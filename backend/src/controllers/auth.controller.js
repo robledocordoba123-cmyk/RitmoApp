@@ -58,6 +58,10 @@ async function onboarding(req, res) {
     mensaje: "Academia registrada correctamente.",
     tenant: { id: tenant.id, nombre: tenant.nombre, nit: tenant.nit },
     token,
+    // Misma forma que devuelve /login, para que el frontend guarde la
+    // sesión de manera consistente sin importar por cuál de las dos rutas
+    // haya entrado el usuario.
+    usuario: { id: usuarioAdmin.id, nombre: usuarioAdmin.nombre, rol: usuarioAdmin.rol, tenantId: usuarioAdmin.tenantId },
   });
 }
 

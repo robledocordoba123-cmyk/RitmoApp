@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
 
   async function onboarding(academia, admin) {
     const data = await api.post("/auth/onboarding", { academia, admin });
-    setSesion({ token: data.token, usuario: { rol: "ADMIN_ACADEMIA", tenantId: data.tenant.id } });
+    setSesion({ token: data.token, usuario: data.usuario });
     return data;
   }
 

@@ -23,6 +23,8 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(201);
     expect(res.body.tenant.nit).toBe("900111222-1");
     expect(res.body.token).toBeDefined();
+    // El frontend guarda esto en la sesión; debe traer lo mismo que /login.
+    expect(res.body.usuario).toMatchObject({ nombre: "Admin Nuevo", rol: "ADMIN_ACADEMIA", tenantId: res.body.tenant.id });
 
     const usuarioCreado = await prisma.user.findUnique({ where: { email: "admin@academianueva.test" } });
     expect(usuarioCreado.rol).toBe("ADMIN_ACADEMIA");
