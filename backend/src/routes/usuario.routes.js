@@ -7,5 +7,6 @@ const router = Router();
 router.use(requireAuth, requireRole("ADMIN_ACADEMIA"));
 
 router.get("/", usuarioController.listarPorRol);
+router.post("/", usuarioController.crear);
 
 module.exports = router;

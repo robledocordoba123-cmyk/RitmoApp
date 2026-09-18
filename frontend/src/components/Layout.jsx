@@ -16,6 +16,7 @@ import {
   X,
   Sun,
   Moon,
+  Users2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -31,6 +32,7 @@ const ENLACES_POR_ROL = {
     { to: "/admin/clases", label: "Clases", icon: CalendarDays },
     { to: "/admin/salones", label: "Salones", icon: DoorOpen },
     { to: "/admin/ritmos", label: "Ritmos", icon: Music4 },
+    { to: "/admin/equipo", label: "Equipo", icon: Users2 },
     { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
   ],
   PROFESOR: [

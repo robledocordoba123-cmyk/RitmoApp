@@ -12,6 +12,7 @@ const CONTENIDO_AYUDA = {
     pasos: [
       "Crea tus salones en “Salones”, con su capacidad real.",
       "Agrega los ritmos que ofrece tu academia en “Ritmos”.",
+      "Da de alta a tus profesores en “Equipo” — ellos no se registran solos.",
       "Programa tus clases asignando salón, ritmo, profesor y horario.",
       "Revisa “Reportes” para ver qué tan lleno está cada salón.",
     ],
@@ -19,6 +20,7 @@ const CONTENIDO_AYUDA = {
       { q: "¿Por qué no puedo programar una clase?", a: "Necesitas al menos un salón, un ritmo y un profesor registrado en tu academia antes de poder programar una clase." },
       { q: "¿Por qué se rechaza una clase que intento crear?", a: "El sistema no permite dos clases en el mismo salón o con el mismo profesor si sus horarios se cruzan, aunque sea por unos minutos." },
       { q: "¿Puedo cancelar una clase ya programada?", a: "Sí, desde la lista de clases puedes cancelarla en cualquier momento mientras siga en estado “Programada”." },
+      { q: "¿Cómo se registran mis estudiantes y profesores?", a: "Tú los das de alta desde “Equipo”, con su nombre, correo y una contraseña. Ellos no pueden registrarse solos: eso mantiene aislada la información entre academias." },
     ],
   },
   PROFESOR: {

@@ -12,10 +12,11 @@ import { SkeletonList } from "../../components/ui/Skeleton";
 
 // Checklist de arranque: guía al admin en su primera visita usando la propia
 // app en vez de un manual aparte. Desaparece sola cuando ya no hace falta.
-function ChecklistArranque({ salones, ritmos, clases }) {
+function ChecklistArranque({ salones, ritmos, profesores, clases }) {
   const pasos = [
     { hecho: salones.length > 0, texto: "Crea tu primer salón", to: "/admin/salones" },
     { hecho: ritmos.length > 0, texto: "Agrega un ritmo", to: "/admin/ritmos" },
+    { hecho: profesores.length > 0, texto: "Agrega un profesor", to: "/admin/equipo" },
     { hecho: clases.length > 0, texto: "Programa tu primera clase", to: "/admin/clases" },
   ];
 
@@ -24,7 +25,7 @@ function ChecklistArranque({ salones, ritmos, clases }) {
   return (
     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
       <Card className="border-indigo-100 dark:border-indigo-900">
-        <CardHeader title="Primeros pasos" subtitle="Configura tu academia en tres pasos." />
+        <CardHeader title="Primeros pasos" subtitle="Configura tu academia en cuatro pasos." />
         <CardBody className="pt-0">
           <ul className="space-y-2">
             {pasos.map((p) => (
@@ -56,9 +57,12 @@ export default function DashboardPage() {
   const [datos, setDatos] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get("/clases", token), api.get("/salones", token), api.get("/ritmos", token)]).then(
-      ([clases, salones, ritmos]) => setDatos({ clases, salones, ritmos })
-    );
+    Promise.all([
+      api.get("/clases", token),
+      api.get("/salones", token),
+      api.get("/ritmos", token),
+      api.get("/usuarios?rol=PROFESOR", token),
+    ]).then(([clases, salones, ritmos, profesores]) => setDatos({ clases, salones, ritmos, profesores }));
   }, []);
 
   if (!datos) {
@@ -70,7 +74,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { clases, salones, ritmos } = datos;
+  const { clases, salones, ritmos, profesores } = datos;
   const cupoTotal = clases.reduce((acc, c) => acc + c.cupoMaximo, 0);
   const reservasTotal = clases.reduce((acc, c) => acc + (c.cupoMaximo - c.cuposDisponibles), 0);
   const ocupacion = cupoTotal === 0 ? 0 : Math.round((reservasTotal / cupoTotal) * 100);
@@ -83,7 +87,7 @@ export default function DashboardPage() {
     <div>
       <PageHeader title={`Hola, ${usuario?.nombre?.split(" ")[0] || ""}`} subtitle="Este es el estado de tu academia." />
 
-      <ChecklistArranque salones={salones} ritmos={ritmos} clases={clases} />
+      <ChecklistArranque salones={salones} ritmos={ritmos} profesores={profesores} clases={clases} />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={CalendarDays} label="Clases programadas" value={clases.length} tone="indigo" />
