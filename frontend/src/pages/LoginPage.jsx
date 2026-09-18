@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, LogIn } from "lucide-react";
-import heroDance from "../assets/hero-dance.jpg";
+import authDance from "../assets/auth-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 import { rutaInicioPara } from "../rutas";
 
@@ -83,9 +83,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="hidden lg:block relative overflow-hidden">
-        <img src={heroDance} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-indigo-950/40 to-fuchsia-900/20" />
+      <div className="hidden lg:block relative overflow-hidden bg-indigo-950">
+        <img src={authDance} alt="" className="absolute inset-0 h-full w-full object-cover opacity-90 mix-blend-luminosity" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-700/70 via-indigo-950/60 to-fuchsia-800/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/95 via-transparent to-transparent" />
         <div className="relative h-full flex flex-col justify-end p-12">
           <p className="text-2xl font-medium text-white leading-snug max-w-md">
             "Cada academia, con su propio espacio. Nunca se mezclan, nunca se pierden."
