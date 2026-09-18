@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 const VARIANTES = {
   primary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none",
   secondary: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800",
@@ -7,12 +9,13 @@ const VARIANTES = {
 
 export default function Button({ variant = "primary", icon: Icon, className = "", children, ...props }) {
   return (
-    <button
+    <motion.button
+      whileTap={{ scale: 0.97 }}
       {...props}
       className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed ${VARIANTES[variant]} ${className}`}
     >
       {Icon && <Icon size={16} />}
       {children}
-    </button>
+    </motion.button>
   );
 }

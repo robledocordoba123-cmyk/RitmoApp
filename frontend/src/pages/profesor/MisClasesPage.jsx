@@ -27,7 +27,7 @@ export default function MisClasesPage() {
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {clases.map((c) => (
-            <Card key={c.id}>
+            <Card hover key={c.id}>
               <CardBody className="pt-5">
                 <p className="font-medium text-gray-900 dark:text-gray-100">{c.ritmo.nombre}</p>
                 <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">

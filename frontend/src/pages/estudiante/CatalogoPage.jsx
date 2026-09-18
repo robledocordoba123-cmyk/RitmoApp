@@ -47,7 +47,7 @@ export default function CatalogoPage() {
           {clases.map((clase) => {
             const sinCupo = clase.cuposDisponibles === 0;
             return (
-              <Card key={clase.id}>
+              <Card hover key={clase.id}>
                 <CardBody className="pt-5">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 mb-3">
                     <Sparkles size={16} />

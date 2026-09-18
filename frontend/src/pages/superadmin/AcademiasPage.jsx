@@ -42,7 +42,7 @@ export default function AcademiasPage() {
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {academias.map((t) => (
-            <Card key={t.id}>
+            <Card hover key={t.id}>
               <CardBody className="pt-5">
                 <div className="flex items-start justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">

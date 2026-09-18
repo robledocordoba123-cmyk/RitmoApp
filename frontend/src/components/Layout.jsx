@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -120,6 +121,7 @@ function PerfilYSalir({ usuario, iniciales, onSalir }) {
 export default function Layout({ children }) {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const enlaces = ENLACES_POR_ROL[usuario?.rol] || [];
 
@@ -169,7 +171,18 @@ export default function Layout({ children }) {
           <span className="font-semibold text-gray-900 dark:text-gray-100">RitmoApp</span>
           <div className="w-[22px]" />
         </header>
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">{children}</main>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
     </div>
   );

@@ -88,7 +88,7 @@ export default function SalonesPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {salones.map((s) => (
-            <Card key={s.id}>
+            <Card hover key={s.id}>
               <CardBody className="pt-5">
                 <div className="flex items-start justify-between">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">

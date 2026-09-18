@@ -1,10 +1,16 @@
-export function Card({ children, className = "" }) {
+import { motion } from "framer-motion";
+
+export function Card({ children, className = "", hover = false }) {
+  const Componente = hover ? motion.div : "div";
+  const propsHover = hover ? { whileHover: { y: -3, transition: { duration: 0.15 } } } : {};
+
   return (
-    <div
+    <Componente
       className={`rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 ${className}`}
+      {...propsHover}
     >
       {children}
-    </div>
+    </Componente>
   );
 }
 

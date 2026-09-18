@@ -158,7 +158,7 @@ export default function ClasesPage() {
             const ocupado = c.cupoMaximo - c.cuposDisponibles;
             const porcentaje = Math.round((ocupado / c.cupoMaximo) * 100);
             return (
-              <Card key={c.id}>
+              <Card hover key={c.id}>
                 <CardBody className="pt-5">
                   <div className="flex items-start justify-between">
                     <div>

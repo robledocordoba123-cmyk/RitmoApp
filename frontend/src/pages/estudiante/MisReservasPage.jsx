@@ -27,7 +27,7 @@ export default function MisReservasPage() {
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {reservas.map((r) => (
-            <Card key={r.id}>
+            <Card hover key={r.id}>
               <CardBody className="pt-5">
                 <div className="flex items-start justify-between">
                   <p className="font-medium text-gray-900 dark:text-gray-100">{r.clase.ritmo.nombre}</p>
