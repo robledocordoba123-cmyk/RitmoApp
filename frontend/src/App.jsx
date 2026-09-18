@@ -1,122 +1,139 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import { rutaInicioPara } from "./rutas";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 
-function App() {
-  const [count, setCount] = useState(0)
+import LoginPage from "./pages/LoginPage";
+import OnboardingPage from "./pages/OnboardingPage";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+import CatalogoPage from "./pages/estudiante/CatalogoPage";
+import MisReservasPage from "./pages/estudiante/MisReservasPage";
 
-      <div className="ticks"></div>
+import SalonesPage from "./pages/admin/SalonesPage";
+import RitmosPage from "./pages/admin/RitmosPage";
+import ClasesPage from "./pages/admin/ClasesPage";
+import ReportesPage from "./pages/admin/ReportesPage";
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+import MisClasesPage from "./pages/profesor/MisClasesPage";
+import AsistenciaPage from "./pages/profesor/AsistenciaPage";
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+import AcademiasPage from "./pages/superadmin/AcademiasPage";
+
+function ConLayout({ children }) {
+  return <Layout>{children}</Layout>;
 }
 
-export default App
+export default function App() {
+  const { estaAutenticado, usuario } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <LoginPage />}
+      />
+      <Route path="/registro-academia" element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <OnboardingPage />} />
+
+      <Route
+        path="/estudiante/catalogo"
+        element={
+          <ProtectedRoute rolesPermitidos={["ESTUDIANTE"]}>
+            <ConLayout>
+              <CatalogoPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/estudiante/reservas"
+        element={
+          <ProtectedRoute rolesPermitidos={["ESTUDIANTE"]}>
+            <ConLayout>
+              <MisReservasPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/salones"
+        element={
+          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
+            <ConLayout>
+              <SalonesPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/ritmos"
+        element={
+          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
+            <ConLayout>
+              <RitmosPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/clases"
+        element={
+          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
+            <ConLayout>
+              <ClasesPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reportes"
+        element={
+          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
+            <ConLayout>
+              <ReportesPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profesor/clases"
+        element={
+          <ProtectedRoute rolesPermitidos={["PROFESOR"]}>
+            <ConLayout>
+              <MisClasesPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profesor/clases/:id/asistencia"
+        element={
+          <ProtectedRoute rolesPermitidos={["PROFESOR"]}>
+            <ConLayout>
+              <AsistenciaPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/superadmin/academias"
+        element={
+          <ProtectedRoute rolesPermitidos={["SUPERADMIN"]}>
+            <ConLayout>
+              <AcademiasPage />
+            </ConLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/"
+        element={<Navigate to={estaAutenticado ? rutaInicioPara(usuario.rol) : "/login"} replace />}
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
