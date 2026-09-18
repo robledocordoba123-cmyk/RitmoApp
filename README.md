@@ -82,14 +82,16 @@ Ver [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectur
 ## Reglas de negocio implementadas hasta ahora
 
 - **RF-01** Onboarding de academia (tenant) + administrador inicial, rechaza NIT o correo duplicado.
-- **RF-02** Login con JWT que incluye rol y `tenantId`.
+- **RF-02** Login con JWT que incluye rol y `tenantId`; bloquea el acceso si la academia está suspendida.
+- **RF-03** Panel de SuperAdmin: lista academias y activa/suspende su estado.
 - **RF-04** CRUD de salones y ritmos, aislado por academia.
 - **RF-05 / RN-02 / RN-03** Programación de clases: rechaza cruces de horario en el mismo salón y del mismo profesor.
 - **RF-06 / RN-01** Reserva de cupo con decremento atómico — probado con dos solicitudes simultáneas por el último cupo, sin overbooking.
 - **RF-07** Registro de asistencia por el profesor asignado, solo el día de la clase.
+- **RF-08** Reporte de ocupación por salón (capacidad ofertada vs. reservas confirmadas) en un rango de fechas.
 - **RNF-01** Aislamiento multi-tenant: extensión de Prisma que inyecta `tenantId` en toda consulta de los modelos de negocio (`src/config/tenantPrismaClient.js`), probado con dos academias distintas.
 - **RNF-02** Transacciones atómicas en el motor de agendamiento (`reserva.controller.js`).
 
-Todo lo anterior está probado en vivo contra PostgreSQL, no solo escrito.
+Los ocho requisitos funcionales del documento de Alcance (RF-01 a RF-08) están implementados y probados en vivo contra PostgreSQL, no solo escritos.
 
-Lo que sigue: panel de SuperAdmin (RF-03), reportes de ocupación (RF-08), pruebas automatizadas, y luego el frontend (React + Tailwind).
+Lo que sigue: pruebas automatizadas y el frontend (React + Tailwind) — todavía no existe ninguno de los dos.
