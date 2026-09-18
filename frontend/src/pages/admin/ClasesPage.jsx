@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { CalendarDays, Plus, XCircle, Music4, DoorOpen, User } from "lucide-react";
+import { CalendarDays, Plus, XCircle, Music4, DoorOpen, User, List, CalendarRange } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+import WeekCalendar from "../../components/WeekCalendar";
 
 const VACIO = { ritmoId: "", salonId: "", profesorId: "", cupoMaximo: "", fecha: "", horaInicio: "", horaFin: "" };
 
@@ -22,6 +23,7 @@ export default function ClasesPage() {
   const [profesores, setProfesores] = useState([]);
   const [form, setForm] = useState(VACIO);
   const [enviando, setEnviando] = useState(false);
+  const [vista, setVista] = useState("lista");
 
   async function cargarTodo() {
     const [c, s, r, p] = await Promise.all([
@@ -93,7 +95,30 @@ export default function ClasesPage() {
 
   return (
     <div>
-      <PageHeader title="Clases" subtitle="Programa clases y controla su ocupación." />
+      <PageHeader
+        title="Clases"
+        subtitle="Programa clases y controla su ocupación."
+        action={
+          <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-gray-900">
+            <button
+              onClick={() => setVista("lista")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                vista === "lista" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300" : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <List size={15} /> Lista
+            </button>
+            <button
+              onClick={() => setVista("calendario")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition ${
+                vista === "calendario" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300" : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <CalendarRange size={15} /> Calendario
+            </button>
+          </div>
+        }
+      />
 
       {faltaCatalogoBase ? (
         <EmptyState
@@ -125,6 +150,8 @@ export default function ClasesPage() {
 
       {clases.length === 0 ? (
         <EmptyState icon={CalendarDays} title="No hay clases programadas" />
+      ) : vista === "calendario" ? (
+        <WeekCalendar clases={clases} />
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
           {clases.map((c) => {
