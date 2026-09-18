@@ -123,6 +123,9 @@ model Clase {
   profesorId     String
   profesor       User        @relation("ProfesorClases", fields: [profesorId], references: [id])
   cupoMaximo     Int
+  // Contador que se decrementa de forma atómica al reservar (RN-01, RNF-02):
+  // evita el overbooking del último cupo sin necesidad de bloqueos manuales.
+  cuposDisponibles Int
   fechaHoraInicio DateTime
   fechaHoraFin    DateTime
   estado         EstadoClase @default(PROGRAMADA)
