@@ -1,0 +1,176 @@
+// Esquema de RitmoApp: SaaS multi-tenant para academias de baile.
+// Cada tabla de negocio lleva tenantId obligatorio (RNF-01, RN-04): el aislamiento
+// entre academias se hace por columna + middleware, no por base de datos separada.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+// La URL de conexión ya no va aquí en Prisma 7: se define en prisma.config.cjs
+// (para el CLI) y se pasa como adapter al construir PrismaClient (para la app).
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  SUPERADMIN
+  ADMIN_ACADEMIA
+  PROFESOR
+  ESTUDIANTE
+}
+
+enum EstadoTenant {
+  ACTIVA
+  SUSPENDIDA
+}
+
+enum EstadoClase {
+  PROGRAMADA
+  CANCELADA
+  FINALIZADA
+}
+
+enum EstadoReserva {
+  CONFIRMADA
+  CANCELADA
+}
+
+enum EstadoAsistencia {
+  ASISTIO
+  INASISTENCIA
+  EXCUSA
+}
+
+// Academia de baile (tenant). RF-01.
+model Tenant {
+  id        String       @id @default(uuid())
+  nombre    String
+  nit       String       @unique
+  estado    EstadoTenant @default(ACTIVA)
+  createdAt DateTime     @default(now())
+
+  usuarios  User[]
+  salones   Salon[]
+  ritmos    Ritmo[]
+  clases    Clase[]
+  reservas  Reserva[]
+  asistencias Asistencia[]
+
+  @@map("tenants")
+}
+
+// Usuario de cualquier rol. tenantId es null solo para SUPERADMIN (RF-02, RF-03).
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  rol          Rol
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  clasesComoProfesor Clase[]      @relation("ProfesorClases")
+  reservas            Reserva[]
+  asistenciasRegistradas Asistencia[] @relation("AsistenciaRegistradaPor")
+  asistenciasComoEstudiante Asistencia[] @relation("AsistenciaEstudiante")
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// Salón físico de una academia. RF-04.
+model Salon {
+  id        String  @id @default(uuid())
+  tenantId  String
+  tenant    Tenant  @relation(fields: [tenantId], references: [id])
+  nombre    String
+  capacidad Int
+  activo    Boolean @default(true)
+
+  clases Clase[]
+
+  @@index([tenantId])
+  @@map("salones")
+}
+
+// Estilo de baile ofrecido por una academia. RF-04.
+model Ritmo {
+  id       String @id @default(uuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  nombre   String
+
+  clases Clase[]
+
+  @@index([tenantId])
+  @@map("ritmos")
+}
+
+// Clase programada: combina salón, ritmo y profesor en una franja horaria.
+// RF-05, RN-02 (salón sin cruce) y RN-03 (profesor sin cruce) se validan en el
+// servicio, no aquí, porque dependen de comparar rangos de fecha/hora.
+model Clase {
+  id             String      @id @default(uuid())
+  tenantId       String
+  tenant         Tenant      @relation(fields: [tenantId], references: [id])
+  ritmoId        String
+  ritmo          Ritmo       @relation(fields: [ritmoId], references: [id])
+  salonId        String
+  salon          Salon       @relation(fields: [salonId], references: [id])
+  profesorId     String
+  profesor       User        @relation("ProfesorClases", fields: [profesorId], references: [id])
+  cupoMaximo     Int
+  fechaHoraInicio DateTime
+  fechaHoraFin    DateTime
+  estado         EstadoClase @default(PROGRAMADA)
+  createdAt      DateTime    @default(now())
+
+  reservas    Reserva[]
+  asistencias Asistencia[]
+
+  @@index([tenantId])
+  @@index([salonId, fechaHoraInicio, fechaHoraFin])
+  @@index([profesorId, fechaHoraInicio, fechaHoraFin])
+  @@map("clases")
+}
+
+// Reserva de cupo de un estudiante. RF-06, RN-01 (cupo), RN-04 (aislamiento).
+// La unicidad (claseId, estudianteId) evita que el mismo estudiante reserve dos
+// veces la misma clase; el límite de cupo se valida en una transacción del servicio.
+model Reserva {
+  id           String        @id @default(uuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  claseId      String
+  clase        Clase         @relation(fields: [claseId], references: [id])
+  estudianteId String
+  estudiante   User          @relation(fields: [estudianteId], references: [id])
+  estado       EstadoReserva @default(CONFIRMADA)
+  createdAt    DateTime      @default(now())
+
+  @@unique([claseId, estudianteId])
+  @@index([tenantId])
+  @@map("reservas")
+}
+
+// Registro de asistencia por clase y estudiante. RF-07.
+model Asistencia {
+  id               String           @id @default(uuid())
+  tenantId         String
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  claseId          String
+  clase            Clase            @relation(fields: [claseId], references: [id])
+  estudianteId     String
+  estudiante       User             @relation("AsistenciaEstudiante", fields: [estudianteId], references: [id])
+  estado           EstadoAsistencia
+  registradoPorId  String
+  registradoPor    User             @relation("AsistenciaRegistradaPor", fields: [registradoPorId], references: [id])
+  registradoEn     DateTime         @default(now())
+
+  @@unique([claseId, estudianteId])
+  @@index([tenantId])
+  @@map("asistencias")
+}

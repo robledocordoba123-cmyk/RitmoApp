@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ritmoapp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ritmoapp
+      POSTGRES_PASSWORD: ritmoapp_dev
+      POSTGRES_DB: ritmoapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - ritmoapp_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ritmoapp -d ritmoapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ritmoapp_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ritmoapp.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5051:80"
+    depends_on:
+      - db
+
+volumes:
+  ritmoapp_db_data:
