@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Rocket } from "lucide-react";
-import authDance from "../assets/auth-dance.jpg";
+import registroDance from "../assets/registro-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 
 export default function OnboardingPage() {
@@ -35,9 +35,9 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-950">
       <div className="hidden lg:block relative overflow-hidden bg-indigo-950">
-        <img src={authDance} alt="" className="absolute inset-0 h-full w-full object-cover opacity-90 mix-blend-luminosity" />
-        <div className="absolute inset-0 bg-gradient-to-bl from-fuchsia-800/60 via-indigo-950/60 to-indigo-700/70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/95 via-transparent to-transparent" />
+        <img src={registroDance} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-bl from-fuchsia-800/40 via-indigo-950/30 to-indigo-700/50 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-transparent to-transparent" />
         <div className="relative h-full flex flex-col justify-end p-12">
           <p className="text-2xl font-medium text-white leading-snug max-w-md">
             "Deja de perseguir cupos por WhatsApp. Prográmalo una vez, sin choques."
