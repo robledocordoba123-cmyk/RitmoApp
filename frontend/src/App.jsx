@@ -4,24 +4,45 @@ import { rutaInicioPara } from "./rutas";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
 
+import EstudianteDashboard from "./pages/estudiante/DashboardPage";
 import CatalogoPage from "./pages/estudiante/CatalogoPage";
 import MisReservasPage from "./pages/estudiante/MisReservasPage";
 
+import AdminDashboard from "./pages/admin/DashboardPage";
 import SalonesPage from "./pages/admin/SalonesPage";
 import RitmosPage from "./pages/admin/RitmosPage";
 import ClasesPage from "./pages/admin/ClasesPage";
 import ReportesPage from "./pages/admin/ReportesPage";
 
+import ProfesorDashboard from "./pages/profesor/DashboardPage";
 import MisClasesPage from "./pages/profesor/MisClasesPage";
 import AsistenciaPage from "./pages/profesor/AsistenciaPage";
 
+import SuperadminDashboard from "./pages/superadmin/DashboardPage";
 import AcademiasPage from "./pages/superadmin/AcademiasPage";
 
 function ConLayout({ children }) {
   return <Layout>{children}</Layout>;
+}
+
+function ruta(path, rolesPermitidos, Componente) {
+  return (
+    <Route
+      key={path}
+      path={path}
+      element={
+        <ProtectedRoute rolesPermitidos={rolesPermitidos}>
+          <ConLayout>
+            <Componente />
+          </ConLayout>
+        </ProtectedRoute>
+      }
+    />
+  );
 }
 
 export default function App() {
@@ -29,111 +50,34 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <LoginPage />}
       />
-      <Route path="/registro-academia" element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <OnboardingPage />} />
-
       <Route
-        path="/estudiante/catalogo"
-        element={
-          <ProtectedRoute rolesPermitidos={["ESTUDIANTE"]}>
-            <ConLayout>
-              <CatalogoPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/estudiante/reservas"
-        element={
-          <ProtectedRoute rolesPermitidos={["ESTUDIANTE"]}>
-            <ConLayout>
-              <MisReservasPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
+        path="/registro-academia"
+        element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <OnboardingPage />}
       />
 
-      <Route
-        path="/admin/salones"
-        element={
-          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
-            <ConLayout>
-              <SalonesPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/ritmos"
-        element={
-          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
-            <ConLayout>
-              <RitmosPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/clases"
-        element={
-          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
-            <ConLayout>
-              <ClasesPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/reportes"
-        element={
-          <ProtectedRoute rolesPermitidos={["ADMIN_ACADEMIA"]}>
-            <ConLayout>
-              <ReportesPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
+      {ruta("/estudiante/inicio", ["ESTUDIANTE"], EstudianteDashboard)}
+      {ruta("/estudiante/catalogo", ["ESTUDIANTE"], CatalogoPage)}
+      {ruta("/estudiante/reservas", ["ESTUDIANTE"], MisReservasPage)}
 
-      <Route
-        path="/profesor/clases"
-        element={
-          <ProtectedRoute rolesPermitidos={["PROFESOR"]}>
-            <ConLayout>
-              <MisClasesPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profesor/clases/:id/asistencia"
-        element={
-          <ProtectedRoute rolesPermitidos={["PROFESOR"]}>
-            <ConLayout>
-              <AsistenciaPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
+      {ruta("/admin/inicio", ["ADMIN_ACADEMIA"], AdminDashboard)}
+      {ruta("/admin/salones", ["ADMIN_ACADEMIA"], SalonesPage)}
+      {ruta("/admin/ritmos", ["ADMIN_ACADEMIA"], RitmosPage)}
+      {ruta("/admin/clases", ["ADMIN_ACADEMIA"], ClasesPage)}
+      {ruta("/admin/reportes", ["ADMIN_ACADEMIA"], ReportesPage)}
 
-      <Route
-        path="/superadmin/academias"
-        element={
-          <ProtectedRoute rolesPermitidos={["SUPERADMIN"]}>
-            <ConLayout>
-              <AcademiasPage />
-            </ConLayout>
-          </ProtectedRoute>
-        }
-      />
+      {ruta("/profesor/inicio", ["PROFESOR"], ProfesorDashboard)}
+      {ruta("/profesor/clases", ["PROFESOR"], MisClasesPage)}
+      {ruta("/profesor/clases/:id/asistencia", ["PROFESOR"], AsistenciaPage)}
 
-      <Route
-        path="/"
-        element={<Navigate to={estaAutenticado ? rutaInicioPara(usuario.rol) : "/login"} replace />}
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {ruta("/superadmin/inicio", ["SUPERADMIN"], SuperadminDashboard)}
+      {ruta("/superadmin/academias", ["SUPERADMIN"], AcademiasPage)}
+
+      <Route path="*" element={<Navigate to={estaAutenticado ? rutaInicioPara(usuario.rol) : "/"} replace />} />
     </Routes>
   );
 }

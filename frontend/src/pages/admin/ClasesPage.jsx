@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { CalendarDays, Plus, XCircle, Music4, DoorOpen, User } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import PageHeader from "../../components/ui/PageHeader";
+import { Card, CardHeader, CardBody } from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Badge from "../../components/ui/Badge";
+import EmptyState from "../../components/ui/EmptyState";
+import { SkeletonList } from "../../components/ui/Skeleton";
 
 const VACIO = { ritmoId: "", salonId: "", profesorId: "", cupoMaximo: "", fecha: "", horaInicio: "", horaFin: "" };
 
+const ESTADO_BADGE = { PROGRAMADA: "green", CANCELADA: "red", FINALIZADA: "gray" };
+
 export default function ClasesPage() {
   const { token } = useAuth();
-  const [clases, setClases] = useState([]);
+  const [clases, setClases] = useState(null);
   const [salones, setSalones] = useState([]);
   const [ritmos, setRitmos] = useState([]);
   const [profesores, setProfesores] = useState([]);
   const [form, setForm] = useState(VACIO);
-  const [error, setError] = useState("");
-  const [cargando, setCargando] = useState(true);
+  const [enviando, setEnviando] = useState(false);
 
   async function cargarTodo() {
     const [c, s, r, p] = await Promise.all([
@@ -25,7 +34,6 @@ export default function ClasesPage() {
     setSalones(s);
     setRitmos(r);
     setProfesores(p);
-    setCargando(false);
   }
 
   useEffect(() => {
@@ -38,7 +46,7 @@ export default function ClasesPage() {
 
   async function crear(e) {
     e.preventDefault();
-    setError("");
+    setEnviando(true);
     try {
       await api.post(
         "/clases",
@@ -53,95 +61,146 @@ export default function ClasesPage() {
         token
       );
       setForm(VACIO);
+      toast.success("Clase programada.");
       await cargarTodo();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setEnviando(false);
     }
   }
 
   async function cancelar(id) {
     try {
       await api.patch(`/clases/${id}/cancelar`, {}, token);
+      toast.success("Clase cancelada.");
       await cargarTodo();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
-  if (cargando) return <p className="text-gray-500">Cargando...</p>;
+  if (clases === null) {
+    return (
+      <div>
+        <PageHeader title="Clases" subtitle="Programa clases y controla su ocupación." />
+        <SkeletonList />
+      </div>
+    );
+  }
 
   const faltaCatalogoBase = salones.length === 0 || ritmos.length === 0 || profesores.length === 0;
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-gray-900 mb-4">Clases</h1>
+      <PageHeader title="Clases" subtitle="Programa clases y controla su ocupación." />
 
-      {faltaCatalogoBase && (
-        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-4">
-          Antes de programar una clase necesitas al menos un salón, un ritmo y un profesor registrado.
-        </p>
+      {faltaCatalogoBase ? (
+        <EmptyState
+          icon={CalendarDays}
+          title="Te falta configurar el catálogo base"
+          description="Antes de programar una clase necesitas al menos un salón, un ritmo y un profesor registrado en tu academia."
+        />
+      ) : (
+        <Card className="mb-6">
+          <CardHeader title="Programar clase" />
+          <CardBody>
+            <form onSubmit={crear} className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <Select label="Ritmo" value={form.ritmoId} onChange={cambiar("ritmoId")} opciones={ritmos} />
+              <Select label="Salón" value={form.salonId} onChange={cambiar("salonId")} opciones={salones} />
+              <Select label="Profesor" value={form.profesorId} onChange={cambiar("profesorId")} opciones={profesores} />
+              <Campo label="Cupo máximo" type="number" min="1" value={form.cupoMaximo} onChange={cambiar("cupoMaximo")} />
+              <Campo label="Fecha" type="date" value={form.fecha} onChange={cambiar("fecha")} />
+              <Campo label="Hora inicio" type="time" value={form.horaInicio} onChange={cambiar("horaInicio")} />
+              <Campo label="Hora fin" type="time" value={form.horaFin} onChange={cambiar("horaFin")} />
+              <div className="col-span-2 sm:col-span-3">
+                <Button type="submit" icon={Plus} disabled={enviando}>
+                  Programar clase
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       )}
 
-      {!faltaCatalogoBase && (
-        <form onSubmit={crear} className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6 bg-white p-4 rounded-lg border border-gray-200">
-          <Select label="Ritmo" value={form.ritmoId} onChange={cambiar("ritmoId")} opciones={ritmos} />
-          <Select label="Salón" value={form.salonId} onChange={cambiar("salonId")} opciones={salones} />
-          <Select label="Profesor" value={form.profesorId} onChange={cambiar("profesorId")} opciones={profesores} />
-          <Campo label="Cupo máximo" type="number" min="1" value={form.cupoMaximo} onChange={cambiar("cupoMaximo")} />
-          <Campo label="Fecha" type="date" value={form.fecha} onChange={cambiar("fecha")} />
-          <Campo label="Hora inicio" type="time" value={form.horaInicio} onChange={cambiar("horaInicio")} />
-          <Campo label="Hora fin" type="time" value={form.horaFin} onChange={cambiar("horaFin")} />
-          <div className="col-span-2 sm:col-span-3">
-            <button type="submit" className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-              Programar clase
-            </button>
-          </div>
-        </form>
+      {clases.length === 0 ? (
+        <EmptyState icon={CalendarDays} title="No hay clases programadas" />
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {clases.map((c) => {
+            const ocupado = c.cupoMaximo - c.cuposDisponibles;
+            const porcentaje = Math.round((ocupado / c.cupoMaximo) * 100);
+            return (
+              <Card key={c.id}>
+                <CardBody className="pt-5">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{c.ritmo.nombre}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
+                      </p>
+                    </div>
+                    <Badge color={ESTADO_BADGE[c.estado]}>{c.estado}</Badge>
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-sm text-gray-500">
+                    <p className="flex items-center gap-1.5">
+                      <DoorOpen size={14} /> {c.salon.nombre}
+                    </p>
+                    <p className="flex items-center gap-1.5">
+                      <User size={14} /> {c.profesor.nombre}
+                    </p>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>
+                        {ocupado}/{c.cupoMaximo} cupos
+                      </span>
+                      <span>{porcentaje}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-gray-100">
+                      <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: `${Math.min(porcentaje, 100)}%` }} />
+                    </div>
+                  </div>
+
+                  {c.estado === "PROGRAMADA" && (
+                    <button
+                      onClick={() => cancelar(c.id)}
+                      className="mt-4 inline-flex items-center gap-1 text-sm text-red-600 hover:text-red-800"
+                    >
+                      <XCircle size={14} /> Cancelar clase
+                    </button>
+                  )}
+                </CardBody>
+              </Card>
+            );
+          })}
+        </div>
       )}
-
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-
-      <ul className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200">
-        {clases.map((c) => (
-          <li key={c.id} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="font-medium text-gray-900">
-                {c.ritmo.nombre} · {c.salon.nombre}
-              </p>
-              <p className="text-sm text-gray-500">
-                {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })} · Profesor:{" "}
-                {c.profesor.nombre}
-              </p>
-              <p className="text-sm text-gray-500">
-                Cupos: {c.cuposDisponibles}/{c.cupoMaximo} · Estado: {c.estado}
-              </p>
-            </div>
-            {c.estado === "PROGRAMADA" && (
-              <button onClick={() => cancelar(c.id)} className="text-sm text-red-600 hover:text-red-800">
-                Cancelar
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
 
 function Campo({ label, ...props }) {
   return (
-    <label className="text-xs text-gray-600 flex flex-col gap-1">
+    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
       {label}
-      <input {...props} required className="rounded-md border border-gray-300 px-2 py-1.5 text-sm" />
+      <input {...props} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
     </label>
   );
 }
 
 function Select({ label, value, onChange, opciones }) {
   return (
-    <label className="text-xs text-gray-600 flex flex-col gap-1">
-      {label}
-      <select value={value} onChange={onChange} required className="rounded-md border border-gray-300 px-2 py-1.5 text-sm">
+    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+      <span className="flex items-center gap-1">
+        {label === "Ritmo" && <Music4 size={12} />}
+        {label === "Salón" && <DoorOpen size={12} />}
+        {label === "Profesor" && <User size={12} />}
+        {label}
+      </span>
+      <select value={value} onChange={onChange} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="" disabled>
           Selecciona...
         </option>

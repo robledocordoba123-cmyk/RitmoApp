@@ -1,47 +1,54 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ClipboardList, DoorOpen, CalendarDays, ArrowRight } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import PageHeader from "../../components/ui/PageHeader";
+import { Card, CardBody } from "../../components/ui/Card";
+import EmptyState from "../../components/ui/EmptyState";
+import { SkeletonList } from "../../components/ui/Skeleton";
 
 export default function MisClasesPage() {
   const { token, usuario } = useAuth();
-  const [clases, setClases] = useState([]);
-  const [cargando, setCargando] = useState(true);
+  const [clases, setClases] = useState(null);
 
   useEffect(() => {
-    api.get("/clases", token).then((data) => {
-      // El catálogo trae las clases de toda la academia; el profesor solo
-      // necesita ver las suyas.
-      setClases(data.filter((c) => c.profesor.id === usuario.id));
-      setCargando(false);
-    });
+    api.get("/clases", token).then((data) => setClases(data.filter((c) => c.profesor.id === usuario.id)));
   }, []);
-
-  if (cargando) return <p className="text-gray-500">Cargando...</p>;
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-gray-900 mb-4">Mis clases</h1>
-      {clases.length === 0 ? (
-        <p className="text-sm text-gray-500">No tienes clases programadas.</p>
+      <PageHeader title="Mis clases" subtitle="Tus clases programadas y el registro de asistencia." />
+
+      {clases === null ? (
+        <SkeletonList />
+      ) : clases.length === 0 ? (
+        <EmptyState icon={ClipboardList} title="No tienes clases programadas" />
       ) : (
-        <ul className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200">
+        <div className="grid sm:grid-cols-2 gap-4">
           {clases.map((c) => (
-            <li key={c.id} className="flex items-center justify-between px-4 py-3">
-              <div>
-                <p className="font-medium text-gray-900">
-                  {c.ritmo.nombre} · {c.salon.nombre}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
-                </p>
-              </div>
-              <Link to={`/profesor/clases/${c.id}/asistencia`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                Tomar asistencia
-              </Link>
-            </li>
+            <Card key={c.id}>
+              <CardBody className="pt-5">
+                <p className="font-medium text-gray-900">{c.ritmo.nombre}</p>
+                <div className="mt-2 space-y-1 text-sm text-gray-500">
+                  <p className="flex items-center gap-1.5">
+                    <DoorOpen size={14} /> {c.salon.nombre}
+                  </p>
+                  <p className="flex items-center gap-1.5">
+                    <CalendarDays size={14} />
+                    {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
+                  </p>
+                </div>
+                <Link
+                  to={`/profesor/clases/${c.id}/asistencia`}
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                >
+                  Tomar asistencia <ArrowRight size={14} />
+                </Link>
+              </CardBody>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

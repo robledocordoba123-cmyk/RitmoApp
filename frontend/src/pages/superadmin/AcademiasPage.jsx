@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Building2, Users2, Power } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import PageHeader from "../../components/ui/PageHeader";
+import { Card, CardBody } from "../../components/ui/Card";
+import Badge from "../../components/ui/Badge";
+import EmptyState from "../../components/ui/EmptyState";
+import { SkeletonList } from "../../components/ui/Skeleton";
 
 export default function AcademiasPage() {
   const { token } = useAuth();
-  const [academias, setAcademias] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const [academias, setAcademias] = useState(null);
 
   async function cargar() {
     setAcademias(await api.get("/superadmin/tenants", token));
-    setCargando(false);
   }
 
   useEffect(() => {
@@ -18,48 +22,50 @@ export default function AcademiasPage() {
   }, []);
 
   async function cambiarEstado(id, estado) {
-    setError("");
     try {
       await api.patch(`/superadmin/tenants/${id}/estado`, { estado }, token);
+      toast.success(estado === "ACTIVA" ? "Academia reactivada." : "Academia suspendida.");
       await cargar();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
-  if (cargando) return <p className="text-gray-500">Cargando...</p>;
-
   return (
     <div>
-      <h1 className="text-lg font-semibold text-gray-900 mb-4">Academias registradas</h1>
+      <PageHeader title="Academias registradas" subtitle="Activa o suspende el acceso de cada academia a la plataforma." />
 
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-
-      <ul className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200">
-        {academias.map((t) => (
-          <li key={t.id} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="font-medium text-gray-900">{t.nombre}</p>
-              <p className="text-sm text-gray-500">
-                NIT {t.nit} · {t._count.usuarios} usuarios
-              </p>
-              <span
-                className={`inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded ${
-                  t.estado === "ACTIVA" ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
-                }`}
-              >
-                {t.estado}
-              </span>
-            </div>
-            <button
-              onClick={() => cambiarEstado(t.id, t.estado === "ACTIVA" ? "SUSPENDIDA" : "ACTIVA")}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-            >
-              {t.estado === "ACTIVA" ? "Suspender" : "Reactivar"}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {academias === null ? (
+        <SkeletonList />
+      ) : academias.length === 0 ? (
+        <EmptyState icon={Building2} title="Todavía no hay academias registradas" />
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4">
+          {academias.map((t) => (
+            <Card key={t.id}>
+              <CardBody className="pt-5">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                    <Building2 size={18} />
+                  </div>
+                  <Badge color={t.estado === "ACTIVA" ? "green" : "red"}>{t.estado}</Badge>
+                </div>
+                <p className="font-medium text-gray-900 mt-3">{t.nombre}</p>
+                <p className="text-sm text-gray-500">NIT {t.nit}</p>
+                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                  <Users2 size={14} /> {t._count.usuarios} usuarios
+                </p>
+                <button
+                  onClick={() => cambiarEstado(t.id, t.estado === "ACTIVA" ? "SUSPENDIDA" : "ACTIVA")}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                >
+                  <Power size={14} /> {t.estado === "ACTIVA" ? "Suspender" : "Reactivar"}
+                </button>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

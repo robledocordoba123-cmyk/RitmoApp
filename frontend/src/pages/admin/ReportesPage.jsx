@@ -1,12 +1,17 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { BarChart3, Search } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import PageHeader from "../../components/ui/PageHeader";
+import { Card, CardHeader, CardBody } from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import EmptyState from "../../components/ui/EmptyState";
 
 function primerDiaDelMes() {
   const hoy = new Date();
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`;
 }
-
 function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -16,64 +21,70 @@ export default function ReportesPage() {
   const [desde, setDesde] = useState(primerDiaDelMes());
   const [hasta, setHasta] = useState(hoyISO());
   const [reporte, setReporte] = useState(null);
-  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
 
   async function consultar(e) {
     e.preventDefault();
-    setError("");
+    setCargando(true);
     try {
       const data = await api.get(`/reportes/ocupacion?desde=${desde}&hasta=${hasta}`, token);
       setReporte(data);
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setCargando(false);
     }
   }
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-gray-900 mb-4">Reporte de ocupación por salón</h1>
+      <PageHeader title="Reporte de ocupación" subtitle="Cuánto se está usando cada salón en el rango que elijas." />
 
-      <form onSubmit={consultar} className="flex flex-wrap items-end gap-2 mb-6 bg-white p-4 rounded-lg border border-gray-200">
-        <label className="text-xs text-gray-600 flex flex-col gap-1">
-          Desde
-          <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-sm" />
-        </label>
-        <label className="text-xs text-gray-600 flex flex-col gap-1">
-          Hasta
-          <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-sm" />
-        </label>
-        <button type="submit" className="rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700">
-          Consultar
-        </button>
-      </form>
+      <Card className="mb-6">
+        <CardBody className="pt-5">
+          <form onSubmit={consultar} className="flex flex-wrap items-end gap-3">
+            <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+              Desde
+              <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm" />
+            </label>
+            <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+              Hasta
+              <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm" />
+            </label>
+            <Button type="submit" icon={Search} disabled={cargando}>
+              Consultar
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
 
-      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-
-      {reporte && (
-        reporte.salones.length === 0 ? (
-          <p className="text-sm text-gray-500">No hubo clases programadas en ese rango.</p>
+      {reporte &&
+        (reporte.salones.length === 0 ? (
+          <EmptyState icon={BarChart3} title="Sin datos en ese rango" description="No hubo clases programadas entre esas fechas." />
         ) : (
-          <div className="space-y-3">
-            {reporte.salones.map((s) => (
-              <div key={s.salonId} className="bg-white p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium text-gray-900">{s.salon}</p>
-                  <p className="text-sm text-gray-500">{s.porcentajeOcupacion}%</p>
+          <Card>
+            <CardHeader title="Ocupación por salón" subtitle={`${reporte.desde} — ${reporte.hasta}`} />
+            <CardBody className="space-y-5">
+              {reporte.salones.map((s) => (
+                <div key={s.salonId}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-medium text-gray-900">{s.salon}</p>
+                    <p className="text-sm font-semibold text-indigo-600">{s.porcentajeOcupacion}%</p>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-gray-100">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                      style={{ width: `${Math.min(s.porcentajeOcupacion, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {s.reservasConfirmadas} reservas de {s.capacidadOfertada} cupos ofertados en {s.totalClases} clases
+                  </p>
                 </div>
-                <div className="h-2 w-full rounded-full bg-gray-100">
-                  <div
-                    className="h-2 rounded-full bg-indigo-600"
-                    style={{ width: `${Math.min(s.porcentajeOcupacion, 100)}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {s.reservasConfirmadas} reservas de {s.capacidadOfertada} cupos ofertados en {s.totalClases} clases
-                </p>
-              </div>
-            ))}
-          </div>
-        )
-      )}
+              ))}
+            </CardBody>
+          </Card>
+        ))}
     </div>
   );
 }

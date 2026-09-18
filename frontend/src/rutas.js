@@ -3,13 +3,13 @@
 export function rutaInicioPara(rol) {
   switch (rol) {
     case "SUPERADMIN":
-      return "/superadmin/academias";
+      return "/superadmin/inicio";
     case "ADMIN_ACADEMIA":
-      return "/admin/clases";
+      return "/admin/inicio";
     case "PROFESOR":
-      return "/profesor/clases";
+      return "/profesor/inicio";
     case "ESTUDIANTE":
-      return "/estudiante/catalogo";
+      return "/estudiante/inicio";
     default:
       return "/login";
   }
