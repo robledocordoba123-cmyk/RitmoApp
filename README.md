@@ -53,6 +53,25 @@ La API queda disponible en `http://localhost:4000/api`. pgAdmin queda en `http:/
 | Profesor | `profesor@ritmocentral.test` | `Prueba123!` |
 | Estudiante | `estudiante@ritmocentral.test` | `Prueba123!` |
 
+También existe `superadmin@ritmoapp.test` (rol SUPERADMIN, sin academia), con la misma contraseña.
+
+## Cómo correr las pruebas automatizadas
+
+Usan una base de datos separada (`ritmoapp_test`) para no tocar los datos con los que estés probando a mano.
+
+```bash
+cd backend
+
+# Solo la primera vez: crear y migrar la base de datos de prueba
+docker exec ritmoapp_db createdb -U ritmoapp ritmoapp_test
+DATABASE_URL="postgresql://ritmoapp:ritmoapp_dev@localhost:5432/ritmoapp_test?schema=public" npx prisma migrate deploy
+
+# Cada vez que quieras correr los tests
+npm test
+```
+
+26 pruebas contra PostgreSQL real (no mocks), incluida una de concurrencia real: dos estudiantes pidiendo el último cupo de una clase al mismo tiempo.
+
 ## Estructura del repositorio
 
 ```
@@ -64,6 +83,7 @@ RitmoApp/
 │   │   ├── migrations/
 │   │   └── seed.js
 │   ├── prisma.config.cjs    # Conexión que usa el CLI de Prisma (Prisma 7)
+│   ├── tests/                # Jest + Supertest, contra ritmoapp_test
 │   └── src/
 │       ├── server.js
 │       ├── app.js
@@ -94,4 +114,6 @@ Ver [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectur
 
 Los ocho requisitos funcionales del documento de Alcance (RF-01 a RF-08) están implementados y probados en vivo contra PostgreSQL, no solo escritos.
 
-Lo que sigue: pruebas automatizadas y el frontend (React + Tailwind) — todavía no existe ninguno de los dos.
+Los ocho RF tienen además pruebas automatizadas que los verifican contra una base de datos real (ver sección de tests arriba).
+
+Lo que sigue: el frontend (React + Tailwind) — todavía no existe.
