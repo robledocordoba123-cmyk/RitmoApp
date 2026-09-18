@@ -1,5 +1,5 @@
 export default function Skeleton({ className = "" }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-200/70 ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-gray-200/70 dark:bg-gray-800 ${className}`} />;
 }
 
 export function SkeletonList({ filas = 3 }) {

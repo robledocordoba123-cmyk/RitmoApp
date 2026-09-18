@@ -63,7 +63,7 @@ export default function SalonesPage() {
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             />
             <input
               type="number"
@@ -72,7 +72,7 @@ export default function SalonesPage() {
               required
               value={capacidad}
               onChange={(e) => setCapacidad(e.target.value)}
-              className="sm:w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="sm:w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             />
             <Button type="submit" icon={Plus} disabled={enviando}>
               Agregar
@@ -98,8 +98,8 @@ export default function SalonesPage() {
                     <Trash2 size={16} />
                   </button>
                 </div>
-                <p className="font-medium text-gray-900 mt-3">{s.nombre}</p>
-                <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                <p className="font-medium text-gray-900 mt-3 dark:text-gray-100">{s.nombre}</p>
+                <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5 dark:text-gray-400">
                   <Users size={14} /> Capacidad para {s.capacidad}
                 </p>
               </CardBody>

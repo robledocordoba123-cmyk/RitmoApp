@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RitmoApp</title>
+    <script>
+      // Se aplica antes de que React monte, para que no haya un parpadeo
+      // de tema claro justo antes de cambiar a oscuro.
+      try {
+        if (localStorage.getItem("ritmoapp_tema") === "oscuro") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

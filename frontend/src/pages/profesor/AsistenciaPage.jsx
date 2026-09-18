@@ -51,7 +51,7 @@ export default function AsistenciaPage() {
 
   return (
     <div>
-      <Link to="/profesor/clases" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-2">
+      <Link to="/profesor/clases" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-2 dark:text-gray-400">
         <ArrowLeft size={14} /> Volver a mis clases
       </Link>
       <PageHeader title="Registrar asistencia" />
@@ -63,12 +63,12 @@ export default function AsistenciaPage() {
       ) : (
         <form onSubmit={guardar}>
           <Card className="mb-4">
-            <CardBody className="pt-5 divide-y divide-gray-100">
+            <CardBody className="pt-5 divide-y divide-gray-100 dark:divide-gray-800">
               {inscritos.map((i) => (
                 <div key={i.estudianteId} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                   <div>
-                    <p className="font-medium text-gray-900">{i.nombre}</p>
-                    <p className="text-sm text-gray-500">{i.email}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{i.nombre}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{i.email}</p>
                   </div>
                   <div className="flex gap-1.5">
                     {ESTADOS.map((estado) => (
@@ -77,7 +77,7 @@ export default function AsistenciaPage() {
                         key={estado}
                         onClick={() => setSeleccion((prev) => ({ ...prev, [i.estudianteId]: estado }))}
                         className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                          seleccion[i.estudianteId] === estado ? COLOR[estado] : "text-gray-400 bg-gray-50 hover:bg-gray-100"
+                          seleccion[i.estudianteId] === estado ? COLOR[estado] : "text-gray-400 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800"
                         }`}
                       >
                         {ETIQUETA[estado]}

@@ -60,14 +60,14 @@ export default function DashboardPage() {
           {clasesHoy.length === 0 ? (
             <EmptyState icon={CalendarDays} title="No tienes clases hoy" description="Aquí verás las clases del día para tomar asistencia." />
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-100 dark:divide-gray-800">
               {clasesHoy.map((c) => (
                 <li key={c.id} className="py-3 flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
                       {c.ritmo.nombre} · {c.salon.nombre}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(c.fechaHoraInicio).toLocaleTimeString("es-CO", { timeStyle: "short" })}
                     </p>
                   </div>

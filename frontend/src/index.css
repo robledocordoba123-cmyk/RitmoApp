@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Modo oscuro controlado a mano (clase .dark en <html>), no solo por
+   preferencia del sistema operativo — así el toggle de la app manda. */
+@custom-variant dark (&:is(.dark *));
+
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors;
 }

@@ -50,9 +50,9 @@ export default function AcademiasPage() {
                   </div>
                   <Badge color={t.estado === "ACTIVA" ? "green" : "red"}>{t.estado}</Badge>
                 </div>
-                <p className="font-medium text-gray-900 mt-3">{t.nombre}</p>
-                <p className="text-sm text-gray-500">NIT {t.nit}</p>
-                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                <p className="font-medium text-gray-900 mt-3 dark:text-gray-100">{t.nombre}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">NIT {t.nit}</p>
+                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1 dark:text-gray-400">
                   <Users2 size={14} /> {t._count.usuarios} usuarios
                 </p>
                 <button

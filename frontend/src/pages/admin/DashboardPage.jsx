@@ -62,18 +62,18 @@ export default function DashboardPage() {
             {proximas.length === 0 ? (
               <EmptyState icon={CalendarDays} title="No hay clases próximas" description="Programa una clase para verla aquí." />
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                 {proximas.map((c) => (
                   <li key={c.id} className="py-3 flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
                         {c.ritmo.nombre} · {c.salon.nombre}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
                       </p>
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {c.cuposDisponibles}/{c.cupoMaximo} cupos
                     </span>
                   </li>
@@ -86,11 +86,11 @@ export default function DashboardPage() {
         <Card>
           <CardHeader title="Ocupación general" />
           <CardBody>
-            <p className="text-3xl font-semibold text-gray-900">{ocupacion}%</p>
-            <div className="mt-3 h-2 w-full rounded-full bg-gray-100">
+            <p className="text-3xl font-semibold text-gray-900 dark:text-gray-100">{ocupacion}%</p>
+            <div className="mt-3 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-800">
               <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${Math.min(ocupacion, 100)}%` }} />
             </div>
-            <p className="text-sm text-gray-500 mt-3">
+            <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
               {reservasTotal} de {cupoTotal} cupos ocupados en total.
             </p>
             <Link to="/admin/reportes" className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800">

@@ -135,15 +135,15 @@ export default function ClasesPage() {
                 <CardBody className="pt-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{c.ritmo.nombre}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{c.ritmo.nombre}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
                       </p>
                     </div>
                     <Badge color={ESTADO_BADGE[c.estado]}>{c.estado}</Badge>
                   </div>
 
-                  <div className="mt-3 space-y-1 text-sm text-gray-500">
+                  <div className="mt-3 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                     <p className="flex items-center gap-1.5">
                       <DoorOpen size={14} /> {c.salon.nombre}
                     </p>
@@ -153,13 +153,13 @@ export default function ClasesPage() {
                   </div>
 
                   <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1 dark:text-gray-400">
                       <span>
                         {ocupado}/{c.cupoMaximo} cupos
                       </span>
                       <span>{porcentaje}%</span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-gray-100">
+                    <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-800">
                       <div className="h-1.5 rounded-full bg-indigo-600" style={{ width: `${Math.min(porcentaje, 100)}%` }} />
                     </div>
                   </div>
@@ -184,23 +184,23 @@ export default function ClasesPage() {
 
 function Campo({ label, ...props }) {
   return (
-    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1 dark:text-gray-400">
       {label}
-      <input {...props} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      <input {...props} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" />
     </label>
   );
 }
 
 function Select({ label, value, onChange, opciones }) {
   return (
-    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1">
+    <label className="text-xs font-medium text-gray-600 flex flex-col gap-1 dark:text-gray-400">
       <span className="flex items-center gap-1">
         {label === "Ritmo" && <Music4 size={12} />}
         {label === "Salón" && <DoorOpen size={12} />}
         {label === "Profesor" && <User size={12} />}
         {label}
       </span>
-      <select value={value} onChange={onChange} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <select value={value} onChange={onChange} required className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
         <option value="" disabled>
           Selecciona...
         </option>

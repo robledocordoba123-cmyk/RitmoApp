@@ -52,8 +52,8 @@ export default function CatalogoPage() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 mb-3">
                     <Sparkles size={16} />
                   </div>
-                  <p className="font-medium text-gray-900">{clase.ritmo.nombre}</p>
-                  <div className="mt-2 space-y-1 text-sm text-gray-500">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{clase.ritmo.nombre}</p>
+                  <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                     <p className="flex items-center gap-1.5">
                       <DoorOpen size={14} /> {clase.salon.nombre}
                     </p>

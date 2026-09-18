@@ -57,9 +57,9 @@ export default function DashboardPage() {
         <CardBody>
           {proximaReserva ? (
             <div className="rounded-xl bg-indigo-50 p-4">
-              <p className="font-medium text-gray-900">{proximaReserva.clase.ritmo.nombre}</p>
-              <p className="text-sm text-gray-600">{proximaReserva.clase.salon.nombre}</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium text-gray-900 dark:text-gray-100">{proximaReserva.clase.ritmo.nombre}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{proximaReserva.clase.salon.nombre}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {new Date(proximaReserva.clase.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
               </p>
             </div>

@@ -30,10 +30,10 @@ export default function MisReservasPage() {
             <Card key={r.id}>
               <CardBody className="pt-5">
                 <div className="flex items-start justify-between">
-                  <p className="font-medium text-gray-900">{r.clase.ritmo.nombre}</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{r.clase.ritmo.nombre}</p>
                   <Badge color={r.estado === "CONFIRMADA" ? "green" : "gray"}>{r.estado}</Badge>
                 </div>
-                <div className="mt-2 space-y-1 text-sm text-gray-500">
+                <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                   <p className="flex items-center gap-1.5">
                     <DoorOpen size={14} /> {r.clase.salon.nombre}
                   </p>

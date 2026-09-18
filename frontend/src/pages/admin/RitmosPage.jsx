@@ -61,7 +61,7 @@ export default function RitmosPage() {
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             />
             <Button type="submit" icon={Plus} disabled={enviando}>
               Agregar
@@ -77,9 +77,9 @@ export default function RitmosPage() {
       ) : (
         <div className="flex flex-wrap gap-3">
           {ritmos.map((r) => (
-            <div key={r.id} className="group flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-3 pr-2 py-1.5">
+            <div key={r.id} className="group flex items-center gap-2 rounded-full border border-gray-200 bg-white pl-3 pr-2 py-1.5 dark:border-gray-800">
               <Music4 size={14} className="text-indigo-500" />
-              <span className="text-sm font-medium text-gray-800">{r.nombre}</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{r.nombre}</span>
               <button
                 onClick={() => eliminar(r.id)}
                 className="text-gray-300 group-hover:text-red-500 transition ml-1"

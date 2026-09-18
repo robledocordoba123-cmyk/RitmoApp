@@ -29,8 +29,8 @@ export default function MisClasesPage() {
           {clases.map((c) => (
             <Card key={c.id}>
               <CardBody className="pt-5">
-                <p className="font-medium text-gray-900">{c.ritmo.nombre}</p>
-                <div className="mt-2 space-y-1 text-sm text-gray-500">
+                <p className="font-medium text-gray-900 dark:text-gray-100">{c.ritmo.nombre}</p>
+                <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                   <p className="flex items-center gap-1.5">
                     <DoorOpen size={14} /> {c.salon.nombre}
                   </p>
