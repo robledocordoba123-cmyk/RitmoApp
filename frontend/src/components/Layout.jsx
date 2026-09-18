@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -52,12 +52,16 @@ const ETIQUETA_ROL = {
 
 function Logo() {
   return (
-    <div className="flex items-center gap-2 px-5 h-16 border-b border-gray-100 dark:border-gray-800 shrink-0">
+    <Link
+      to="/"
+      title="Volver a la página principal"
+      className="flex items-center gap-2 px-5 h-16 border-b border-gray-100 dark:border-gray-800 shrink-0 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition"
+    >
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-500 text-white">
         <Sparkles size={16} />
       </div>
       <span className="font-semibold text-gray-900 dark:text-gray-100">RitmoApp</span>
-    </div>
+    </Link>
   );
 }
 

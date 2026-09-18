@@ -201,14 +201,15 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="absolute -bottom-5 -left-5 hidden sm:flex items-center gap-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3"
+              className="absolute -bottom-5 -left-5 hidden sm:flex items-center gap-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3 max-w-[220px]"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400">
                 <CalendarCheck2 size={17} />
+                <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-900 animate-pulse" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Reserva confirmada</p>
-                <p className="text-xs text-gray-400">Salsa · 6:00 p.m.</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Un estudiante reservó su cupo</p>
+                <p className="text-xs text-gray-400">Clase de Salsa · 6:00 p.m.</p>
               </div>
             </motion.div>
 
@@ -216,12 +217,15 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.75 }}
-              className="absolute -top-5 -right-5 hidden sm:flex items-center gap-2 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3"
+              className="absolute -top-5 -right-5 hidden sm:block rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3 w-40"
             >
-              <BarChart3 size={16} className="text-indigo-500" />
-              <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">87%</p>
-                <p className="text-[11px] text-gray-400 -mt-0.5">ocupación</p>
+              <div className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500">
+                <BarChart3 size={13} />
+                <p className="text-[11px] font-medium uppercase tracking-wide">Ocupación del salón</p>
+              </div>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mt-1">87%</p>
+              <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-gray-800 mt-1.5">
+                <div className="h-1.5 rounded-full bg-indigo-500" style={{ width: "87%" }} />
               </div>
             </motion.div>
           </motion.div>
