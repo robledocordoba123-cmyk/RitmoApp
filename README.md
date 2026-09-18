@@ -83,6 +83,13 @@ Ver [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectur
 
 - **RF-01** Onboarding de academia (tenant) + administrador inicial, rechaza NIT o correo duplicado.
 - **RF-02** Login con JWT que incluye rol y `tenantId`.
-- **RNF-01** Aislamiento multi-tenant: toda tabla de negocio tiene `tenantId`; falta el middleware que lo inyecte automáticamente en cada consulta (próximo paso).
+- **RF-04** CRUD de salones y ritmos, aislado por academia.
+- **RF-05 / RN-02 / RN-03** Programación de clases: rechaza cruces de horario en el mismo salón y del mismo profesor.
+- **RF-06 / RN-01** Reserva de cupo con decremento atómico — probado con dos solicitudes simultáneas por el último cupo, sin overbooking.
+- **RF-07** Registro de asistencia por el profesor asignado, solo el día de la clase.
+- **RNF-01** Aislamiento multi-tenant: extensión de Prisma que inyecta `tenantId` en toda consulta de los modelos de negocio (`src/config/tenantPrismaClient.js`), probado con dos academias distintas.
+- **RNF-02** Transacciones atómicas en el motor de agendamiento (`reserva.controller.js`).
 
-Lo que sigue: middleware de scoping por tenant, módulo de salones/ritmos/clases (RF-04, RF-05) y el motor de agendamiento transaccional (RF-06, RN-01, RN-02, RN-03).
+Todo lo anterior está probado en vivo contra PostgreSQL, no solo escrito.
+
+Lo que sigue: panel de SuperAdmin (RF-03), reportes de ocupación (RF-08), pruebas automatizadas, y luego el frontend (React + Tailwind).
