@@ -4,6 +4,7 @@ const salonRoutes = require("./salon.routes");
 const ritmoRoutes = require("./ritmo.routes");
 const claseRoutes = require("./clase.routes");
 const reservaRoutes = require("./reserva.routes");
+const superadminRoutes = require("./superadmin.routes");
 
 const router = Router();
 
@@ -13,5 +14,6 @@ router.use("/salones", salonRoutes);
 router.use("/ritmos", ritmoRoutes);
 router.use("/clases", claseRoutes);
 router.use("/reservas", reservaRoutes);
+router.use("/superadmin", superadminRoutes);
 
 module.exports = router;

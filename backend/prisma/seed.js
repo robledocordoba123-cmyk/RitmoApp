@@ -11,6 +11,20 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const passwordHash = await bcrypt.hash("Prueba123!", 10);
 
+  // No hay endpoint público para crear un SuperAdmin (RF-03): por seguridad,
+  // solo se puede crear por seed o directamente en base de datos.
+  const superadmin = await prisma.user.upsert({
+    where: { email: "superadmin@ritmoapp.test" },
+    update: {},
+    create: {
+      tenantId: null,
+      nombre: "SuperAdmin RitmoApp",
+      email: "superadmin@ritmoapp.test",
+      passwordHash,
+      rol: "SUPERADMIN",
+    },
+  });
+
   const academia = await prisma.tenant.upsert({
     where: { nit: "900123456-1" },
     update: {},
@@ -75,8 +89,8 @@ async function main() {
   });
 
   console.log("Seed listo:");
-  console.log({ academia: academia.nit, admin: admin.email, profesor: profesor.email, estudiante: estudiante.email, salon: salon.nombre, ritmo: ritmo.nombre });
-  console.log('Contraseña de prueba para los tres usuarios: "Prueba123!"');
+  console.log({ superadmin: superadmin.email, academia: academia.nit, admin: admin.email, profesor: profesor.email, estudiante: estudiante.email, salon: salon.nombre, ritmo: ritmo.nombre });
+  console.log('Contraseña de prueba para los cuatro usuarios: "Prueba123!"');
 }
 
 main()
