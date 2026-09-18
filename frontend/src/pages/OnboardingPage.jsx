@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Rocket } from "lucide-react";
+import heroDance from "../assets/hero-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 
 export default function OnboardingPage() {
@@ -32,47 +33,57 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-violet-50 px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-500 text-white mb-3">
-            <Sparkles size={20} />
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">Registra tu academia</h1>
-          <p className="text-sm text-gray-500 mt-1 text-center">Crea tu academia y tu cuenta de administrador en un solo paso.</p>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white dark:bg-gray-950">
+      <div className="hidden lg:block relative overflow-hidden">
+        <img src={heroDance} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-900/30 via-indigo-950/50 to-indigo-950/90" />
+        <div className="relative h-full flex flex-col justify-end p-12">
+          <p className="text-2xl font-medium text-white leading-snug max-w-md">
+            "Deja de perseguir cupos por WhatsApp. Prográmalo una vez, sin choques."
+          </p>
+          <p className="text-sm text-white/60 mt-3">Tu academia, lista en menos de un minuto.</p>
         </div>
+      </div>
 
-        <div className="bg-white p-7 rounded-2xl border border-gray-200 shadow-sm">
-          <form onSubmit={manejarSubmit} className="space-y-4">
+      <div className="flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          <Link to="/" className="flex items-center gap-2 mb-8">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-white">
+              <Sparkles size={16} />
+            </div>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">RitmoApp</span>
+          </Link>
+
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Registra tu academia</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-6">
+            Crea tu academia y tu cuenta de administrador en un solo paso.
+          </p>
+
+          <form onSubmit={manejarSubmit} className="space-y-3.5">
             <Campo label="Nombre de la academia" value={form.nombreAcademia} onChange={cambiar("nombreAcademia")} />
             <Campo label="NIT" value={form.nit} onChange={cambiar("nit")} />
             <Campo label="Tu nombre" value={form.nombreAdmin} onChange={cambiar("nombreAdmin")} />
             <Campo label="Correo" type="email" value={form.email} onChange={cambiar("email")} />
             <Campo label="Contraseña" type="password" value={form.password} onChange={cambiar("password")} />
 
-            {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+            {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
 
             <button
               type="submit"
               disabled={cargando}
-              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-50"
             >
               <Rocket size={16} /> {cargando ? "Creando..." : "Crear academia"}
             </button>
           </form>
-        </div>
 
-        <p className="text-sm text-gray-500 mt-5 text-center">
-          ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-indigo-600 font-medium">
-            Inicia sesión
-          </Link>
-        </p>
-        <p className="text-sm text-center mt-2">
-          <Link to="/" className="text-gray-400 hover:text-gray-600">
-            ← Volver al inicio
-          </Link>
-        </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-5">
+            ¿Ya tienes cuenta?{" "}
+            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium">
+              Inicia sesión
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -81,13 +92,13 @@ export default function OnboardingPage() {
 function Campo({ label, type = "text", value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <input
         type={type}
         required
         value={value}
         onChange={onChange}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
     </div>
   );
