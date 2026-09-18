@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import heroDance from "../assets/hero-dance.jpg";
 import {
   Sparkles,
   CalendarCheck2,
@@ -132,51 +133,97 @@ export default function LandingPage() {
       </header>
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-indigo-950/40 dark:via-gray-950 dark:to-violet-950/30" />
-        <div className="relative max-w-4xl mx-auto px-6 pt-24 pb-20 text-center">
-          <motion.span
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 px-3 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-6"
-          >
-            <Sparkles size={12} /> SaaS multi-academia para escuelas de baile
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-            className="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50"
-          >
-            Una plataforma. <span className="text-indigo-600 dark:text-indigo-400">Todas tus academias.</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-5 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
-          >
-            RitmoApp reemplaza los cuadernos, el Excel y los grupos de WhatsApp con agendamiento, control de cupos y
-            asistencia en tiempo real — para cada academia, de forma aislada y segura.
-          </motion.p>
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 dark:from-indigo-950/40 dark:via-gray-950 dark:to-fuchsia-950/20" />
+        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-20 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="text-center lg:text-left">
+            <motion.span
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950 px-3 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-6"
+            >
+              <Sparkles size={12} /> SaaS multi-academia para escuelas de baile
+            </motion.span>
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50"
+            >
+              Una plataforma.{" "}
+              <span className="bg-gradient-to-r from-indigo-600 to-fuchsia-500 bg-clip-text text-transparent">
+                Todas tus academias.
+              </span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="mt-5 text-lg text-gray-600 dark:text-gray-400 max-w-lg mx-auto lg:mx-0"
+            >
+              RitmoApp reemplaza los cuadernos, el Excel y los grupos de WhatsApp con agendamiento, control de cupos y
+              asistencia en tiempo real — para cada academia, de forma aislada y segura.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="mt-8 flex items-center justify-center lg:justify-start gap-3"
+            >
+              <Link
+                to="/registro-academia"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none"
+              >
+                Registra tu academia gratis <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                Ya tengo cuenta
+              </Link>
+            </motion.div>
+          </div>
+
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            className="mt-8 flex items-center justify-center gap-3"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="relative"
           >
-            <Link
-              to="/registro-academia"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none"
+            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-400 via-fuchsia-400 to-violet-400 rounded-[2rem] blur-2xl opacity-30 dark:opacity-25" />
+            <div className="relative rounded-[1.75rem] overflow-hidden border border-white/60 dark:border-gray-800 shadow-2xl shadow-indigo-900/10">
+              <img src={heroDance} alt="Pareja bailando" className="w-full h-[420px] sm:h-[480px] object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/50 via-transparent to-transparent" />
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="absolute -bottom-5 -left-5 hidden sm:flex items-center gap-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3"
             >
-              Registra tu academia gratis <ArrowRight size={16} />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400">
+                <CalendarCheck2 size={17} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Reserva confirmada</p>
+                <p className="text-xs text-gray-400">Salsa · 6:00 p.m.</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.75 }}
+              className="absolute -top-5 -right-5 hidden sm:flex items-center gap-2 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg px-4 py-3"
             >
-              Ya tengo cuenta
-            </Link>
+              <BarChart3 size={16} className="text-indigo-500" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">87%</p>
+                <p className="text-[11px] text-gray-400 -mt-0.5">ocupación</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -271,9 +318,15 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      <footer className="max-w-6xl mx-auto px-6 py-10 flex items-center justify-between text-sm text-gray-400 dark:text-gray-600">
+      <footer className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-400 dark:text-gray-600">
         <span>© {new Date().getFullYear()} RitmoApp</span>
         <span>Proyecto formativo SENA · Ficha 3229209</span>
+        <span className="text-xs">
+          Foto de portada:{" "}
+          <a href="https://unsplash.com/photos/spmbpgtvOiw" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-400">
+            Unsplash
+          </a>
+        </span>
       </footer>
     </div>
   );
