@@ -69,7 +69,7 @@ export default function DashboardPage() {
               title="Todavía no tienes reservas"
               description="Explora el catálogo y reserva tu cupo en la clase que quieras."
               action={
-                <Link to="/estudiante/catalogo" className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <Link to="/estudiante/catalogo" className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 px-4 py-2 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600">
                   Ver catálogo <ArrowRight size={14} />
                 </Link>
               }

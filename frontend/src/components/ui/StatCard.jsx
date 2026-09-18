@@ -3,10 +3,10 @@ import AnimatedNumber from "./AnimatedNumber";
 
 export default function StatCard({ icon: Icon, label, value, hint, tone = "indigo" }) {
   const tonos = {
-    indigo: "bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400",
-    green: "bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400",
-    amber: "bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400",
-    rose: "bg-rose-50 text-rose-600 dark:bg-rose-950 dark:text-rose-400",
+    indigo: "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none",
+    green: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-200 dark:shadow-none",
+    amber: "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shadow-amber-200 dark:shadow-none",
+    rose: "bg-gradient-to-br from-fuchsia-500 to-rose-500 text-white shadow-sm shadow-rose-200 dark:shadow-none",
   };
 
   return (

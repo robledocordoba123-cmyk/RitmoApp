@@ -72,7 +72,7 @@ export default function OnboardingPage() {
             <button
               type="submit"
               disabled={cargando}
-              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 py-2.5 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-50"
             >
               <Rocket size={16} /> {cargando ? "Creando..." : "Crear academia"}
             </button>

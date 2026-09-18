@@ -73,7 +73,7 @@ export default function CatalogoPage() {
                   <button
                     onClick={() => reservar(clase.id)}
                     disabled={sinCupo || reservandoId === clase.id}
-                    className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    className="mt-3 w-full rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 py-2 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   >
                     {sinCupo ? "Sin cupos" : reservandoId === clase.id ? "Reservando..." : "Reservar"}
                   </button>

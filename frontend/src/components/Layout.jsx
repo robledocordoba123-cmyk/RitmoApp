@@ -77,7 +77,7 @@ function EnlacesNav({ enlaces, onNavegar }) {
           className={({ isActive }) =>
             `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
               isActive
-                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                ? "bg-gradient-to-r from-indigo-50 to-fuchsia-50 text-indigo-700 ring-1 ring-indigo-100 dark:from-indigo-950 dark:to-fuchsia-950/30 dark:text-indigo-300 dark:ring-indigo-900"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
             }`
           }
@@ -143,9 +143,17 @@ export default function Layout({ children }) {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex relative">
+      {/* Textura de fondo muy sutil: un dashboard funcional no se pinta de
+          colores, pero tampoco tiene que ser plano. Un solo acento de marca,
+          disciplinado, a baja opacidad. */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-indigo-200/40 dark:bg-indigo-800/10 blur-3xl" />
+        <div className="absolute top-1/2 -left-32 h-96 w-96 rounded-full bg-fuchsia-200/25 dark:bg-fuchsia-900/10 blur-3xl" />
+      </div>
+
       {/* Sidebar fijo en escritorio */}
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-gray-200 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 relative z-10">
         <Logo />
         <EnlacesNav enlaces={enlaces} />
         <PerfilYSalir usuario={usuario} iniciales={iniciales} onSalir={cerrarSesion} />
@@ -168,7 +176,7 @@ export default function Layout({ children }) {
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative z-10">
         <header className="flex md:hidden items-center justify-between h-14 px-4 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <button onClick={() => setMenuAbierto(true)} className="text-gray-600 dark:text-gray-300">
             <Menu size={22} />

@@ -103,7 +103,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/registro-academia"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none"
+              className="rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 px-4 py-2 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none"
             >
               Registra tu academia
             </Link>
@@ -151,7 +151,7 @@ export default function LandingPage() {
             >
               <Link
                 to="/registro-academia"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 px-5 py-2.5 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none"
               >
                 Registra tu academia gratis <ArrowRight size={16} />
               </Link>
@@ -294,7 +294,7 @@ export default function LandingPage() {
           <p className="text-gray-500 dark:text-gray-400 mt-3">Registra tu academia y prográmala en minutos.</p>
           <Link
             to="/registro-academia"
-            className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm shadow-indigo-200 dark:shadow-none"
+            className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 px-6 py-3 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none"
           >
             Empezar gratis <ArrowRight size={16} />
           </Link>
