@@ -6,6 +6,7 @@ const claseRoutes = require("./clase.routes");
 const reservaRoutes = require("./reserva.routes");
 const superadminRoutes = require("./superadmin.routes");
 const reporteRoutes = require("./reporte.routes");
+const usuarioRoutes = require("./usuario.routes");
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/clases", claseRoutes);
 router.use("/reservas", reservaRoutes);
 router.use("/superadmin", superadminRoutes);
 router.use("/reportes", reporteRoutes);
+router.use("/usuarios", usuarioRoutes);
 
 module.exports = router;
