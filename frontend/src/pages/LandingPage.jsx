@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import heroDance from "../assets/hero-dance.jpg";
+import AccordionItem from "../components/ui/Accordion";
 import {
   Sparkles,
   CalendarCheck2,
@@ -11,7 +12,6 @@ import {
   Building2,
   Zap,
   ArrowRight,
-  ChevronDown,
   UserPlus,
   CalendarDays,
   Smile,
@@ -85,27 +85,6 @@ function Reveal({ children, delay = 0 }) {
   );
 }
 
-function PreguntaFrecuente({ pregunta, respuesta }) {
-  const [abierta, setAbierta] = useState(false);
-  return (
-    <div className="border-b border-gray-100 dark:border-gray-800 py-4">
-      <button onClick={() => setAbierta((a) => !a)} className="w-full flex items-center justify-between text-left">
-        <span className="font-medium text-gray-900 dark:text-gray-100">{pregunta}</span>
-        <motion.span animate={{ rotate: abierta ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown size={18} className="text-gray-400" />
-        </motion.span>
-      </button>
-      <motion.div
-        initial={false}
-        animate={{ height: abierta ? "auto" : 0, opacity: abierta ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-        className="overflow-hidden"
-      >
-        <p className="text-sm text-gray-500 dark:text-gray-400 pt-2 pr-8">{respuesta}</p>
-      </motion.div>
-    </div>
-  );
-}
 
 export default function LandingPage() {
   return (
@@ -300,7 +279,7 @@ export default function LandingPage() {
           <Reveal>
             <div>
               {PREGUNTAS.map((p) => (
-                <PreguntaFrecuente key={p.q} pregunta={p.q} respuesta={p.a} />
+                <AccordionItem key={p.q} pregunta={p.q} respuesta={p.a} />
               ))}
             </div>
           </Reveal>

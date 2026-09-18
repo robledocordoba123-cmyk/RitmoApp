@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import HelpPanel from "./HelpPanel";
 
 const ENLACES_POR_ROL = {
   SUPERADMIN: [
@@ -188,6 +189,8 @@ export default function Layout({ children }) {
           </AnimatePresence>
         </main>
       </div>
+
+      <HelpPanel />
     </div>
   );
 }

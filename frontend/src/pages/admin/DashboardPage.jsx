@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, DoorOpen, Music4, Ticket, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { CalendarDays, DoorOpen, Music4, Ticket, ArrowRight, CheckCircle2, Circle } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -8,6 +9,47 @@ import StatCard from "../../components/ui/StatCard";
 import { Card, CardHeader, CardBody } from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+
+// Checklist de arranque: guía al admin en su primera visita usando la propia
+// app en vez de un manual aparte. Desaparece sola cuando ya no hace falta.
+function ChecklistArranque({ salones, ritmos, clases }) {
+  const pasos = [
+    { hecho: salones.length > 0, texto: "Crea tu primer salón", to: "/admin/salones" },
+    { hecho: ritmos.length > 0, texto: "Agrega un ritmo", to: "/admin/ritmos" },
+    { hecho: clases.length > 0, texto: "Programa tu primera clase", to: "/admin/clases" },
+  ];
+
+  if (pasos.every((p) => p.hecho)) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+      <Card className="border-indigo-100 dark:border-indigo-900">
+        <CardHeader title="Primeros pasos" subtitle="Configura tu academia en tres pasos." />
+        <CardBody className="pt-0">
+          <ul className="space-y-2">
+            {pasos.map((p) => (
+              <li key={p.texto}>
+                <Link
+                  to={p.to}
+                  className={`flex items-center gap-2.5 text-sm rounded-lg px-2 py-1.5 -mx-2 transition ${
+                    p.hecho ? "text-gray-400 dark:text-gray-500" : "text-gray-800 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-950"
+                  }`}
+                >
+                  {p.hecho ? (
+                    <CheckCircle2 size={17} className="text-green-500 shrink-0" />
+                  ) : (
+                    <Circle size={17} className="text-gray-300 dark:text-gray-600 shrink-0" />
+                  )}
+                  <span className={p.hecho ? "line-through" : ""}>{p.texto}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </CardBody>
+      </Card>
+    </motion.div>
+  );
+}
 
 export default function DashboardPage() {
   const { token, usuario } = useAuth();
@@ -40,6 +82,8 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader title={`Hola, ${usuario?.nombre?.split(" ")[0] || ""}`} subtitle="Este es el estado de tu academia." />
+
+      <ChecklistArranque salones={salones} ritmos={ritmos} clases={clases} />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={CalendarDays} label="Clases programadas" value={clases.length} tone="indigo" />
