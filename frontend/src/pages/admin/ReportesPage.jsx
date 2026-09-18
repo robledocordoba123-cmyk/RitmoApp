@@ -1,12 +1,13 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { BarChart3, Search } from "lucide-react";
+import { BarChart3, Search, Table2 } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
 import { Card, CardHeader, CardBody } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
+import OcupacionChart from "../../components/OcupacionChart";
 
 function primerDiaDelMes() {
   const hoy = new Date();
@@ -22,6 +23,7 @@ export default function ReportesPage() {
   const [hasta, setHasta] = useState(hoyISO());
   const [reporte, setReporte] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [verTabla, setVerTabla] = useState(false);
 
   async function consultar(e) {
     e.preventDefault();
@@ -63,25 +65,47 @@ export default function ReportesPage() {
           <EmptyState icon={BarChart3} title="Sin datos en ese rango" description="No hubo clases programadas entre esas fechas." />
         ) : (
           <Card>
-            <CardHeader title="Ocupación por salón" subtitle={`${reporte.desde} — ${reporte.hasta}`} />
-            <CardBody className="space-y-5">
-              {reporte.salones.map((s) => (
-                <div key={s.salonId}>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{s.salon}</p>
-                    <p className="text-sm font-semibold text-indigo-600">{s.porcentajeOcupacion}%</p>
-                  </div>
-                  <div className="h-2.5 w-full rounded-full bg-gray-100 dark:bg-gray-800">
-                    <div
-                      className="h-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
-                      style={{ width: `${Math.min(s.porcentajeOcupacion, 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
-                    {s.reservasConfirmadas} reservas de {s.capacidadOfertada} cupos ofertados en {s.totalClases} clases
-                  </p>
+            <CardHeader
+              title="Ocupación por salón"
+              subtitle={`${reporte.desde} — ${reporte.hasta}`}
+              action={
+                <button
+                  onClick={() => setVerTabla((v) => !v)}
+                  className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  <Table2 size={15} /> {verTabla ? "Ver gráfica" : "Ver tabla"}
+                </button>
+              }
+            />
+            <CardBody>
+              {verTabla ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+                        <th className="py-2 font-medium">Salón</th>
+                        <th className="py-2 font-medium">Clases</th>
+                        <th className="py-2 font-medium">Reservas</th>
+                        <th className="py-2 font-medium">Capacidad</th>
+                        <th className="py-2 font-medium text-right">Ocupación</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reporte.salones.map((s) => (
+                        <tr key={s.salonId} className="border-b border-gray-50 dark:border-gray-800/60 last:border-0">
+                          <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{s.salon}</td>
+                          <td className="py-2 text-gray-600 dark:text-gray-400">{s.totalClases}</td>
+                          <td className="py-2 text-gray-600 dark:text-gray-400">{s.reservasConfirmadas}</td>
+                          <td className="py-2 text-gray-600 dark:text-gray-400">{s.capacidadOfertada}</td>
+                          <td className="py-2 text-right font-semibold text-gray-900 dark:text-gray-100">{s.porcentajeOcupacion}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              ) : (
+                <OcupacionChart datos={reporte.salones} />
+              )}
             </CardBody>
           </Card>
         ))}
