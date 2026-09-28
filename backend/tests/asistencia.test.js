@@ -95,4 +95,29 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
 
     expect(res.status).toBe(400);
   });
+
+  // Regresión: antes se comparaba el día en UTC y esto devolvía 400.
+  test("acepta asistencia de una clase nocturna aunque en UTC ya sea el día siguiente", async () => {
+    // Solo se congela el reloj (Date); los temporizadores reales siguen
+    // funcionando para que Supertest y el driver de Postgres no se queden colgados.
+    jest.useFakeTimers({
+      now: new Date("2027-03-02T00:30:00.000Z"), // 7:30 p. m. del 1 de marzo en Bogotá
+      doNotFake: ["nextTick", "setImmediate", "clearImmediate", "setTimeout", "clearTimeout",
+        "setInterval", "clearInterval", "queueMicrotask", "hrtime", "performance"],
+    });
+
+    try {
+      const token = await login("profe@asistencia.test");
+      const clase = await crearClaseConReserva(new Date("2027-03-01T23:00:00.000Z")); // 6:00 p. m. en Bogotá
+
+      const res = await request(app)
+        .post(`/api/clases/${clase.id}/asistencia`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ asistencias: [{ estudianteId: estudiante.id, estado: "ASISTIO" }] });
+
+      expect(res.status).toBe(200);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });

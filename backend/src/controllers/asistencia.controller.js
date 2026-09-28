@@ -2,12 +2,15 @@
 // de permiso (solo el profesor asignado a la clase) y de tiempo (solo el día
 // de la clase, no antes ni después).
 
+// "El día de la clase" es el día en Colombia, no en UTC. Comparar con
+// getUTCDate() fallaba en las clases de la noche: una clase de 6:00 p. m.
+// en Bogotá (UTC-5) ya es "mañana" en UTC a partir de las 7:00 p. m., así que
+// el profesor no podía registrar la asistencia al terminar la clase.
+const ZONA_HORARIA = process.env.TZ_ACADEMIAS || "America/Bogota";
+const formatoFecha = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA });
+
 function esMismoDia(fechaA, fechaB) {
-  return (
-    fechaA.getUTCFullYear() === fechaB.getUTCFullYear() &&
-    fechaA.getUTCMonth() === fechaB.getUTCMonth() &&
-    fechaA.getUTCDate() === fechaB.getUTCDate()
-  );
+  return formatoFecha.format(fechaA) === formatoFecha.format(fechaB);
 }
 
 async function listarInscritos(req, res) {
