@@ -9,16 +9,27 @@ async function ocupacionPorSalon(req, res) {
     return res.status(400).json({ error: "Los parámetros desde y hasta son obligatorios (formato YYYY-MM-DD)." });
   }
 
-  const inicio = new Date(desde);
-  const fin = new Date(hasta);
-  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime()) || inicio > fin) {
+  const FORMATO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+  if (!FORMATO_FECHA.test(desde) || !FORMATO_FECHA.test(hasta)) {
+    return res.status(400).json({ error: "Las fechas deben tener el formato YYYY-MM-DD." });
+  }
+
+  // Las fechas llegan como días de calendario en Colombia (UTC-5, sin horario
+  // de verano). "hasta" es inclusivo: el rango termina al inicio del día
+  // siguiente. Antes new Date("2026-09-30") era medianoche UTC y dejaba por
+  // fuera todas las clases del último día, incluida la de hoy.
+  const inicio = new Date(`${desde}T00:00:00-05:00`);
+  const finExclusivo = new Date(`${hasta}T00:00:00-05:00`);
+  finExclusivo.setUTCDate(finExclusivo.getUTCDate() + 1);
+  if (Number.isNaN(inicio.getTime()) || Number.isNaN(finExclusivo.getTime()) || inicio >= finExclusivo) {
     return res.status(400).json({ error: "El rango de fechas no es válido." });
   }
 
   const clases = await req.db.clase.findMany({
     where: {
-      fechaHoraInicio: { gte: inicio },
-      fechaHoraFin: { lte: fin },
+      // Una clase cancelada no ofertó cupos: contarla bajaba el porcentaje.
+      estado: { not: "CANCELADA" },
+      fechaHoraInicio: { gte: inicio, lt: finExclusivo },
     },
     include: {
       salon: { select: { id: true, nombre: true } },
