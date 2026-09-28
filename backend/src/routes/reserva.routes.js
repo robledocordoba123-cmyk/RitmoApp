@@ -9,5 +9,6 @@ router.use(requireAuth, requireRole("ESTUDIANTE"), requireTenant);
 
 router.post("/", reservaController.reservar);
 router.get("/mias", reservaController.misReservas);
+router.patch("/:id/cancelar", reservaController.cancelar);
 
 module.exports = router;

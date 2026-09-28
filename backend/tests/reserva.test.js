@@ -20,6 +20,12 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+// La clase siempre queda 30 días en el futuro. Con una fecha fija, estas
+// pruebas empezarían a fallar solas el día que esa fecha quedara en el pasado.
+const EN_30_DIAS = Date.now() + 30 * 24 * 60 * 60 * 1000;
+const INICIO_CLASE = new Date(EN_30_DIAS).toISOString();
+const FIN_CLASE = new Date(EN_30_DIAS + 60 * 60 * 1000).toISOString();
+
 async function crearClase(cupoMaximo, overrides = {}) {
   const salon = await crearSalon(tenant.id, { nombre: `Salón ${Math.random()}` });
   const ritmo = await crearRitmo(tenant.id);
@@ -31,8 +37,8 @@ async function crearClase(cupoMaximo, overrides = {}) {
       salonId: salon.id,
       profesorId: profesor.id,
       cupoMaximo,
-      fechaHoraInicio: "2027-02-01T18:00:00.000Z",
-      fechaHoraFin: "2027-02-01T19:00:00.000Z",
+      fechaHoraInicio: INICIO_CLASE,
+      fechaHoraFin: FIN_CLASE,
       ...overrides,
     });
   return res.body;
@@ -99,5 +105,75 @@ describe("RF-06 / RN-01: reserva de cupo", () => {
 
     const claseFinal = await prisma.clase.findUnique({ where: { id: clase.id } });
     expect(claseFinal.cuposDisponibles).toBe(0);
+  });
+});
+
+describe("Cancelación de reserva por el estudiante", () => {
+  async function reservarComo(email, clase) {
+    await crearUsuario(tenant.id, "ESTUDIANTE", { email });
+    const token = await login(email);
+    const res = await request(app).post("/api/reservas").set("Authorization", `Bearer ${token}`).send({ claseId: clase.id });
+    return { token, reserva: res.body };
+  }
+
+  function cancelarReserva(id, token) {
+    return request(app).patch(`/api/reservas/${id}/cancelar`).set("Authorization", `Bearer ${token}`);
+  }
+
+  test("cancela la reserva y el cupo vuelve a quedar libre", async () => {
+    const clase = await crearClase(1);
+    const { token, reserva } = await reservarComo("cancela@reserva.test", clase);
+
+    const res = await cancelarReserva(reserva.id, token);
+    expect(res.status).toBe(200);
+
+    const claseActualizada = await prisma.clase.findUnique({ where: { id: clase.id } });
+    expect(claseActualizada.cuposDisponibles).toBe(1);
+    const reservaActualizada = await prisma.reserva.findUnique({ where: { id: reserva.id } });
+    expect(reservaActualizada.estado).toBe("CANCELADA");
+  });
+
+  test("cancelar dos veces no devuelve el cupo dos veces (409)", async () => {
+    const clase = await crearClase(2);
+    const { token, reserva } = await reservarComo("doble@reserva.test", clase);
+
+    await cancelarReserva(reserva.id, token);
+    const segunda = await cancelarReserva(reserva.id, token);
+    expect(segunda.status).toBe(409);
+
+    const claseActualizada = await prisma.clase.findUnique({ where: { id: clase.id } });
+    expect(claseActualizada.cuposDisponibles).toBe(2);
+  });
+
+  test("después de cancelar, el estudiante puede volver a reservar la misma clase", async () => {
+    const clase = await crearClase(1);
+    const { token, reserva } = await reservarComo("vuelve@reserva.test", clase);
+    await cancelarReserva(reserva.id, token);
+
+    const res = await request(app).post("/api/reservas").set("Authorization", `Bearer ${token}`).send({ claseId: clase.id });
+    expect(res.status).toBe(201);
+    expect(res.body.estado).toBe("CONFIRMADA");
+
+    const claseActualizada = await prisma.clase.findUnique({ where: { id: clase.id } });
+    expect(claseActualizada.cuposDisponibles).toBe(0);
+  });
+
+  test("un estudiante no puede cancelar la reserva de otro (404)", async () => {
+    const clase = await crearClase(2);
+    const { reserva } = await reservarComo("duena@reserva.test", clase);
+    await crearUsuario(tenant.id, "ESTUDIANTE", { email: "intrusa@reserva.test" });
+    const tokenIntrusa = await login("intrusa@reserva.test");
+
+    const res = await cancelarReserva(reserva.id, tokenIntrusa);
+    expect(res.status).toBe(404);
+  });
+
+  test("no se puede cancelar una clase que ya empezó (400)", async () => {
+    const clase = await crearClase(2);
+    const { token, reserva } = await reservarComo("tarde@reserva.test", clase);
+    await prisma.clase.update({ where: { id: clase.id }, data: { fechaHoraInicio: new Date(Date.now() - 60 * 1000) } });
+
+    const res = await cancelarReserva(reserva.id, token);
+    expect(res.status).toBe(400);
   });
 });

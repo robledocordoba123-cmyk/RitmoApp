@@ -29,7 +29,8 @@ export default function DashboardPage() {
   }
 
   const { clases, reservas } = datos;
-  const reservasActivas = reservas.filter((r) => r.estado === "CONFIRMADA");
+  // Activa = confirmada y la clase no fue cancelada por la academia.
+  const reservasActivas = reservas.filter((r) => r.estado === "CONFIRMADA" && r.clase.estado !== "CANCELADA");
   const proximaReserva = [...reservasActivas]
     .filter((r) => new Date(r.clase.fechaHoraInicio) > new Date())
     .sort((a, b) => new Date(a.clase.fechaHoraInicio) - new Date(b.clase.fechaHoraInicio))[0];

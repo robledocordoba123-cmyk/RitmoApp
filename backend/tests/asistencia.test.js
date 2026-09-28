@@ -60,7 +60,7 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
   });
 
   test("rechaza registrar asistencia de una clase que no es de hoy (400)", async () => {
-    const otroDia = new Date("2027-03-01T18:00:00.000Z");
+    const otroDia = new Date("2099-03-01T18:00:00.000Z");
     const clase = await crearClaseConReserva(otroDia);
 
     const res = await request(app)

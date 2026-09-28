@@ -26,7 +26,7 @@ async function reservar(req, res) {
       const yaReservada = await tx.reserva.findUnique({
         where: { claseId_estudianteId: { claseId, estudianteId } },
       });
-      if (yaReservada) {
+      if (yaReservada && yaReservada.estado === "CONFIRMADA") {
         return { tipo: "ya_reservada" };
       }
 
@@ -43,9 +43,16 @@ async function reservar(req, res) {
       // la fila. La restricción única del modelo detiene a la segunda; que
       // ese error se propague hace rollback de TODA la transacción, incluido
       // el decremento de cupo que esa segunda solicitud hizo de más.
-      const reserva = await tx.reserva.create({
-        data: { claseId, estudianteId, estado: "CONFIRMADA" },
-      });
+      // Si el estudiante había cancelado antes, se reactiva esa misma fila:
+      // la restricción única (claseId, estudianteId) no permite crear otra.
+      const reserva = yaReservada
+        ? await tx.reserva.update({
+            where: { id: yaReservada.id },
+            data: { estado: "CONFIRMADA" },
+          })
+        : await tx.reserva.create({
+            data: { claseId, estudianteId, estado: "CONFIRMADA" },
+          });
       return { tipo: "ok", reserva };
     });
   } catch (err) {
@@ -78,4 +85,50 @@ async function misReservas(req, res) {
   res.json(reservas);
 }
 
-module.exports = { reservar, misReservas };
+// El estudiante cancela su propia reserva y el cupo vuelve a quedar libre
+// para otro. Solo se permite antes de que empiece la clase. El cambio de
+// estado es condicional (solo si sigue CONFIRMADA), así que dos
+// cancelaciones simultáneas no pueden devolver el cupo dos veces.
+async function cancelar(req, res) {
+  const { id } = req.params;
+  const estudianteId = req.user.id;
+
+  const resultado = await req.db.$transaction(async (tx) => {
+    const reserva = await tx.reserva.findFirst({
+      where: { id, estudianteId },
+      include: { clase: true },
+    });
+
+    if (!reserva) return { tipo: "no_encontrada" };
+    if (reserva.estado !== "CONFIRMADA") return { tipo: "ya_cancelada" };
+    if (reserva.clase.fechaHoraInicio <= new Date()) return { tipo: "clase_iniciada" };
+
+    const cambio = await tx.reserva.updateMany({
+      where: { id, estado: "CONFIRMADA" },
+      data: { estado: "CANCELADA" },
+    });
+    if (cambio.count === 0) return { tipo: "ya_cancelada" };
+
+    // Si la clase fue cancelada por la academia, no hay cupo que devolver.
+    if (reserva.clase.estado === "PROGRAMADA") {
+      await tx.clase.update({
+        where: { id: reserva.claseId },
+        data: { cuposDisponibles: { increment: 1 } },
+      });
+    }
+    return { tipo: "ok" };
+  });
+
+  switch (resultado.tipo) {
+    case "no_encontrada":
+      return res.status(404).json({ error: "Reserva no encontrada." });
+    case "ya_cancelada":
+      return res.status(409).json({ error: "Esta reserva ya estaba cancelada." });
+    case "clase_iniciada":
+      return res.status(400).json({ error: "No se puede cancelar: la clase ya empezó o ya pasó." });
+    default:
+      return res.json({ mensaje: "Reserva cancelada. El cupo quedó libre." });
+  }
+}
+
+module.exports = { reservar, misReservas, cancelar };
