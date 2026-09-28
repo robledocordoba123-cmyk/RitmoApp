@@ -1,8 +1,12 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const HORA_INICIO = 6; // 06:00
-const HORA_FIN = 22; // 22:00
+// Rango por defecto cuando no hay clases. Si hay, el rango se ajusta a ellas
+// (ver rangoHoras): una academia que solo abre de noche no ve 11 horas vacías,
+// y una clase de 5:30 a. m. no queda dibujada por fuera de la grilla.
+const HORA_INICIO_DEFECTO = 6;
+const HORA_FIN_DEFECTO = 22;
+const HORAS_MINIMAS_VISIBLES = 6;
 const ALTURA_HORA = 56; // px por hora
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -27,6 +31,23 @@ function lunesDeLaSemana(fecha) {
   return d;
 }
 
+function rangoHoras(clases) {
+  if (clases.length === 0) return { inicio: HORA_INICIO_DEFECTO, fin: HORA_FIN_DEFECTO };
+  let primera = 24;
+  let ultima = 0;
+  for (const c of clases) {
+    const inicio = new Date(c.fechaHoraInicio);
+    const fin = new Date(c.fechaHoraFin);
+    primera = Math.min(primera, inicio.getHours());
+    // Si termina en punto (8:00), la hora 8 no hace falta; si termina 8:30, sí.
+    ultima = Math.max(ultima, fin.getHours() + (fin.getMinutes() > 0 ? 1 : 0));
+  }
+  let inicio = Math.max(0, primera - 1);
+  let fin = Math.min(24, Math.max(ultima + 1, inicio + HORAS_MINIMAS_VISIBLES));
+  if (fin - inicio < HORAS_MINIMAS_VISIBLES) inicio = Math.max(0, fin - HORAS_MINIMAS_VISIBLES);
+  return { inicio, fin };
+}
+
 function sumarDias(fecha, n) {
   const d = new Date(fecha);
   d.setDate(d.getDate() + n);
@@ -49,7 +70,10 @@ export default function WeekCalendar({ clases }) {
   }, [clases]);
 
   const dias = useMemo(() => Array.from({ length: 7 }, (_, i) => sumarDias(inicioSemana, i)), [inicioSemana]);
-  const horas = useMemo(() => Array.from({ length: HORA_FIN - HORA_INICIO }, (_, i) => HORA_INICIO + i), []);
+  // Se calcula con todas las clases, no solo las de la semana visible, para
+  // que la grilla no cambie de tamaño al pasar de una semana a otra.
+  const rango = useMemo(() => rangoHoras(clases), [clases]);
+  const horas = useMemo(() => Array.from({ length: rango.fin - rango.inicio }, (_, i) => rango.inicio + i), [rango]);
 
   const clasesPorDia = useMemo(() => {
     const mapa = new Map(dias.map((d) => [d.toDateString(), []]));
@@ -64,7 +88,7 @@ export default function WeekCalendar({ clases }) {
   function posicion(clase) {
     const inicio = new Date(clase.fechaHoraInicio);
     const fin = new Date(clase.fechaHoraFin);
-    const minutosDesdeInicio = (inicio.getHours() - HORA_INICIO) * 60 + inicio.getMinutes();
+    const minutosDesdeInicio = (inicio.getHours() - rango.inicio) * 60 + inicio.getMinutes();
     const duracionMin = Math.max((fin - inicio) / 60000, 30);
     return {
       top: (minutosDesdeInicio / 60) * ALTURA_HORA,
@@ -114,8 +138,11 @@ export default function WeekCalendar({ clases }) {
 
           <div className="relative border-r border-gray-100 dark:border-gray-800">
             {horas.map((h) => (
-              <div key={h} style={{ height: ALTURA_HORA }} className="text-right pr-1.5 -mt-2 text-[11px] text-gray-400 dark:text-gray-500">
-                {h}:00
+              // El desplazamiento va en el texto y no en el div: con -mt-2 en
+              // cada div el error se acumulaba 8px por hora y las etiquetas
+              // quedaban cada vez más arriba que su línea.
+              <div key={h} style={{ height: ALTURA_HORA }} className="text-right pr-1.5 text-[11px] text-gray-400 dark:text-gray-500">
+                <span className="relative -top-2">{h}:00</span>
               </div>
             ))}
           </div>

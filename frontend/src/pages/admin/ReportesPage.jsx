@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { BarChart3, Search, Table2 } from "lucide-react";
 import { api } from "../../api/client";
@@ -29,7 +29,7 @@ export default function ReportesPage() {
   const [verTabla, setVerTabla] = useState(false);
 
   async function consultar(e) {
-    e.preventDefault();
+    e?.preventDefault();
     setCargando(true);
     try {
       const data = await api.get(`/reportes/ocupacion?desde=${desde}&hasta=${hasta}`, token);
@@ -40,6 +40,12 @@ export default function ReportesPage() {
       setCargando(false);
     }
   }
+
+  // Al entrar se muestra de una vez el mes en curso, sin tener que darle a "Consultar".
+  useEffect(() => {
+    consultar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
