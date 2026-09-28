@@ -8,7 +8,7 @@ import StatCard from "../../components/ui/StatCard";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
 export default function DashboardPage() {
-  const { token, usuario } = useAuth();
+  const { token } = useAuth();
   const [tenants, setTenants] = useState(null);
 
   useEffect(() => {

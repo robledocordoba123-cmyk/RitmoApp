@@ -12,7 +12,8 @@ import { SkeletonList } from "../../components/ui/Skeleton";
 function esHoy(fecha) {
   const hoy = new Date();
   const f = new Date(fecha);
-  return f.getUTCFullYear() === hoy.getUTCFullYear() && f.getUTCMonth() === hoy.getUTCMonth() && f.getUTCDate() === hoy.getUTCDate();
+  // En hora local: con getUTC* las clases de la noche no salían como "hoy".
+  return f.getFullYear() === hoy.getFullYear() && f.getMonth() === hoy.getMonth() && f.getDate() === hoy.getDate();
 }
 
 export default function DashboardPage() {
@@ -33,8 +34,9 @@ export default function DashboardPage() {
   }
 
   const clasesHoy = misClases.filter((c) => esHoy(c.fechaHoraInicio));
+  // Las de hoy ya salen en su propia tarjeta; aquí van las de los días siguientes.
   const proximas = [...misClases]
-    .filter((c) => new Date(c.fechaHoraInicio) > new Date())
+    .filter((c) => new Date(c.fechaHoraInicio) > new Date() && !esHoy(c.fechaHoraInicio))
     .sort((a, b) => new Date(a.fechaHoraInicio) - new Date(b.fechaHoraInicio))
     .slice(0, 5);
 
@@ -80,6 +82,26 @@ export default function DashboardPage() {
           )}
         </CardBody>
       </Card>
+
+      {proximas.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader title="Próximas clases" />
+          <CardBody>
+            <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+              {proximas.map((c) => (
+                <li key={c.id} className="py-3 flex items-center justify-between">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">
+                    {c.ritmo.nombre} · {c.salon.nombre}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(c.fechaHoraInicio).toLocaleString("es-CO", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }

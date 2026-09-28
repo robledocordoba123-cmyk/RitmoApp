@@ -13,8 +13,11 @@ function primerDiaDelMes() {
   const hoy = new Date();
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`;
 }
+// Fecha local, no UTC: toISOString() después de las 7:00 p. m. en Colombia
+// ya devuelve el día de mañana.
 function hoyISO() {
-  return new Date().toISOString().slice(0, 10);
+  const hoy = new Date();
+  return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
 }
 
 export default function ReportesPage() {
