@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
+const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
 
 const SALT_ROUNDS = 10;
 
@@ -28,14 +29,15 @@ async function listarPorRol(req, res) {
 // del proyecto define esto como gestión de usuarios por parte del admin, no
 // un estudiante buscando su academia entre muchas.
 async function crear(req, res) {
-  const { nombre, email, password, rol } = req.body;
+  const { nombre, password, rol } = req.body;
+  const email = normalizarEmail(req.body.email);
   const ROLES_CREABLES = ["PROFESOR", "ESTUDIANTE"];
 
   if (!nombre || !email || !password || !ROLES_CREABLES.includes(rol)) {
     return res.status(400).json({ error: "nombre, email, password y rol (PROFESOR o ESTUDIANTE) son obligatorios." });
   }
-  if (password.length < 8) {
-    return res.status(400).json({ error: "La contraseña debe tener al menos 8 caracteres." });
+  if (!passwordValida(password)) {
+    return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
   }
 
   const yaExiste = await prisma.user.findUnique({ where: { email } });

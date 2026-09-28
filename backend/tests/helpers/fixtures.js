@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { randomUUID } = require("crypto");
 const { prisma } = require("./db");
+const { normalizarEmail } = require("../../src/utils/validaciones");
 
 const PASSWORD_PLANA = "Prueba123!";
 
@@ -22,7 +23,8 @@ async function crearUsuario(tenantId, rol, overrides = {}) {
     data: {
       tenantId,
       nombre: overrides.nombre || `Usuario ${rol}`,
-      email: overrides.email || `${rol.toLowerCase()}-${randomUUID()}@test.com`,
+      // Igual que la app: el correo siempre se guarda normalizado.
+      email: normalizarEmail(overrides.email || `${rol.toLowerCase()}-${randomUUID()}@test.com`),
       passwordHash,
       rol,
       activo: overrides.activo ?? true,

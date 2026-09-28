@@ -57,6 +57,31 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(409);
   });
 
+  test("el correo no distingue mayúsculas: 'Repetido@Test.com' choca con 'repetido@test.com' (409)", async () => {
+    const academia = await crearAcademia();
+    await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "repetido@test.com" });
+
+    const res = await request(app)
+      .post("/api/auth/onboarding")
+      .send({
+        academia: { nombre: "Academia Nueva 3", nit: "900777888-1" },
+        admin: { nombre: "Admin", email: "  Repetido@Test.com ", password: "Prueba123!" },
+      });
+
+    expect(res.status).toBe(409);
+  });
+
+  test("rechaza una contraseña de menos de 8 caracteres (400)", async () => {
+    const res = await request(app)
+      .post("/api/auth/onboarding")
+      .send({
+        academia: { nombre: "Academia Corta", nit: "900999000-1" },
+        admin: { nombre: "Admin", email: "corta@test.com", password: "123" },
+      });
+
+    expect(res.status).toBe(400);
+  });
+
   test("rechaza la solicitud si faltan datos (400)", async () => {
     const res = await request(app).post("/api/auth/onboarding").send({ academia: { nombre: "X" } });
     expect(res.status).toBe(400);
@@ -74,6 +99,14 @@ describe("RF-02: login", () => {
     expect(res.body.token).toBeDefined();
     expect(res.body.usuario.rol).toBe("ADMIN_ACADEMIA");
     expect(res.body.usuario.tenantId).toBe(academia.id);
+  });
+
+  test("acepta el correo escrito con mayúsculas o espacios", async () => {
+    const academia = await crearAcademia();
+    await crearUsuario(academia.id, "ESTUDIANTE", { email: "ana@test.com" });
+
+    const res = await request(app).post("/api/auth/login").send({ email: " Ana@Test.com", password: "Prueba123!" });
+    expect(res.status).toBe(200);
   });
 
   test("rechaza contraseña incorrecta (401)", async () => {

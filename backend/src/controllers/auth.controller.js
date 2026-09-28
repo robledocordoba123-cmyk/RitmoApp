@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
+const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
 
 const SALT_ROUNDS = 10;
 
@@ -19,10 +20,15 @@ async function onboarding(req, res) {
   if (!academia?.nombre || !academia?.nit || !admin?.nombre || !admin?.email || !admin?.password) {
     return res.status(400).json({ error: "Faltan datos de la academia o del administrador." });
   }
+  if (!passwordValida(admin.password)) {
+    return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
+  }
+
+  const emailAdmin = normalizarEmail(admin.email);
 
   const [nitExistente, correoExistente] = await Promise.all([
     prisma.tenant.findUnique({ where: { nit: academia.nit } }),
-    prisma.user.findUnique({ where: { email: admin.email } }),
+    prisma.user.findUnique({ where: { email: emailAdmin } }),
   ]);
 
   if (nitExistente) {
@@ -43,7 +49,7 @@ async function onboarding(req, res) {
       data: {
         tenantId: tenant.id,
         nombre: admin.nombre,
-        email: admin.email,
+        email: emailAdmin,
         passwordHash,
         rol: "ADMIN_ACADEMIA",
       },
@@ -74,7 +80,7 @@ async function login(req, res) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizarEmail(email) },
     include: { tenant: true },
   });
 
