@@ -31,6 +31,9 @@ async function crear(req, res) {
   ]);
   if (!salon) return res.status(400).json({ error: "El salón indicado no existe en esta academia." });
   if (!ritmo) return res.status(400).json({ error: "El ritmo indicado no existe en esta academia." });
+  if (cupoMaximo > salon.capacidad) {
+    return res.status(400).json({ error: `El cupo (${cupoMaximo}) supera la capacidad del salón (${salon.capacidad}).` });
+  }
 
   // Dos franjas se cruzan si una empieza antes de que la otra termine, en ambos sentidos.
   const filtroCruceHorario = { fechaHoraInicio: { lt: fin }, fechaHoraFin: { gt: inicio } };

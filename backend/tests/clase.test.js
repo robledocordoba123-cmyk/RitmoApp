@@ -42,6 +42,15 @@ describe("RF-05: programación de clases", () => {
     expect(res.body.cuposDisponibles).toBe(5);
   });
 
+  test("rechaza un cupo mayor que la capacidad del salón (400)", async () => {
+    // El salón de prueba tiene capacidad 20.
+    const res = await request(app)
+      .post("/api/clases")
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .send(crearClasePayload({ cupoMaximo: 25 }));
+    expect(res.status).toBe(400);
+  });
+
   test("RN-02: rechaza un cruce de horario en el mismo salón (409)", async () => {
     await request(app).post("/api/clases").set("Authorization", `Bearer ${tokenAdmin}`).send(crearClasePayload());
 

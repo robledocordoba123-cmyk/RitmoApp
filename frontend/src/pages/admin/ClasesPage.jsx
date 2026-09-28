@@ -92,6 +92,8 @@ export default function ClasesPage() {
   }
 
   const faltaCatalogoBase = salones.length === 0 || ritmos.length === 0 || profesores.length === 0;
+  // El cupo no puede superar la capacidad física del salón elegido (el backend también lo valida).
+  const salonElegido = salones.find((s) => s.id === form.salonId);
 
   return (
     <div>
@@ -134,7 +136,14 @@ export default function ClasesPage() {
               <Select label="Ritmo" value={form.ritmoId} onChange={cambiar("ritmoId")} opciones={ritmos} />
               <Select label="Salón" value={form.salonId} onChange={cambiar("salonId")} opciones={salones} />
               <Select label="Profesor" value={form.profesorId} onChange={cambiar("profesorId")} opciones={profesores} />
-              <Campo label="Cupo máximo" type="number" min="1" value={form.cupoMaximo} onChange={cambiar("cupoMaximo")} />
+              <Campo
+                label={salonElegido ? `Cupo máximo (hasta ${salonElegido.capacidad})` : "Cupo máximo"}
+                type="number"
+                min="1"
+                max={salonElegido?.capacidad}
+                value={form.cupoMaximo}
+                onChange={cambiar("cupoMaximo")}
+              />
               <Campo label="Fecha" type="date" value={form.fecha} onChange={cambiar("fecha")} />
               <Campo label="Hora inicio" type="time" value={form.horaInicio} onChange={cambiar("horaInicio")} />
               <Campo label="Hora fin" type="time" value={form.horaFin} onChange={cambiar("horaFin")} />
