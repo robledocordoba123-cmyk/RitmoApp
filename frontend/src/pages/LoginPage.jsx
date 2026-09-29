@@ -1,9 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, LogIn } from "lucide-react";
+import { Sparkles, LogIn, ShieldCheck, GraduationCap, UserRound, Coffee } from "lucide-react";
 import loginDance from "../assets/login-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 import { rutaInicioPara } from "../rutas";
+
+// Solo en la demo pública (VITE_MODO_DEMO=true): accesos de un clic para que
+// quien visite pueda probar cada rol sin copiar correos. Son las cuentas que
+// crea el seed de demostración, sin ningún privilegio fuera de esa academia.
+const MODO_DEMO = import.meta.env.VITE_MODO_DEMO === "true";
+const CUENTAS_DEMO = [
+  { rol: "Administrador", email: "admin@ritmocentral.test", icono: ShieldCheck },
+  { rol: "Profesor", email: "profesor@ritmocentral.test", icono: UserRound },
+  { rol: "Estudiante", email: "estudiante@ritmocentral.test", icono: GraduationCap },
+];
+const PASSWORD_DEMO = "Prueba123!";
+
+// El plan gratuito del hosting apaga la API tras 15 minutos sin uso y tarda
+// cerca de un minuto en volver a encender. Si el login se demora más de
+// esto, se avisa en vez de dejar el botón girando sin explicación.
+const MS_ANTES_DE_AVISAR = 4000;
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -12,19 +28,39 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [servidorDespertando, setServidorDespertando] = useState(false);
 
-  async function manejarSubmit(e) {
-    e.preventDefault();
+  useEffect(() => {
+    if (!cargando) return undefined;
+    const temporizador = setTimeout(() => setServidorDespertando(true), MS_ANTES_DE_AVISAR);
+    return () => {
+      clearTimeout(temporizador);
+      setServidorDespertando(false);
+    };
+  }, [cargando]);
+
+  async function ingresar(correo, clave) {
     setError("");
     setCargando(true);
     try {
-      const usuario = await login(email, password);
+      const usuario = await login(correo, clave);
       navigate(rutaInicioPara(usuario.rol));
     } catch (err) {
       setError(err.message);
     } finally {
       setCargando(false);
     }
+  }
+
+  function manejarSubmit(e) {
+    e.preventDefault();
+    ingresar(email, password);
+  }
+
+  function entrarComoDemo(cuenta) {
+    setEmail(cuenta.email);
+    setPassword(PASSWORD_DEMO);
+    ingresar(cuenta.email, PASSWORD_DEMO);
   }
 
   return (
@@ -63,6 +99,13 @@ export default function LoginPage() {
               />
             </div>
 
+            {servidorDespertando && (
+              <p className="flex items-start gap-2 text-sm text-amber-800 bg-amber-50 dark:bg-amber-950 dark:text-amber-300 rounded-lg px-3 py-2">
+                <Coffee size={16} className="mt-0.5 shrink-0" />
+                El servidor de la demo estaba en reposo y está encendiendo. La primera entrada puede tardar hasta un minuto.
+              </p>
+            )}
+
             {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
 
             <button
@@ -73,6 +116,30 @@ export default function LoginPage() {
               <LogIn size={16} /> {cargando ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
+
+          {MODO_DEMO && (
+            <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-900 dark:bg-indigo-950/40">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">¿Solo quieres probarla?</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">Entra con una cuenta de demostración:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {CUENTAS_DEMO.map((cuenta) => {
+                  const Icono = cuenta.icono;
+                  return (
+                    <button
+                      key={cuenta.email}
+                      type="button"
+                      disabled={cargando}
+                      onClick={() => entrarComoDemo(cuenta)}
+                      className="flex flex-col items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-2.5 text-xs font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-indigo-700"
+                    >
+                      <Icono size={18} />
+                      {cuenta.rol}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-6">
             ¿Tu academia aún no está registrada?{" "}

@@ -1,0 +1,38 @@
+# Configuración de la API en Render como código (Blueprint).
+# En Render: New → Blueprint → elegir este repositorio.
+#
+# La base de datos NO se crea aquí: vive en Neon (el PostgreSQL gratuito de
+# Render se borra a los 30 días). Su URL se pega a mano en DATABASE_URL la
+# primera vez; nunca va en el repositorio.
+services:
+  - type: web
+    name: ritmoapp-api
+    runtime: node
+    region: ohio            # misma región que la base de datos en Neon
+    plan: free
+    rootDir: backend
+    # --include=dev: el CLI de Prisma (migraciones) es devDependency y con
+    # NODE_ENV=production npm lo omitiría.
+    buildCommand: npm ci --include=dev && npx prisma generate
+    # Aplica migraciones pendientes, recarga los datos de demostración (la
+    # agenda queda siempre alrededor de "hoy") y arranca la API.
+    startCommand: npm run start:demo
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: TZ_ACADEMIAS
+        value: America/Bogota
+      # Render genera un secreto largo y aleatorio; nadie necesita conocerlo.
+      - key: JWT_SECRET
+        generateValue: true
+      # Estas dos se piden al crear el Blueprint (sync: false = no están en el repo).
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

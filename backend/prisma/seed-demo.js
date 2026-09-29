@@ -123,6 +123,25 @@ async function main() {
   await prisma.reserva.deleteMany({ where: { tenantId: academia.id } });
   await prisma.clase.deleteMany({ where: { tenantId: academia.id } });
 
+  // En la demo pública cualquiera puede entrar como admin o superadmin: se
+  // deshace lo que hayan cambiado los visitantes para que la siguiente persona
+  // encuentre la academia igual (activa y sin salones, ritmos o usuarios de más).
+  await prisma.tenant.update({ where: { id: academia.id }, data: { estado: "ACTIVA" } });
+  await prisma.salon.deleteMany({
+    where: { tenantId: academia.id, id: { notIn: salones.map((s) => s.id) } },
+  });
+  await prisma.ritmo.deleteMany({
+    where: { tenantId: academia.id, id: { notIn: Object.values(ritmos).map((r) => r.id) } },
+  });
+  const correosDemo = [
+    "admin@ritmocentral.test",
+    ...Object.values(profesores).map((p) => p.email),
+    ...estudiantes.map((e) => e.email),
+  ];
+  await prisma.user.deleteMany({
+    where: { tenantId: academia.id, email: { notIn: correosDemo } },
+  });
+
   // Cada franja usa salones y profesores distintos entre sí, así que no hay
   // cruces. De lunes a sábado; el domingo la academia descansa.
   const franjas = [

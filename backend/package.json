@@ -11,7 +11,8 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "node prisma/seed.js",
     "test": "jest --runInBand",
-    "prisma:seed:demo": "node prisma/seed-demo.js"
+    "prisma:seed:demo": "node prisma/seed-demo.js",
+    "start:demo": "prisma migrate deploy && node prisma/seed.js && node prisma/seed-demo.js && node src/server.js"
   },
   "keywords": [],
   "author": "",
