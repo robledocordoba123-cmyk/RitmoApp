@@ -171,4 +171,4 @@ RitmoApp/
 
 Proyecto formativo de la Tecnología en Análisis y Desarrollo de Software del SENA (ficha 3229209). El análisis y el diseño (requisitos, historias de usuario, diagramas y arquitectura) se hicieron en equipo con Davier Andrés Quinto Bejarano. La implementación de este repositorio la hizo **Manuela Córdoba Robledo**.
 
-[LinkedIn](https://www.linkedin.com/in/manuela-c%C3%B3rdoba-robledo-145322418/) · [GitHub](https://github.com/robledocordoba123-cmyk) · robledocordoba123@gmail.com
+[LinkedIn](https://www.linkedin.com/in/manuela-cordoba-dev/) · [GitHub](https://github.com/robledocordoba123-cmyk) · robledocordoba123@gmail.com
