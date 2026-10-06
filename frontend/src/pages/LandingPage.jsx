@@ -25,7 +25,7 @@ const CARACTERISTICAS = [
   {
     icon: Zap,
     titulo: "Cupos en tiempo real",
-    texto: "Control de concurrencia real: si dos estudiantes van por el último cupo al mismo tiempo, solo uno se queda con él. Nunca overbooking.",
+    texto: "Control de concurrencia real: si dos estudiantes van por el último cupo al mismo tiempo, solo uno se queda con él. Nunca hay sobrecupo.",
   },
   {
     icon: ShieldCheck,
@@ -59,7 +59,7 @@ const PREGUNTAS = [
   },
   {
     q: "¿Qué pasa si dos estudiantes reservan el último cupo al mismo tiempo?",
-    a: "Solo uno se queda con él. El control de cupos usa una operación atómica a nivel de base de datos, así que no hay forma de que se genere overbooking incluso bajo uso simultáneo real.",
+    a: "Solo uno se queda con él. El control de cupos usa una operación atómica a nivel de base de datos, así que no hay forma de que se genere sobrecupo incluso bajo uso simultáneo real.",
   },
   {
     q: "¿Necesito instalar algo?",

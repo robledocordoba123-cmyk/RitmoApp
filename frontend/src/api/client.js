@@ -2,6 +2,14 @@
 // el token del usuario logueado y el manejo de errores en un solo formato.
 const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+// Si la API rechaza el token (venció o la demo se reinició), la sesión guardada
+// ya no sirve: se avisa al AuthProvider para que cierre sesión y lleve al login.
+let alVencerSesion = () => {};
+
+function cuandoVenzaLaSesion(funcion) {
+  alVencerSesion = funcion;
+}
+
 class ApiError extends Error {
   constructor(mensaje, status) {
     super(mensaje);
@@ -24,6 +32,7 @@ async function solicitar(ruta, { method = "GET", body, token } = {}) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    if (res.status === 401 && token) alVencerSesion();
     throw new ApiError(data?.error || "Ocurrió un error inesperado.", res.status);
   }
 
@@ -38,4 +47,4 @@ const api = {
   delete: (ruta, token) => solicitar(ruta, { method: "DELETE", token }),
 };
 
-export { api, ApiError };
+export { api, ApiError, cuandoVenzaLaSesion };

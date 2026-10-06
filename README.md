@@ -4,6 +4,8 @@
 
 Plataforma SaaS multi-academia para que las escuelas de baile gestionen clases, horarios, cupos, reservas y asistencia, en lugar de hacerlo con cuadernos, Excel y grupos de WhatsApp.
 
+> **Proyecto de grado** de la Tecnología en Análisis y Desarrollo de Software del SENA (ficha 3229209).
+
 Cada academia se registra sola y trabaja con sus datos totalmente aislados de las demás. Hay cuatro roles: **SuperAdmin** (dueño de la plataforma), **Admin de academia**, **Profesor** y **Estudiante**.
 
 ### 🌐 Demo en vivo: **[ritmoapp-demo.vercel.app](https://ritmoapp-demo.vercel.app)**

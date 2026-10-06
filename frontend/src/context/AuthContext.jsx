@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../api/client";
+import { api, cuandoVenzaLaSesion } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -25,6 +25,11 @@ export function AuthProvider({ children }) {
       localStorage.removeItem("ritmoapp_sesion");
     }
   }, [sesion]);
+
+  // Un token vencido cierra la sesión en vez de dejar la pantalla cargando.
+  useEffect(() => {
+    cuandoVenzaLaSesion(() => setSesion(null));
+  }, []);
 
   async function login(email, password) {
     const data = await api.post("/auth/login", { email, password });
