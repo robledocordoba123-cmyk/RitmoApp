@@ -6,6 +6,12 @@ Plataforma SaaS multi-academia para que las escuelas de baile gestionen clases, 
 
 Cada academia se registra sola y trabaja con sus datos totalmente aislados de las demás. Hay cuatro roles: **SuperAdmin** (dueño de la plataforma), **Admin de academia**, **Profesor** y **Estudiante**.
 
+### 🌐 Demo en vivo: **[ritmoapp-demo.vercel.app](https://ritmoapp-demo.vercel.app)**
+
+En la pantalla de inicio de sesión puedes entrar con un clic como **Administrador**, **Profesor** o **Estudiante** de una academia de ejemplo con su agenda de clases. Los datos de la demo se restablecen solos.
+
+> La API está en un plan gratuito que se apaga tras 15 minutos sin uso: si nadie la ha abierto en un rato, la primera entrada puede tardar cerca de un minuto.
+
 ![Panel del administrador](docs/capturas/03-admin-dashboard.png)
 
 ## Lo más interesante técnicamente
@@ -51,6 +57,16 @@ Cada academia se registra sola y trabaja con sus datos totalmente aislados de la
 | Entorno | Docker Compose (PostgreSQL + pgAdmin) |
 
 Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md).
+
+## Despliegue
+
+| Capa | Servicio | Configuración |
+|---|---|---|
+| Frontend | Vercel | Carpeta `frontend`, variables `VITE_API_URL` y `VITE_MODO_DEMO`. Se publica solo con cada merge a `main`. |
+| API | Render (Ohio) | Definida como código en [`render.yaml`](render.yaml). Al arrancar aplica migraciones y recarga los datos de demo. |
+| Base de datos | Neon, PostgreSQL 16 (Ohio) | Misma región que la API. La cadena de conexión solo vive en las variables de Render, nunca en el repositorio. |
+
+`main` está protegida: todo cambio entra por Pull Request con revisión y con las pruebas de CI en verde.
 
 ## Cómo correrlo en local
 
@@ -155,4 +171,4 @@ RitmoApp/
 
 Proyecto formativo de la Tecnología en Análisis y Desarrollo de Software del SENA (ficha 3229209). El análisis y el diseño (requisitos, historias de usuario, diagramas y arquitectura) se hicieron en equipo con Davier Andrés Quinto Bejarano. La implementación de este repositorio la hizo **Manuela Córdoba Robledo**.
 
-[LinkedIn](https://www.linkedin.com/in/manuela-c%C3%B3rdoba-robledo-145322418/) · [GitHub](https://github.com/robledocordoba123-cmyk) · robledocordoba123@gmail.com
+[LinkedIn](https://www.linkedin.com/in/manuela-cordoba-dev/) · [GitHub](https://github.com/robledocordoba123-cmyk) · robledocordoba123@gmail.com
