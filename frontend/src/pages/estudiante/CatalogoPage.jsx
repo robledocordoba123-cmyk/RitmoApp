@@ -14,7 +14,10 @@ export default function CatalogoPage() {
   const [reservandoId, setReservandoId] = useState(null);
 
   async function cargar() {
-    setClases(await api.get("/clases", token));
+    // Solo las clases que aún no empiezan: las pasadas ya no se pueden reservar.
+    const ahora = new Date();
+    const todas = await api.get("/clases", token);
+    setClases(todas.filter((clase) => new Date(clase.fechaHoraInicio) > ahora));
   }
 
   useEffect(() => {

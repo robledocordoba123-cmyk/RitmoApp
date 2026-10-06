@@ -28,11 +28,15 @@ export default function DashboardPage() {
     );
   }
 
-  const { clases, reservas } = datos;
-  // Activa = confirmada y la clase no fue cancelada por la academia.
-  const reservasActivas = reservas.filter((r) => r.estado === "CONFIRMADA" && r.clase.estado !== "CANCELADA");
+  const { reservas } = datos;
+  const ahora = new Date();
+  // El catálogo y las reservas activas cuentan solo clases que aún no empiezan.
+  const clases = datos.clases.filter((c) => new Date(c.fechaHoraInicio) > ahora);
+  // Activa = confirmada, la clase no fue cancelada por la academia y todavía no pasa.
+  const reservasActivas = reservas.filter(
+    (r) => r.estado === "CONFIRMADA" && r.clase.estado !== "CANCELADA" && new Date(r.clase.fechaHoraInicio) > ahora
+  );
   const proximaReserva = [...reservasActivas]
-    .filter((r) => new Date(r.clase.fechaHoraInicio) > new Date())
     .sort((a, b) => new Date(a.clase.fechaHoraInicio) - new Date(b.clase.fechaHoraInicio))[0];
   const conCupo = clases.filter((c) => c.cuposDisponibles > 0).length;
 

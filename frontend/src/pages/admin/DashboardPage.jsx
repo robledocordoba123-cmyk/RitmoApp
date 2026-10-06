@@ -122,7 +122,7 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {c.cuposDisponibles}/{c.cupoMaximo} cupos
+                      {c.cupoMaximo - c.cuposDisponibles}/{c.cupoMaximo} cupos
                     </span>
                   </li>
                 ))}
