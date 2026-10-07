@@ -54,8 +54,8 @@ function pedirReporte(desde, hasta) {
     .set("Authorization", `Bearer ${tokenAdmin}`);
 }
 
-describe("RF-08: reporte de ocupación por salón", () => {
-  test("calcula el porcentaje de ocupación del salón", async () => {
+describe("RF-20 · HU-20: reporte de ocupación por salón", () => {
+  test("CP-040 · calcula el porcentaje de ocupación del salón", async () => {
     await crearClase({ inicio: "2027-02-10T15:00:00.000Z", cupoMaximo: 10, reservas: 4 });
 
     const res = await pedirReporte("2027-02-01", "2027-02-28");
@@ -71,7 +71,7 @@ describe("RF-08: reporte de ocupación por salón", () => {
     });
   });
 
-  test("incluye las clases del último día del rango, también las de la noche", async () => {
+  test("CP-041 · incluye las clases del último día del rango, también las de la noche", async () => {
     // 7:00 p. m. del 28 de febrero en Bogotá = 00:00 UTC del 1 de marzo.
     await crearClase({ inicio: "2027-03-01T00:00:00.000Z", reservas: 2 });
 
@@ -80,7 +80,7 @@ describe("RF-08: reporte de ocupación por salón", () => {
     expect(res.body.salones[0].totalClases).toBe(1);
   });
 
-  test("no cuenta las clases canceladas", async () => {
+  test("CP-042 · no cuenta las clases canceladas", async () => {
     await crearClase({ inicio: "2027-02-10T15:00:00.000Z", cupoMaximo: 10, reservas: 5 });
     await crearClase({ inicio: "2027-02-11T15:00:00.000Z", cupoMaximo: 10, estado: "CANCELADA" });
 
@@ -90,12 +90,12 @@ describe("RF-08: reporte de ocupación por salón", () => {
     expect(res.body.salones[0].porcentajeOcupacion).toBe(50);
   });
 
-  test("rechaza fechas con formato inválido o rango invertido (400)", async () => {
+  test("CP-043 · rechaza fechas con formato inválido o rango invertido (400)", async () => {
     expect((await pedirReporte("10-02-2027", "2027-02-28")).status).toBe(400);
     expect((await pedirReporte("2027-02-28", "2027-02-01")).status).toBe(400);
   });
 
-  test("solo el admin de la academia puede ver el reporte (403)", async () => {
+  test("CP-044 · solo el admin de la academia puede ver el reporte (403)", async () => {
     const tokenProfesor = await login("profe@reporte.test");
     const res = await request(app)
       .get("/api/reportes/ocupacion?desde=2027-02-01&hasta=2027-02-28")

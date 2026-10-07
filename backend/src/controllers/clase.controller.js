@@ -1,6 +1,6 @@
 const prisma = require("../config/prisma");
 
-// RF-05: el administrador de academia programa una clase asignando ritmo,
+// RF-14: el administrador de academia programa una clase asignando ritmo,
 // salón, profesor, cupo y horario. RN-02 (salón sin cruce) y RN-03
 // (profesor sin cruce) se validan antes de crear, dentro de la misma
 // academia (req.db ya viene aislado por tenant).
@@ -67,7 +67,7 @@ async function crear(req, res) {
   res.status(201).json(clase);
 }
 
-// RF-06 (catálogo): el estudiante consulta las clases con cupos en tiempo real.
+// RF-08 (catálogo): el estudiante consulta las clases con cupos en tiempo real.
 async function listar(req, res) {
   const clases = await req.db.clase.findMany({
     where: { estado: "PROGRAMADA" },

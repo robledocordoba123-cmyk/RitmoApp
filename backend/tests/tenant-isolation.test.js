@@ -13,8 +13,8 @@ afterAll(async () => {
 });
 
 // RNF-01 / RN-04: una academia nunca debe ver ni poder tocar los datos de otra.
-describe("Aislamiento multi-tenant", () => {
-  test("un admin no ve los salones de otra academia", async () => {
+describe("RNF-01 · RN-04: aislamiento entre academias", () => {
+  test("CP-045 · un admin no ve los salones de otra academia", async () => {
     const academiaA = await crearAcademia({ nit: "AAA-1" });
     const academiaB = await crearAcademia({ nit: "BBB-1" });
     await crearUsuario(academiaA.id, "ADMIN_ACADEMIA", { email: "adminA@test.com" });
@@ -35,7 +35,7 @@ describe("Aislamiento multi-tenant", () => {
     expect(resA.body).toHaveLength(1);
   });
 
-  test("un admin no puede editar ni borrar un salón de otra academia (404)", async () => {
+  test("CP-046 · un admin no puede editar ni borrar un salón de otra academia (404)", async () => {
     const academiaA = await crearAcademia({ nit: "CCC-1" });
     const academiaB = await crearAcademia({ nit: "DDD-1" });
     await crearUsuario(academiaA.id, "ADMIN_ACADEMIA", { email: "adminC@test.com" });
@@ -59,7 +59,7 @@ describe("Aislamiento multi-tenant", () => {
     expect(borrar.status).toBe(404);
   });
 
-  test("sin token no se puede acceder a rutas protegidas (401)", async () => {
+  test("CP-047 · sin token no se puede acceder a rutas protegidas (401)", async () => {
     const res = await request(app).get("/api/salones");
     expect(res.status).toBe(401);
   });

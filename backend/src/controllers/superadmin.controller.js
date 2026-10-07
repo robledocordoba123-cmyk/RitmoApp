@@ -1,6 +1,6 @@
 const prisma = require("../config/prisma");
 
-// RF-03: el SuperAdmin SaaS gestiona el estado global de las academias.
+// RF-02 y RF-03: el SuperAdmin SaaS gestiona el estado global de las academias.
 // Opera sobre el modelo Tenant directamente (no está en el cliente aislado
 // por tenant: el SuperAdmin no pertenece a ninguna academia).
 

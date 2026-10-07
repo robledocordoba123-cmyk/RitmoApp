@@ -15,7 +15,7 @@ router.get("/", claseController.listar);
 router.post("/", requireRole("ADMIN_ACADEMIA"), claseController.crear);
 router.patch("/:id/cancelar", requireRole("ADMIN_ACADEMIA"), claseController.cancelar);
 
-// RF-07: solo el profesor asignado ve y registra la asistencia de su clase.
+// RF-16: solo el profesor asignado ve y registra la asistencia de su clase.
 router.get("/:id/inscritos", requireRole("PROFESOR"), asistenciaController.listarInscritos);
 router.post("/:id/asistencia", requireRole("PROFESOR"), asistenciaController.registrar);
 

@@ -11,8 +11,8 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-describe("RF-01: onboarding de academia", () => {
-  test("registra una academia nueva con su administrador y devuelve token", async () => {
+describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
+  test("CP-001 · registra una academia nueva con su administrador y devuelve token", async () => {
     const res = await request(app)
       .post("/api/auth/onboarding")
       .send({
@@ -30,7 +30,7 @@ describe("RF-01: onboarding de academia", () => {
     expect(usuarioCreado.rol).toBe("ADMIN_ACADEMIA");
   });
 
-  test("rechaza un NIT ya registrado (409)", async () => {
+  test("CP-002 · rechaza un NIT ya registrado (409)", async () => {
     await crearAcademia({ nit: "900333444-1" });
 
     const res = await request(app)
@@ -43,7 +43,7 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(409);
   });
 
-  test("rechaza un correo de administrador ya registrado (409)", async () => {
+  test("CP-003 · rechaza un correo de administrador ya registrado (409)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "repetido@test.com" });
 
@@ -57,7 +57,7 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(409);
   });
 
-  test("el correo no distingue mayúsculas: 'Repetido@Test.com' choca con 'repetido@test.com' (409)", async () => {
+  test("CP-004 · el correo no distingue mayúsculas: 'Repetido@Test.com' choca con 'repetido@test.com' (409)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "repetido@test.com" });
 
@@ -71,7 +71,7 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(409);
   });
 
-  test("rechaza una contraseña de menos de 8 caracteres (400)", async () => {
+  test("CP-005 · rechaza una contraseña de menos de 8 caracteres (400)", async () => {
     const res = await request(app)
       .post("/api/auth/onboarding")
       .send({
@@ -82,14 +82,14 @@ describe("RF-01: onboarding de academia", () => {
     expect(res.status).toBe(400);
   });
 
-  test("rechaza la solicitud si faltan datos (400)", async () => {
+  test("CP-006 · rechaza la solicitud si faltan datos (400)", async () => {
     const res = await request(app).post("/api/auth/onboarding").send({ academia: { nombre: "X" } });
     expect(res.status).toBe(400);
   });
 });
 
-describe("RF-02: login", () => {
-  test("con credenciales correctas devuelve token con rol y tenantId", async () => {
+describe("RF-04 · HU-04: inicio de sesión", () => {
+  test("CP-007 · con credenciales correctas devuelve token con rol y tenantId", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "valido@test.com" });
 
@@ -101,7 +101,7 @@ describe("RF-02: login", () => {
     expect(res.body.usuario.tenantId).toBe(academia.id);
   });
 
-  test("acepta el correo escrito con mayúsculas o espacios", async () => {
+  test("CP-008 · acepta el correo escrito con mayúsculas o espacios", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ESTUDIANTE", { email: "ana@test.com" });
 
@@ -109,7 +109,7 @@ describe("RF-02: login", () => {
     expect(res.status).toBe(200);
   });
 
-  test("rechaza contraseña incorrecta (401)", async () => {
+  test("CP-009 · rechaza contraseña incorrecta (401)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "valido2@test.com" });
 
@@ -117,12 +117,12 @@ describe("RF-02: login", () => {
     expect(res.status).toBe(401);
   });
 
-  test("rechaza un correo que no existe (401)", async () => {
+  test("CP-010 · rechaza un correo que no existe (401)", async () => {
     const res = await request(app).post("/api/auth/login").send({ email: "nadie@test.com", password: "Prueba123!" });
     expect(res.status).toBe(401);
   });
 
-  test("rechaza el login si la academia está suspendida (401)", async () => {
+  test("CP-011 · rechaza el login si la academia está suspendida (401)", async () => {
     const academia = await crearAcademia({ estado: "SUSPENDIDA" });
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "suspendida@test.com" });
 

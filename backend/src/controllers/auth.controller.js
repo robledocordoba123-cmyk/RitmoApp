@@ -71,7 +71,7 @@ async function onboarding(req, res) {
   });
 }
 
-// RF-02: autenticación de cualquier rol.
+// RF-04: autenticación de cualquier rol.
 async function login(req, res) {
   const { email, password } = req.body;
 

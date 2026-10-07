@@ -1,4 +1,4 @@
-// RF-04: el administrador de academia crea y edita salones de su propia
+// RF-18: el administrador de academia crea y edita salones de su propia
 // academia. req.db ya viene aislado por tenant (middleware requireTenant).
 
 async function listar(req, res) {

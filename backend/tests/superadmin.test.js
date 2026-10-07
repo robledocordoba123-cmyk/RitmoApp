@@ -21,14 +21,14 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-describe("RF-03: panel de SuperAdmin", () => {
-  test("lista las academias registradas", async () => {
+describe("RF-02 y RF-03 · HU-02 y HU-03: panel del SuperAdministrador", () => {
+  test("CP-012 · lista las academias registradas", async () => {
     const res = await request(app).get("/api/superadmin/tenants").set("Authorization", `Bearer ${tokenSuper}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
   });
 
-  test("suspender una academia bloquea el login de sus usuarios", async () => {
+  test("CP-013 · suspender una academia bloquea el login de sus usuarios", async () => {
     const suspender = await request(app)
       .patch(`/api/superadmin/tenants/${academia.id}/estado`)
       .set("Authorization", `Bearer ${tokenSuper}`)
@@ -39,7 +39,7 @@ describe("RF-03: panel de SuperAdmin", () => {
     expect(loginRes.status).toBe(401);
   });
 
-  test("un ADMIN_ACADEMIA no puede usar las rutas de SuperAdmin (403)", async () => {
+  test("CP-014 · un ADMIN_ACADEMIA no puede usar las rutas de SuperAdmin (403)", async () => {
     const res = await request(app).get("/api/superadmin/tenants").set("Authorization", `Bearer ${tokenAdminAcademia}`);
     expect(res.status).toBe(403);
   });
