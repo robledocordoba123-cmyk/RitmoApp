@@ -7,17 +7,20 @@ import PageHeader from "../../components/ui/PageHeader";
 import { Card, CardBody } from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+import AvisoMembresia from "../../components/AvisoMembresia";
 
 export default function CatalogoPage() {
   const { token } = useAuth();
   const [clases, setClases] = useState(null);
   const [reservandoId, setReservandoId] = useState(null);
+  const [membresia, setMembresia] = useState(null);
 
   async function cargar() {
     // Solo las clases que aún no empiezan: las pasadas ya no se pueden reservar.
     const ahora = new Date();
-    const todas = await api.get("/clases", token);
+    const [todas, pagos] = await Promise.all([api.get("/clases", token), api.get("/pagos/mios", token)]);
     setClases(todas.filter((clase) => new Date(clase.fechaHoraInicio) > ahora));
+    setMembresia(pagos.membresia);
   }
 
   useEffect(() => {
@@ -41,6 +44,8 @@ export default function CatalogoPage() {
     <div>
       <PageHeader title="Catálogo de clases" subtitle="Elige tu ritmo y reserva tu cupo en un clic." />
 
+      <AvisoMembresia membresia={membresia} />
+
       {clases === null ? (
         <SkeletonList />
       ) : clases.length === 0 ? (
@@ -49,6 +54,9 @@ export default function CatalogoPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {clases.map((clase) => {
             const sinCupo = clase.cuposDisponibles === 0;
+            // RN-05: sin membresía vigente el botón se desactiva desde antes;
+            // la API igual lo rechaza si alguien intenta saltárselo.
+            const bloqueada = membresia !== null && membresia.estado !== "AL_DIA";
             return (
               <Card hover key={clase.id}>
                 <CardBody className="pt-5">
@@ -70,15 +78,17 @@ export default function CatalogoPage() {
                   </div>
 
                   <p className={`text-sm mt-3 font-medium ${sinCupo ? "text-red-500" : "text-green-600"}`}>
-                    {sinCupo ? "Sin cupos disponibles" : `${clase.cuposDisponibles} cupos disponibles de ${clase.cupoMaximo}`}
+                    {sinCupo
+                      ? "Sin cupos disponibles"
+                      : `${clase.cuposDisponibles} ${clase.cuposDisponibles === 1 ? "cupo disponible" : "cupos disponibles"} de ${clase.cupoMaximo}`}
                   </p>
 
                   <button
                     onClick={() => reservar(clase.id)}
-                    disabled={sinCupo || reservandoId === clase.id}
+                    disabled={sinCupo || bloqueada || reservandoId === clase.id}
                     className="mt-3 w-full rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 py-2 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   >
-                    {sinCupo ? "Sin cupos" : reservandoId === clase.id ? "Reservando..." : "Reservar"}
+                    {sinCupo ? "Sin cupos" : bloqueada ? "Membresía vencida" : reservandoId === clase.id ? "Reservando..." : "Reservar"}
                   </button>
                 </CardBody>
               </Card>

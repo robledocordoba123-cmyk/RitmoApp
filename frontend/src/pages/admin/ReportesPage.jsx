@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BarChart3, Search, Table2 } from "lucide-react";
+import { BarChart3, Search, Table2, Wallet } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -8,6 +8,7 @@ import { Card, CardHeader, CardBody } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 import OcupacionChart from "../../components/OcupacionChart";
+import { pesos, MEDIOS_DE_PAGO } from "../../utils/formato";
 
 function primerDiaDelMes() {
   const hoy = new Date();
@@ -25,6 +26,7 @@ export default function ReportesPage() {
   const [desde, setDesde] = useState(primerDiaDelMes());
   const [hasta, setHasta] = useState(hoyISO());
   const [reporte, setReporte] = useState(null);
+  const [ingresos, setIngresos] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [verTabla, setVerTabla] = useState(false);
 
@@ -32,8 +34,13 @@ export default function ReportesPage() {
     e?.preventDefault();
     setCargando(true);
     try {
-      const data = await api.get(`/reportes/ocupacion?desde=${desde}&hasta=${hasta}`, token);
-      setReporte(data);
+      const rango = `desde=${desde}&hasta=${hasta}`;
+      const [ocupacion, dinero] = await Promise.all([
+        api.get(`/reportes/ocupacion?${rango}`, token),
+        api.get(`/reportes/ingresos?${rango}`, token),
+      ]);
+      setReporte(ocupacion);
+      setIngresos(dinero);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -49,7 +56,7 @@ export default function ReportesPage() {
 
   return (
     <div>
-      <PageHeader title="Reporte de ocupación" subtitle="Cuánto se está usando cada salón en el rango que elijas." />
+      <PageHeader title="Reportes" subtitle="Ocupación de cada salón e ingresos de la academia en el rango que elijas." />
 
       <Card className="mb-6">
         <CardBody className="pt-5">
@@ -118,6 +125,52 @@ export default function ReportesPage() {
             </CardBody>
           </Card>
         ))}
+
+      {ingresos && (
+        <Card className="mt-6">
+          <CardHeader title="Ingresos" subtitle={`${ingresos.desde} — ${ingresos.hasta}`} />
+          <CardBody>
+            {ingresos.cantidadPagos === 0 ? (
+              <EmptyState icon={Wallet} title="Sin pagos en ese rango" description="No se registraron pagos entre esas fechas." />
+            ) : (
+              <>
+                <p className="text-3xl font-semibold text-gray-900 dark:text-gray-100">{pesos(ingresos.total)}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+                  {ingresos.cantidadPagos === 1 ? "1 pago registrado" : `${ingresos.cantidadPagos} pagos registrados`}
+                </p>
+                <div className="grid sm:grid-cols-2 gap-6">
+                  {[
+                    { titulo: "Por tarifa", filas: ingresos.porTarifa.map((t) => ({ nombre: t.nombreTarifa, ...t })) },
+                    { titulo: "Por medio de pago", filas: ingresos.porMedio.map((m) => ({ nombre: MEDIOS_DE_PAGO[m.medio], ...m })) },
+                  ].map((grupo) => (
+                    <div key={grupo.titulo}>
+                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{grupo.titulo}</h3>
+                      <ul className="space-y-2">
+                        {grupo.filas.map((fila) => (
+                          <li key={fila.nombre}>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">
+                                {fila.nombre} <span className="text-gray-400">({fila.pagos})</span>
+                              </span>
+                              <span className="font-medium text-gray-900 dark:text-gray-100">{pesos(fila.total)}</span>
+                            </div>
+                            <div className="mt-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
+                              <div
+                                className="h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500"
+                                style={{ width: `${Math.round((fila.total / ingresos.total) * 100)}%` }}
+                              />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }

@@ -42,6 +42,13 @@ enum EstadoAsistencia {
   EXCUSA
 }
 
+enum MedioPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA
+  OTRO
+}
+
 // Academia de baile (tenant). RF-01.
 model Tenant {
   id        String       @id @default(uuid())
@@ -56,6 +63,8 @@ model Tenant {
   clases    Clase[]
   reservas  Reserva[]
   asistencias Asistencia[]
+  tarifas   Tarifa[]
+  pagos     Pago[]
 
   @@map("tenants")
 }
@@ -76,6 +85,8 @@ model User {
   reservas            Reserva[]
   asistenciasRegistradas Asistencia[] @relation("AsistenciaRegistradaPor")
   asistenciasComoEstudiante Asistencia[] @relation("AsistenciaEstudiante")
+  pagos               Pago[]       @relation("PagosEstudiante")
+  pagosRegistrados    Pago[]       @relation("PagosRegistradosPor")
 
   @@index([tenantId])
   @@map("users")
@@ -176,4 +187,51 @@ model Asistencia {
   @@unique([claseId, estudianteId])
   @@index([tenantId])
   @@map("asistencias")
+}
+
+// Plan que vende la academia (mensualidad, tiquetera, etc.). RF-18 · HU-18.
+// El valor se guarda en pesos colombianos enteros: el COP no usa centavos.
+model Tarifa {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  nombre       String
+  valor        Int
+  duracionDias Int
+  activa       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  pagos Pago[]
+
+  @@index([tenantId])
+  @@map("tarifas")
+}
+
+// Pago de un estudiante registrado por el administrador. RF-19 · HU-19,
+// RN-05 (vigencia) y RN-14 (pago válido). Nombre, valor y duración de la
+// tarifa se copian al pago para que editar la tarifa después no cambie los
+// pagos ya registrados (HU-18-CA-03). La membresía vigente del estudiante es
+// el mayor vigenteHasta de sus pagos.
+model Pago {
+  id              String    @id @default(uuid())
+  tenantId        String
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  estudianteId    String
+  estudiante      User      @relation("PagosEstudiante", fields: [estudianteId], references: [id])
+  tarifaId        String
+  tarifa          Tarifa    @relation(fields: [tarifaId], references: [id])
+  nombreTarifa    String
+  monto           Int
+  duracionDias    Int
+  medio           MedioPago
+  referencia      String?
+  vigenteDesde    DateTime
+  vigenteHasta    DateTime
+  registradoPorId String
+  registradoPor   User      @relation("PagosRegistradosPor", fields: [registradoPorId], references: [id])
+  registradoEn    DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([estudianteId, vigenteHasta])
+  @@map("pagos")
 }

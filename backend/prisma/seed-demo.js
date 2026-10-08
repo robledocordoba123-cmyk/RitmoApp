@@ -9,7 +9,8 @@
 //
 // Respeta las mismas reglas que la API: cupo <= capacidad del salón (RF-05),
 // sin cruces de salón ni de profesor (RN-02, RN-03) y cuposDisponibles =
-// cupoMaximo - reservas confirmadas (RN-01).
+// cupoMaximo - reservas confirmadas (RN-01). Los pagos siguen RN-05: cada
+// pago extiende la membresía desde donde terminaba el anterior.
 require("dotenv/config");
 const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("../generated/prisma");
@@ -118,7 +119,9 @@ async function main() {
   }
   const estudianteDemo = estudiantes[0];
 
-  // --- Agenda: se regenera completa ------------------------------------------
+  // --- Agenda y pagos: se regeneran completos --------------------------------
+  // Los pagos van primero: apuntan a usuarios y tarifas que se limpian abajo.
+  await prisma.pago.deleteMany({ where: { tenantId: academia.id } });
   await prisma.asistencia.deleteMany({ where: { tenantId: academia.id } });
   await prisma.reserva.deleteMany({ where: { tenantId: academia.id } });
   await prisma.clase.deleteMany({ where: { tenantId: academia.id } });
@@ -229,6 +232,71 @@ async function main() {
     }
   }
 
+  // --- Tarifas y pagos (RF-18, RF-19, RN-05) ----------------------------------
+  const datosTarifas = [
+    { id: "00000000-0000-0000-0000-000000000031", nombre: "Mensualidad", valor: 150000, duracionDias: 30 },
+    { id: "00000000-0000-0000-0000-000000000032", nombre: "Tiquetera 8 clases", valor: 110000, duracionDias: 30 },
+    { id: "00000000-0000-0000-0000-000000000033", nombre: "Plan trimestral", valor: 400000, duracionDias: 90 },
+  ];
+  const tarifas = [];
+  for (const t of datosTarifas) {
+    tarifas.push(
+      await prisma.tarifa.upsert({
+        where: { id: t.id },
+        update: { nombre: t.nombre, valor: t.valor, duracionDias: t.duracionDias, activa: true },
+        create: { ...t, tenantId: academia.id },
+      })
+    );
+  }
+  await prisma.tarifa.deleteMany({
+    where: { tenantId: academia.id, id: { notIn: tarifas.map((t) => t.id) } },
+  });
+
+  const admin = await prisma.user.findUnique({ where: { email: "admin@ritmocentral.test" } });
+  const UN_DIA = 24 * 60 * 60 * 1000;
+  const medios = ["EFECTIVO", "TRANSFERENCIA", "TRANSFERENCIA", "TARJETA"];
+
+  // Días que le quedan a cada estudiante (negativo = vencida, null = sin
+  // pagos). La cuenta demo queda al día; dos estudiantes quedan en mora y una
+  // recién llegada todavía no ha pagado, para que el panel muestre los tres casos.
+  const diasRestantes = {
+    "estudiante@ritmocentral.test": 18,
+    "tomas@ritmocentral.test": -6,
+    "emilio@ritmocentral.test": -15,
+    "gabriela@ritmocentral.test": null,
+  };
+  let totalPagos = 0;
+  for (const [i, estudiante] of estudiantes.entries()) {
+    const restantes = estudiante.email in diasRestantes ? diasRestantes[estudiante.email] : 3 + ((i * 7) % 26);
+    if (restantes === null) continue;
+
+    const tarifa = i % 5 === 3 ? tarifas[2] : i % 3 === 1 ? tarifas[1] : tarifas[0];
+    // Historial de unos tres meses hacia atrás: cada pago empieza donde
+    // terminó el anterior y se registró ese mismo día.
+    const cantidad = Math.max(1, Math.round(90 / tarifa.duracionDias));
+    let hasta = new Date(Date.now() + restantes * UN_DIA);
+    const pagos = [];
+    for (let n = 0; n < cantidad; n++) {
+      const desde = new Date(hasta.getTime() - tarifa.duracionDias * UN_DIA);
+      pagos.push({
+        tenantId: academia.id,
+        estudianteId: estudiante.id,
+        tarifaId: tarifa.id,
+        nombreTarifa: tarifa.nombre,
+        monto: tarifa.valor,
+        duracionDias: tarifa.duracionDias,
+        medio: medios[Math.floor(aleatorio() * medios.length)],
+        vigenteDesde: desde,
+        vigenteHasta: hasta,
+        registradoPorId: admin.id,
+        registradoEn: desde,
+      });
+      hasta = desde;
+    }
+    await prisma.pago.createMany({ data: pagos });
+    totalPagos += pagos.length;
+  }
+
   // --- Otras academias, para el panel del SuperAdmin ---------------------------
   const otras = [
     { nombre: "Son de Barrio Escuela de Baile", nit: "901456789-2", estado: "ACTIVA", admin: "admin@sondebarrio.test" },
@@ -243,7 +311,7 @@ async function main() {
     await upsertUsuario(tenant.id, `Admin ${o.nombre}`, o.admin, "ADMIN_ACADEMIA", passwordHash);
   }
 
-  console.log(`Demo lista: ${totalClases} clases y ${totalReservas} reservas en ${academia.nombre}.`);
+  console.log(`Demo lista: ${totalClases} clases, ${totalReservas} reservas y ${totalPagos} pagos en ${academia.nombre}.`);
 }
 
 main()

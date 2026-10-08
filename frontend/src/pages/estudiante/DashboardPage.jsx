@@ -8,14 +8,15 @@ import StatCard from "../../components/ui/StatCard";
 import { Card, CardHeader, CardBody } from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+import AvisoMembresia from "../../components/AvisoMembresia";
 
 export default function DashboardPage() {
   const { token, usuario } = useAuth();
   const [datos, setDatos] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get("/clases", token), api.get("/reservas/mias", token)]).then(([clases, reservas]) =>
-      setDatos({ clases, reservas })
+    Promise.all([api.get("/clases", token), api.get("/reservas/mias", token), api.get("/pagos/mios", token)]).then(
+      ([clases, reservas, pagos]) => setDatos({ clases, reservas, membresia: pagos.membresia })
     );
   }, []);
 
@@ -44,6 +45,8 @@ export default function DashboardPage() {
     <div>
       <PageHeader title={`Hola, ${usuario?.nombre?.split(" ")[0] || ""}`} subtitle="Tu próxima clase te espera." />
 
+      <AvisoMembresia membresia={datos.membresia} />
+
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <StatCard icon={Ticket} label="Reservas activas" value={reservasActivas.length} tone="indigo" />
         <StatCard icon={CalendarDays} label="Clases con cupo" value={conCupo} tone="green" hint="disponibles ahora mismo" />
@@ -61,7 +64,7 @@ export default function DashboardPage() {
         />
         <CardBody>
           {proximaReserva ? (
-            <div className="rounded-xl bg-indigo-50 p-4">
+            <div className="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/40">
               <p className="font-medium text-gray-900 dark:text-gray-100">{proximaReserva.clase.ritmo.nombre}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">{proximaReserva.clase.salon.nombre}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">

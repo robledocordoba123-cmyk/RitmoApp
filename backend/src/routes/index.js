@@ -7,6 +7,8 @@ const reservaRoutes = require("./reserva.routes");
 const superadminRoutes = require("./superadmin.routes");
 const reporteRoutes = require("./reporte.routes");
 const usuarioRoutes = require("./usuario.routes");
+const tarifaRoutes = require("./tarifa.routes");
+const pagoRoutes = require("./pago.routes");
 
 const router = Router();
 
@@ -19,5 +21,7 @@ router.use("/reservas", reservaRoutes);
 router.use("/superadmin", superadminRoutes);
 router.use("/reportes", reporteRoutes);
 router.use("/usuarios", usuarioRoutes);
+router.use("/tarifas", tarifaRoutes);
+router.use("/pagos", pagoRoutes);
 
 module.exports = router;
