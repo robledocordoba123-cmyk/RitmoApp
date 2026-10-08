@@ -3,7 +3,7 @@ const prisma = require("./prisma");
 // Modelos cuyas filas pertenecen siempre a una sola academia. "users" queda
 // fuera a propósito: el login necesita buscar por correo sin conocer todavía
 // el tenant, y el SuperAdmin no tiene tenantId propio.
-const MODELOS_CON_TENANT = new Set(["salon", "ritmo", "clase", "reserva", "asistencia"]);
+const MODELOS_CON_TENANT = new Set(["salon", "ritmo", "clase", "reserva", "asistencia", "tarifa", "pago"]);
 
 const OPERACIONES_CON_WHERE = new Set([
   "findMany",

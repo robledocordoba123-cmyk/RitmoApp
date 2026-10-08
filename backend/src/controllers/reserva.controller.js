@@ -1,3 +1,5 @@
+const { estadoMembresia } = require("../utils/membresia");
+
 // RF-09 · HU-09: reservar un cupo. El punto crítico es RN-01 (no exceder el
 // cupo) bajo concurrencia real (dos estudiantes pidiendo el último cupo a la
 // vez). Se resuelve con un UPDATE condicional atómico: la fila solo se
@@ -9,6 +11,17 @@ async function reservar(req, res) {
 
   if (!claseId) {
     return res.status(400).json({ error: "claseId es obligatorio." });
+  }
+
+  // RN-05 · HU-13: sin membresía vigente no se reserva. El código permite
+  // que el frontend muestre el aviso de mora en lugar de un error genérico.
+  const membresia = await estadoMembresia(req.db, estudianteId);
+  if (membresia.estado !== "AL_DIA") {
+    return res.status(403).json({
+      error: "Tu membresía no está vigente. Acércate a la academia para registrar tu pago y poder reservar.",
+      codigo: "MEMBRESIA_VENCIDA",
+      membresia,
+    });
   }
 
   let resultado;

@@ -14,6 +14,7 @@ const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const EstudianteDashboard = lazy(() => import("./pages/estudiante/DashboardPage"));
 const CatalogoPage = lazy(() => import("./pages/estudiante/CatalogoPage"));
 const MisReservasPage = lazy(() => import("./pages/estudiante/MisReservasPage"));
+const MisPagosPage = lazy(() => import("./pages/estudiante/MisPagosPage"));
 
 const AdminDashboard = lazy(() => import("./pages/admin/DashboardPage"));
 const SalonesPage = lazy(() => import("./pages/admin/SalonesPage"));
@@ -21,6 +22,8 @@ const RitmosPage = lazy(() => import("./pages/admin/RitmosPage"));
 const ClasesPage = lazy(() => import("./pages/admin/ClasesPage"));
 const ReportesPage = lazy(() => import("./pages/admin/ReportesPage"));
 const EquipoPage = lazy(() => import("./pages/admin/EquipoPage"));
+const TarifasPage = lazy(() => import("./pages/admin/TarifasPage"));
+const PagosPage = lazy(() => import("./pages/admin/PagosPage"));
 
 const ProfesorDashboard = lazy(() => import("./pages/profesor/DashboardPage"));
 const MisClasesPage = lazy(() => import("./pages/profesor/MisClasesPage"));
@@ -76,6 +79,7 @@ export default function App() {
         {ruta("/estudiante/inicio", ["ESTUDIANTE"], EstudianteDashboard)}
         {ruta("/estudiante/catalogo", ["ESTUDIANTE"], CatalogoPage)}
         {ruta("/estudiante/reservas", ["ESTUDIANTE"], MisReservasPage)}
+        {ruta("/estudiante/pagos", ["ESTUDIANTE"], MisPagosPage)}
 
         {ruta("/admin/inicio", ["ADMIN_ACADEMIA"], AdminDashboard)}
         {ruta("/admin/salones", ["ADMIN_ACADEMIA"], SalonesPage)}
@@ -83,6 +87,8 @@ export default function App() {
         {ruta("/admin/clases", ["ADMIN_ACADEMIA"], ClasesPage)}
         {ruta("/admin/reportes", ["ADMIN_ACADEMIA"], ReportesPage)}
         {ruta("/admin/equipo", ["ADMIN_ACADEMIA"], EquipoPage)}
+        {ruta("/admin/tarifas", ["ADMIN_ACADEMIA"], TarifasPage)}
+        {ruta("/admin/pagos", ["ADMIN_ACADEMIA"], PagosPage)}
 
         {ruta("/profesor/inicio", ["PROFESOR"], ProfesorDashboard)}
         {ruta("/profesor/clases", ["PROFESOR"], MisClasesPage)}

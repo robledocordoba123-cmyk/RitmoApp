@@ -19,7 +19,7 @@ async function crearAcademia(overrides = {}) {
 // tests se llama cientos de veces y no aporta nada probar que bcrypt es lento.
 async function crearUsuario(tenantId, rol, overrides = {}) {
   const passwordHash = await bcrypt.hash(overrides.password || PASSWORD_PLANA, 4);
-  return prisma.user.create({
+  const usuario = await prisma.user.create({
     data: {
       tenantId,
       nombre: overrides.nombre || `Usuario ${rol}`,
@@ -28,6 +28,48 @@ async function crearUsuario(tenantId, rol, overrides = {}) {
       passwordHash,
       rol,
       activo: overrides.activo ?? true,
+    },
+  });
+
+  // Los estudiantes nacen con membresía vigente (RN-05) para que las pruebas
+  // de reserva, asistencia y reportes sigan probando lo suyo. Las pruebas de
+  // membresía piden { membresia: false } para empezar sin pagos.
+  if (rol === "ESTUDIANTE" && tenantId && overrides.membresia !== false) {
+    await darMembresia(tenantId, usuario.id);
+  }
+  return usuario;
+}
+
+async function crearTarifa(tenantId, overrides = {}) {
+  return prisma.tarifa.create({
+    data: {
+      tenantId,
+      nombre: overrides.nombre || "Mensualidad",
+      valor: overrides.valor ?? 120000,
+      duracionDias: overrides.duracionDias ?? 30,
+      activa: overrides.activa ?? true,
+    },
+  });
+}
+
+// Crea un pago directo en BD con la vigencia indicada (por defecto 30 días
+// desde hoy). Sirve para preparar estudiantes al día o vencidos.
+async function darMembresia(tenantId, estudianteId, { vigenteHasta } = {}) {
+  const tarifa = (await prisma.tarifa.findFirst({ where: { tenantId } })) || (await crearTarifa(tenantId));
+  const admin = await prisma.user.findFirst({ where: { tenantId } });
+  const hasta = vigenteHasta || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  return prisma.pago.create({
+    data: {
+      tenantId,
+      estudianteId,
+      tarifaId: tarifa.id,
+      nombreTarifa: tarifa.nombre,
+      monto: tarifa.valor,
+      duracionDias: tarifa.duracionDias,
+      medio: "EFECTIVO",
+      vigenteDesde: new Date(hasta.getTime() - tarifa.duracionDias * 24 * 60 * 60 * 1000),
+      vigenteHasta: hasta,
+      registradoPorId: admin.id,
     },
   });
 }
@@ -48,4 +90,4 @@ async function crearRitmo(tenantId, overrides = {}) {
   });
 }
 
-module.exports = { crearAcademia, crearUsuario, crearSalon, crearRitmo, PASSWORD_PLANA };
+module.exports = { crearAcademia, crearUsuario, crearSalon, crearRitmo, crearTarifa, darMembresia, PASSWORD_PLANA };

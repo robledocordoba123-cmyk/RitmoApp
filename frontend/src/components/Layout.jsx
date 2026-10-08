@@ -17,6 +17,8 @@ import {
   Sun,
   Moon,
   Users2,
+  Tags,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -33,6 +35,8 @@ const ENLACES_POR_ROL = {
     { to: "/admin/salones", label: "Salones", icon: DoorOpen },
     { to: "/admin/ritmos", label: "Ritmos", icon: Music4 },
     { to: "/admin/equipo", label: "Equipo", icon: Users2 },
+    { to: "/admin/tarifas", label: "Tarifas", icon: Tags },
+    { to: "/admin/pagos", label: "Pagos", icon: Wallet },
     { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
   ],
   PROFESOR: [
@@ -43,6 +47,7 @@ const ENLACES_POR_ROL = {
     { to: "/estudiante/inicio", label: "Inicio", icon: LayoutDashboard },
     { to: "/estudiante/catalogo", label: "Catálogo", icon: CalendarDays },
     { to: "/estudiante/reservas", label: "Mis reservas", icon: Ticket },
+    { to: "/estudiante/pagos", label: "Mis pagos", icon: Wallet },
   ],
 };
 
