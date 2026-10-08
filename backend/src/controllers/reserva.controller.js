@@ -1,4 +1,4 @@
-// RF-06 / CU-01: reservar un cupo. El punto crítico es RN-01 (no exceder el
+// RF-09 · HU-09: reservar un cupo. El punto crítico es RN-01 (no exceder el
 // cupo) bajo concurrencia real (dos estudiantes pidiendo el último cupo a la
 // vez). Se resuelve con un UPDATE condicional atómico: la fila solo se
 // decrementa si en ESE momento todavía queda cupo, y Postgres serializa esa

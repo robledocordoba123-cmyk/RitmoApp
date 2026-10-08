@@ -1,4 +1,4 @@
-// RF-08: reporte de ocupación por salón en un rango de fechas. Devuelve los
+// RF-20: reporte de ocupación por salón en un rango de fechas. Devuelve los
 // datos listos para graficar (porcentaje de ocupación por salón); el
 // frontend decide cómo dibujarlos cuando exista.
 

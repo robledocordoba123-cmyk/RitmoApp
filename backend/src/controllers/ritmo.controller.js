@@ -1,4 +1,4 @@
-// RF-04: catálogo de estilos de baile que ofrece cada academia.
+// RF-18: catálogo de estilos de baile que ofrece cada academia.
 
 async function listar(req, res) {
   const ritmos = await req.db.ritmo.findMany({ orderBy: { nombre: "asc" } });

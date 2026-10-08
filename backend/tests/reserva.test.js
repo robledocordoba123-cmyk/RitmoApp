@@ -44,8 +44,8 @@ async function crearClase(cupoMaximo, overrides = {}) {
   return res.body;
 }
 
-describe("RF-06 / RN-01: reserva de cupo", () => {
-  test("reserva correctamente y decrementa el cupo", async () => {
+describe("RF-09 · HU-09: reserva de cupo (RN-01, RN-16, RNF-02)", () => {
+  test("CP-026 · reserva correctamente y decrementa el cupo", async () => {
     const clase = await crearClase(3);
     const estudiante = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "est1@reserva.test" });
     const tokenEst = await login("est1@reserva.test");
@@ -57,7 +57,7 @@ describe("RF-06 / RN-01: reserva de cupo", () => {
     expect(claseActualizada.cuposDisponibles).toBe(2);
   });
 
-  test("rechaza reservar dos veces la misma clase sin perder un cupo (409)", async () => {
+  test("CP-027 · rechaza reservar dos veces la misma clase sin perder un cupo (409)", async () => {
     const clase = await crearClase(3);
     const estudiante = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "est2@reserva.test" });
     const tokenEst = await login("est2@reserva.test");
@@ -71,7 +71,7 @@ describe("RF-06 / RN-01: reserva de cupo", () => {
     expect(claseActualizada.cuposDisponibles).toBe(2); // solo se descontó una vez
   });
 
-  test("rechaza reservar cuando ya no hay cupo (400)", async () => {
+  test("CP-028 · rechaza reservar cuando ya no hay cupo (400)", async () => {
     const clase = await crearClase(1);
     const est1 = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "est3@reserva.test" });
     const est2 = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "est4@reserva.test" });
@@ -85,7 +85,7 @@ describe("RF-06 / RN-01: reserva de cupo", () => {
     expect(segundo.status).toBe(400);
   });
 
-  test("RNF-02: bajo concurrencia real, dos estudiantes pidiendo el último cupo — solo uno gana", async () => {
+  test("CP-029 · RNF-02: bajo concurrencia real, dos estudiantes pidiendo el último cupo — solo uno gana", async () => {
     const clase = await crearClase(1);
     const est1 = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "race1@reserva.test" });
     const est2 = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "race2@reserva.test" });
@@ -108,7 +108,7 @@ describe("RF-06 / RN-01: reserva de cupo", () => {
   });
 });
 
-describe("Cancelación de reserva por el estudiante", () => {
+describe("RF-10 · HU-10: cancelación de reserva (RN-10)", () => {
   async function reservarComo(email, clase) {
     await crearUsuario(tenant.id, "ESTUDIANTE", { email });
     const token = await login(email);
@@ -120,7 +120,7 @@ describe("Cancelación de reserva por el estudiante", () => {
     return request(app).patch(`/api/reservas/${id}/cancelar`).set("Authorization", `Bearer ${token}`);
   }
 
-  test("cancela la reserva y el cupo vuelve a quedar libre", async () => {
+  test("CP-030 · cancela la reserva y el cupo vuelve a quedar libre", async () => {
     const clase = await crearClase(1);
     const { token, reserva } = await reservarComo("cancela@reserva.test", clase);
 
@@ -133,7 +133,7 @@ describe("Cancelación de reserva por el estudiante", () => {
     expect(reservaActualizada.estado).toBe("CANCELADA");
   });
 
-  test("cancelar dos veces no devuelve el cupo dos veces (409)", async () => {
+  test("CP-031 · cancelar dos veces no devuelve el cupo dos veces (409)", async () => {
     const clase = await crearClase(2);
     const { token, reserva } = await reservarComo("doble@reserva.test", clase);
 
@@ -145,7 +145,7 @@ describe("Cancelación de reserva por el estudiante", () => {
     expect(claseActualizada.cuposDisponibles).toBe(2);
   });
 
-  test("después de cancelar, el estudiante puede volver a reservar la misma clase", async () => {
+  test("CP-032 · después de cancelar, el estudiante puede volver a reservar la misma clase", async () => {
     const clase = await crearClase(1);
     const { token, reserva } = await reservarComo("vuelve@reserva.test", clase);
     await cancelarReserva(reserva.id, token);
@@ -158,7 +158,7 @@ describe("Cancelación de reserva por el estudiante", () => {
     expect(claseActualizada.cuposDisponibles).toBe(0);
   });
 
-  test("un estudiante no puede cancelar la reserva de otro (404)", async () => {
+  test("CP-033 · un estudiante no puede cancelar la reserva de otro (404)", async () => {
     const clase = await crearClase(2);
     const { reserva } = await reservarComo("duena@reserva.test", clase);
     await crearUsuario(tenant.id, "ESTUDIANTE", { email: "intrusa@reserva.test" });
@@ -168,7 +168,7 @@ describe("Cancelación de reserva por el estudiante", () => {
     expect(res.status).toBe(404);
   });
 
-  test("no se puede cancelar una clase que ya empezó (400)", async () => {
+  test("CP-034 · no se puede cancelar una clase que ya empezó (400)", async () => {
     const clase = await crearClase(2);
     const { token, reserva } = await reservarComo("tarde@reserva.test", clase);
     await prisma.clase.update({ where: { id: clase.id }, data: { fechaHoraInicio: new Date(Date.now() - 60 * 1000) } });

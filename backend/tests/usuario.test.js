@@ -14,8 +14,8 @@ afterAll(async () => {
 
 // El admin necesita esta lista para poder asignar un profesor al programar
 // una clase (RF-05).
-describe("GET /api/usuarios: listar por rol", () => {
-  test("el admin lista solo los profesores de su propia academia", async () => {
+describe("RF-17 · HU-17: listar profesores y estudiantes", () => {
+  test("CP-015 · el admin lista solo los profesores de su propia academia", async () => {
     const academiaA = await crearAcademia();
     const academiaB = await crearAcademia();
     await crearUsuario(academiaA.id, "ADMIN_ACADEMIA", { email: "admin@usuarios.test" });
@@ -30,7 +30,7 @@ describe("GET /api/usuarios: listar por rol", () => {
     expect(res.body[0].nombre).toBe("Profe A");
   });
 
-  test("rechaza un rol no consultable (400)", async () => {
+  test("CP-016 · rechaza un rol no consultable (400)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "admin2@usuarios.test" });
     const token = await login("admin2@usuarios.test");
@@ -42,8 +42,8 @@ describe("GET /api/usuarios: listar por rol", () => {
 
 // El admin es quien da de alta a profesores y estudiantes de su academia;
 // no existe autorregistro público para estos dos roles.
-describe("POST /api/usuarios: el admin crea profesores y estudiantes", () => {
-  test("crea un profesor en la academia del admin", async () => {
+describe("RF-17 · HU-17: el admin crea profesores y estudiantes", () => {
+  test("CP-017 · crea un profesor en la academia del admin", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "admin3@usuarios.test" });
     const token = await login("admin3@usuarios.test");
@@ -61,7 +61,7 @@ describe("POST /api/usuarios: el admin crea profesores y estudiantes", () => {
     expect(creado.tenantId).toBe(academia.id);
   });
 
-  test("rechaza un correo ya usado (409)", async () => {
+  test("CP-018 · rechaza un correo ya usado (409)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "admin4@usuarios.test" });
     await crearUsuario(academia.id, "ESTUDIANTE", { email: "repetido2@usuarios.test" });
@@ -75,7 +75,7 @@ describe("POST /api/usuarios: el admin crea profesores y estudiantes", () => {
     expect(res.status).toBe(409);
   });
 
-  test("rechaza crear un rol no permitido, como ADMIN_ACADEMIA (400)", async () => {
+  test("CP-019 · rechaza crear un rol no permitido, como ADMIN_ACADEMIA (400)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "admin5@usuarios.test" });
     const token = await login("admin5@usuarios.test");
@@ -88,7 +88,7 @@ describe("POST /api/usuarios: el admin crea profesores y estudiantes", () => {
     expect(res.status).toBe(400);
   });
 
-  test("un profesor no puede crear usuarios (403)", async () => {
+  test("CP-020 · un profesor no puede crear usuarios (403)", async () => {
     const academia = await crearAcademia();
     await crearUsuario(academia.id, "PROFESOR", { email: "profe6@usuarios.test" });
     const token = await login("profe6@usuarios.test");

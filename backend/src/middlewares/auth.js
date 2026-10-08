@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-// Verifica el JWT y adjunta { id, rol, tenantId } en req.user (RF-02).
+// Verifica el JWT y adjunta { id, rol, tenantId } en req.user (RF-04).
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || "";
   const [scheme, token] = header.split(" ");

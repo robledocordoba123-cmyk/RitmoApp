@@ -45,8 +45,8 @@ async function crearClaseConReserva(fechaHoraInicio) {
   return clase;
 }
 
-describe("RF-07 / CU-03: registro de asistencia", () => {
-  test("el profesor asignado registra asistencia de una clase de hoy", async () => {
+describe("RF-16 · HU-16: registro de asistencia (RN-12)", () => {
+  test("CP-035 · el profesor asignado registra asistencia de una clase de hoy", async () => {
     const haceDosHoras = new Date(Date.now() - 2 * 60 * 60 * 1000);
     const clase = await crearClaseConReserva(haceDosHoras);
 
@@ -59,7 +59,7 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
     expect(res.body[0].estado).toBe("ASISTIO");
   });
 
-  test("rechaza registrar asistencia de una clase que no es de hoy (400)", async () => {
+  test("CP-036 · rechaza registrar asistencia de una clase que no es de hoy (400)", async () => {
     const otroDia = new Date("2099-03-01T18:00:00.000Z");
     const clase = await crearClaseConReserva(otroDia);
 
@@ -71,7 +71,7 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
     expect(res.status).toBe(400);
   });
 
-  test("rechaza a un profesor que no es el asignado a la clase (403)", async () => {
+  test("CP-037 · rechaza a un profesor que no es el asignado a la clase (403)", async () => {
     const otroProfesor = await crearUsuario(tenant.id, "PROFESOR", { email: "otroprofe@asistencia.test" });
     const tokenOtroProfesor = await login("otroprofe@asistencia.test");
     const clase = await crearClaseConReserva(new Date(Date.now() - 60 * 60 * 1000));
@@ -84,7 +84,7 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
     expect(res.status).toBe(403);
   });
 
-  test("rechaza marcar asistencia de un estudiante sin reserva confirmada (400)", async () => {
+  test("CP-038 · rechaza marcar asistencia de un estudiante sin reserva confirmada (400)", async () => {
     const clase = await crearClaseConReserva(new Date(Date.now() - 60 * 60 * 1000));
     const otroEstudiante = await crearUsuario(tenant.id, "ESTUDIANTE", { email: "sinreserva@asistencia.test" });
 
@@ -97,7 +97,7 @@ describe("RF-07 / CU-03: registro de asistencia", () => {
   });
 
   // Regresión: antes se comparaba el día en UTC y esto devolvía 400.
-  test("acepta asistencia de una clase nocturna aunque en UTC ya sea el día siguiente", async () => {
+  test("CP-039 · acepta asistencia de una clase nocturna aunque en UTC ya sea el día siguiente", async () => {
     // Solo se congela el reloj (Date); los temporizadores reales siguen
     // funcionando para que Supertest y el driver de Postgres no se queden colgados.
     jest.useFakeTimers({

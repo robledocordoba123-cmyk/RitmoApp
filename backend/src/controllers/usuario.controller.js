@@ -5,7 +5,7 @@ const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require(".
 const SALT_ROUNDS = 10;
 
 // Necesario para que el admin pueda elegir un profesor al programar una
-// clase (RF-05). users no está en el cliente aislado por tenant (ver
+// clase (RF-14). users no está en el cliente aislado por tenant (ver
 // tenantPrismaClient.js), así que se filtra a mano por tenantId.
 async function listarPorRol(req, res) {
   const { rol } = req.query;

@@ -1,4 +1,4 @@
-// RF-07 / CU-03: el profesor registra asistencia. Mezcla dos restricciones:
+// RF-16 · HU-16: el profesor registra asistencia. Mezcla dos restricciones:
 // de permiso (solo el profesor asignado a la clase) y de tiempo (solo el día
 // de la clase, no antes ni después).
 

@@ -35,14 +35,14 @@ function crearClasePayload(overrides = {}) {
   };
 }
 
-describe("RF-05: programación de clases", () => {
-  test("crea una clase válida", async () => {
+describe("RF-14 · HU-14: programación de clases (RN-02, RN-03)", () => {
+  test("CP-021 · crea una clase válida", async () => {
     const res = await request(app).post("/api/clases").set("Authorization", `Bearer ${tokenAdmin}`).send(crearClasePayload());
     expect(res.status).toBe(201);
     expect(res.body.cuposDisponibles).toBe(5);
   });
 
-  test("rechaza un cupo mayor que la capacidad del salón (400)", async () => {
+  test("CP-022 · rechaza un cupo mayor que la capacidad del salón (400)", async () => {
     // El salón de prueba tiene capacidad 20.
     const res = await request(app)
       .post("/api/clases")
@@ -51,7 +51,7 @@ describe("RF-05: programación de clases", () => {
     expect(res.status).toBe(400);
   });
 
-  test("RN-02: rechaza un cruce de horario en el mismo salón (409)", async () => {
+  test("CP-023 · RN-02: rechaza un cruce de horario en el mismo salón (409)", async () => {
     await request(app).post("/api/clases").set("Authorization", `Bearer ${tokenAdmin}`).send(crearClasePayload());
 
     const otroProfesor = await crearUsuario((await prisma.tenant.findFirst()).id, "PROFESOR", { email: "profe2@clase.test" });
@@ -70,7 +70,7 @@ describe("RF-05: programación de clases", () => {
     expect(res.body.error).toMatch(/RN-02/);
   });
 
-  test("RN-03: rechaza al mismo profesor en dos salones a la vez (409)", async () => {
+  test("CP-024 · RN-03: rechaza al mismo profesor en dos salones a la vez (409)", async () => {
     await request(app).post("/api/clases").set("Authorization", `Bearer ${tokenAdmin}`).send(crearClasePayload());
 
     const otroSalon = await crearSalon((await prisma.tenant.findFirst()).id, { nombre: "Salón 2" });
@@ -89,7 +89,7 @@ describe("RF-05: programación de clases", () => {
     expect(res.body.error).toMatch(/RN-03/);
   });
 
-  test("permite horarios distintos sin cruce", async () => {
+  test("CP-025 · permite horarios distintos sin cruce", async () => {
     await request(app).post("/api/clases").set("Authorization", `Bearer ${tokenAdmin}`).send(crearClasePayload());
 
     const res = await request(app)
