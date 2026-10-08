@@ -177,3 +177,45 @@ describe("RF-10 · HU-10: cancelación de reserva (RN-10)", () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe("RF-09 · HU-09: no reservar dos clases que se cruzan (RN-16)", () => {
+  const UNA_HORA = 60 * 60 * 1000;
+
+  async function reservar(token, claseId) {
+    return request(app).post("/api/reservas").set("Authorization", `Bearer ${token}`).send({ claseId });
+  }
+
+  test("CP-084 · rechaza una clase que se cruza con otra ya reservada, sin descontar cupo (HU-09-CA-03)", async () => {
+    const otroProfe = await crearUsuario(tenant.id, "PROFESOR");
+    const primera = await crearClase(5);
+    // Empieza 30 minutos después de la primera: se cruzan.
+    const segunda = await crearClase(5, {
+      profesorId: otroProfe.id,
+      fechaHoraInicio: new Date(EN_30_DIAS + UNA_HORA / 2).toISOString(),
+      fechaHoraFin: new Date(EN_30_DIAS + UNA_HORA * 1.5).toISOString(),
+    });
+    await crearUsuario(tenant.id, "ESTUDIANTE", { email: "cruce@reserva.test" });
+    const token = await login("cruce@reserva.test");
+
+    expect((await reservar(token, primera.id)).status).toBe(201);
+    const res = await reservar(token, segunda.id);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/se cruza/);
+    expect((await prisma.clase.findUnique({ where: { id: segunda.id } })).cuposDisponibles).toBe(5);
+  });
+
+  test("CP-085 · permite reservar una clase que empieza justo cuando termina la otra", async () => {
+    const otroProfe = await crearUsuario(tenant.id, "PROFESOR");
+    const primera = await crearClase(5);
+    const seguida = await crearClase(5, {
+      profesorId: otroProfe.id,
+      fechaHoraInicio: FIN_CLASE,
+      fechaHoraFin: new Date(EN_30_DIAS + UNA_HORA * 2).toISOString(),
+    });
+    await crearUsuario(tenant.id, "ESTUDIANTE", { email: "seguidas@reserva.test" });
+    const token = await login("seguidas@reserva.test");
+
+    expect((await reservar(token, primera.id)).status).toBe(201);
+    expect((await reservar(token, seguida.id)).status).toBe(201);
+  });
+});

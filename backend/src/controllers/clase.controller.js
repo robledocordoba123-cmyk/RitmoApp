@@ -68,9 +68,30 @@ async function crear(req, res) {
 }
 
 // RF-08 (catálogo): el estudiante consulta las clases con cupos en tiempo real.
+// RF-08 · HU-08: filtros opcionales para el catálogo. Sin parámetros
+// devuelve todas las clases programadas (lo que usa el administrador).
 async function listar(req, res) {
+  const { ritmoId, fecha, soloFuturas } = req.query;
+  const where = { estado: "PROGRAMADA" };
+
+  if (ritmoId) where.ritmoId = ritmoId;
+  if (fecha) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      return res.status(400).json({ error: "La fecha debe tener el formato YYYY-MM-DD." });
+    }
+    // Día de calendario en Colombia (UTC-5, sin horario de verano).
+    const inicioDia = new Date(`${fecha}T00:00:00-05:00`);
+    if (Number.isNaN(inicioDia.getTime())) {
+      return res.status(400).json({ error: "La fecha no es válida." });
+    }
+    where.fechaHoraInicio = { gte: inicioDia, lt: new Date(inicioDia.getTime() + 24 * 60 * 60 * 1000) };
+  }
+  if (soloFuturas === "true") {
+    where.fechaHoraInicio = { ...where.fechaHoraInicio, gt: new Date() };
+  }
+
   const clases = await req.db.clase.findMany({
-    where: { estado: "PROGRAMADA" },
+    where,
     include: { ritmo: true, salon: true, profesor: { select: { id: true, nombre: true } } },
     orderBy: { fechaHoraInicio: "asc" },
   });

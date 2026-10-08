@@ -20,15 +20,21 @@ async function cambiarEstadoTenant(req, res) {
     return res.status(400).json({ error: "estado debe ser ACTIVA o SUSPENDIDA." });
   }
 
-  try {
-    const tenant = await prisma.tenant.update({ where: { id }, data: { estado } });
-    res.json(tenant);
-  } catch (err) {
-    if (err.code === "P2025") {
-      return res.status(404).json({ error: "Academia no encontrada." });
-    }
-    throw err;
+  const actual = await prisma.tenant.findUnique({ where: { id } });
+  if (!actual) {
+    return res.status(404).json({ error: "Academia no encontrada." });
   }
+  // HU-03-CA-02: si ya está en ese estado se avisa en lugar de "guardar"
+  // un cambio que no ocurrió.
+  if (actual.estado === estado) {
+    return res.status(409).json({
+      error: estado === "SUSPENDIDA" ? "Esta academia ya está desactivada." : "Esta academia ya está activa.",
+    });
+  }
+
+  // RN-06: solo cambia el estado; ningún dato de la academia se borra.
+  const tenant = await prisma.tenant.update({ where: { id }, data: { estado } });
+  res.json(tenant);
 }
 
 module.exports = { listarTenants, cambiarEstadoTenant };

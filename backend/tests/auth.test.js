@@ -130,3 +130,20 @@ describe("RF-04 · HU-04: inicio de sesión", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("RNF-07 · HU-04: límite de intentos de inicio de sesión", () => {
+  test("CP-081 · después de 10 intentos fallidos bloquea el siguiente con 429 (HU-04-CA-02)", async () => {
+    const academia = await crearAcademia();
+    await crearUsuario(academia.id, "ADMIN_ACADEMIA", { email: "fuerza@bruta.test" });
+    // La cabecera activa el límite solo en esta prueba (ver middlewares/rateLimit.js).
+    const intentar = (password) =>
+      request(app).post("/api/auth/login").set("X-Probar-Limite", "1").send({ email: "fuerza@bruta.test", password });
+
+    for (let i = 0; i < 10; i++) {
+      expect((await intentar("ClaveIncorrecta")).status).toBe(401);
+    }
+    const bloqueado = await intentar("Prueba123!");
+    expect(bloqueado.status).toBe(429);
+    expect(bloqueado.body.error).toMatch(/15 minutos/);
+  });
+});
