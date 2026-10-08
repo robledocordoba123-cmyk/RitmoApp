@@ -87,6 +87,7 @@ model User {
   asistenciasComoEstudiante Asistencia[] @relation("AsistenciaEstudiante")
   pagos               Pago[]       @relation("PagosEstudiante")
   pagosRegistrados    Pago[]       @relation("PagosRegistradosPor")
+  tokensRecuperacion  TokenRecuperacion[]
 
   @@index([tenantId])
   @@map("users")
@@ -234,4 +235,20 @@ model Pago {
   @@index([tenantId])
   @@index([estudianteId, vigenteHasta])
   @@map("pagos")
+}
+
+// Enlace para recuperar la contraseña. RF-05 · HU-05, RN-07: vence a los 30
+// minutos y sirve una sola vez. Se guarda solo el hash SHA-256 del token: si
+// alguien leyera la base de datos, no podría usar los enlaces pendientes.
+model TokenRecuperacion {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiraEn  DateTime
+  usadoEn   DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("tokens_recuperacion")
 }

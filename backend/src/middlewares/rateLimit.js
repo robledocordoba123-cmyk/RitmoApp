@@ -25,4 +25,15 @@ const limiteRegistro = rateLimit({
   message: { error: "Demasiados registros desde esta conexión. Intenta más tarde." },
 });
 
-module.exports = { limiteLogin, limiteRegistro };
+// Recuperar contraseña envía correos: se limita para que nadie pueda usar el
+// formulario para llenar de correos la bandeja de otra persona.
+const limiteRecuperacion = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === "test",
+  message: { error: "Demasiadas solicitudes de recuperación. Intenta de nuevo en 15 minutos." },
+});
+
+module.exports = { limiteLogin, limiteRegistro, limiteRecuperacion };
