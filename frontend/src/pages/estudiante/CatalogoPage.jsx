@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { CalendarDays, DoorOpen, User, Sparkles } from "lucide-react";
+import { CalendarDays, DoorOpen, User, Sparkles, SearchX } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -14,18 +14,29 @@ export default function CatalogoPage() {
   const [clases, setClases] = useState(null);
   const [reservandoId, setReservandoId] = useState(null);
   const [membresia, setMembresia] = useState(null);
+  // RF-08 · HU-08: filtros por ritmo y por día. Los aplica la API.
+  const [filtros, setFiltros] = useState({ ritmoId: "", fecha: "" });
+  const [ritmos, setRitmos] = useState([]);
+  const hayFiltros = Boolean(filtros.ritmoId || filtros.fecha);
 
   async function cargar() {
     // Solo las clases que aún no empiezan: las pasadas ya no se pueden reservar.
-    const ahora = new Date();
-    const [todas, pagos] = await Promise.all([api.get("/clases", token), api.get("/pagos/mios", token)]);
-    setClases(todas.filter((clase) => new Date(clase.fechaHoraInicio) > ahora));
+    const parametros = new URLSearchParams({ soloFuturas: "true" });
+    if (filtros.ritmoId) parametros.set("ritmoId", filtros.ritmoId);
+    if (filtros.fecha) parametros.set("fecha", filtros.fecha);
+    const [lista, pagos] = await Promise.all([api.get(`/clases?${parametros}`, token), api.get("/pagos/mios", token)]);
+    setClases(lista);
     setMembresia(pagos.membresia);
+    // Las opciones de ritmo salen de la primera carga, sin filtros.
+    if (!hayFiltros) {
+      setRitmos([...new Map(lista.map((c) => [c.ritmo.id, c.ritmo])).values()].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+    }
   }
 
   useEffect(() => {
     cargar();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtros]);
 
   async function reservar(claseId) {
     setReservandoId(claseId);
@@ -46,10 +57,50 @@ export default function CatalogoPage() {
 
       <AvisoMembresia membresia={membresia} />
 
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex flex-col gap-1">
+          Ritmo
+          <select
+            value={filtros.ritmoId}
+            onChange={(e) => setFiltros({ ...filtros, ritmoId: e.target.value })}
+            className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+          >
+            <option value="">Todos los ritmos</option>
+            {ritmos.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex flex-col gap-1">
+          Día
+          <input
+            type="date"
+            value={filtros.fecha}
+            onChange={(e) => setFiltros({ ...filtros, fecha: e.target.value })}
+            className="rounded-lg border border-gray-300 px-2.5 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+          />
+        </label>
+        {hayFiltros && (
+          <button
+            type="button"
+            onClick={() => setFiltros({ ritmoId: "", fecha: "" })}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 pb-2"
+          >
+            Quitar filtros
+          </button>
+        )}
+      </div>
+
       {clases === null ? (
         <SkeletonList />
       ) : clases.length === 0 ? (
-        <EmptyState icon={CalendarDays} title="No hay clases programadas todavía" />
+        hayFiltros ? (
+          <EmptyState icon={SearchX} title="Sin resultados" description="No hay clases con esos filtros. Prueba con otro ritmo u otro día." />
+        ) : (
+          <EmptyState icon={CalendarDays} title="No hay clases programadas todavía" />
+        )
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {clases.map((clase) => {

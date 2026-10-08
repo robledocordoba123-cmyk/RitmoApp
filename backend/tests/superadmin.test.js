@@ -44,3 +44,28 @@ describe("RF-02 y RF-03 · HU-02 y HU-03: panel del SuperAdministrador", () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe("RF-03 · HU-03: desactivar una academia sin borrar sus datos (RN-06)", () => {
+  function cambiarEstado(estado) {
+    return request(app)
+      .patch(`/api/superadmin/tenants/${academia.id}/estado`)
+      .set("Authorization", `Bearer ${tokenSuper}`)
+      .send({ estado });
+  }
+
+  test("CP-079 · avisa si la academia ya estaba desactivada (HU-03-CA-02)", async () => {
+    expect((await cambiarEstado("SUSPENDIDA")).status).toBe(200);
+
+    const otraVez = await cambiarEstado("SUSPENDIDA");
+    expect(otraVez.status).toBe(409);
+    expect(otraVez.body.error).toMatch(/ya está desactivada/);
+  });
+
+  test("CP-080 · al reactivarla conserva sus datos y sus usuarios vuelven a entrar (HU-03-CA-03)", async () => {
+    await cambiarEstado("SUSPENDIDA");
+    expect((await cambiarEstado("ACTIVA")).status).toBe(200);
+
+    expect(await prisma.user.count({ where: { tenantId: academia.id } })).toBe(1);
+    expect(await login("admin@super.test")).toBeDefined();
+  });
+});

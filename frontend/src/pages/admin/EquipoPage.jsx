@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Users2, Plus, GraduationCap, User } from "lucide-react";
+import { Users2, Plus, GraduationCap, User, Pencil, Power } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -21,7 +21,10 @@ export default function EquipoPage() {
   const [enviando, setEnviando] = useState(false);
 
   async function cargar() {
-    const [p, e] = await Promise.all([api.get("/usuarios?rol=PROFESOR", token), api.get("/usuarios?rol=ESTUDIANTE", token)]);
+    const [p, e] = await Promise.all([
+      api.get("/usuarios?rol=PROFESOR&incluirInactivos=true", token),
+      api.get("/usuarios?rol=ESTUDIANTE&incluirInactivos=true", token),
+    ]);
     setProfesores(p);
     setEstudiantes(e);
   }
@@ -119,22 +122,104 @@ export default function EquipoPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {lista.map((u) => (
-            <Card key={u.id} hover>
-              <CardBody className="pt-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white font-semibold text-sm">
-                    {u.nombre.slice(0, 2).toUpperCase()}
-                  </div>
-                  <Badge color="indigo">{u.rol === "PROFESOR" ? "Profesor" : "Estudiante"}</Badge>
-                </div>
-                <p className="font-medium text-gray-900 dark:text-gray-100 mt-3">{u.nombre}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{u.email}</p>
-              </CardBody>
-            </Card>
+            <TarjetaPersona key={u.id} persona={u} token={token} alCambiar={cargar} />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+// RF-17 · HU-17: editar nombre y correo, y desactivar o reactivar. Nadie se
+// borra: el historial de reservas, asistencias y pagos se conserva.
+function TarjetaPersona({ persona, token, alCambiar }) {
+  const [editando, setEditando] = useState(false);
+  const [datos, setDatos] = useState({ nombre: persona.nombre, email: persona.email });
+  const [guardando, setGuardando] = useState(false);
+
+  async function guardar(cambios, mensaje) {
+    setGuardando(true);
+    try {
+      await api.patch(`/usuarios/${persona.id}`, cambios, token);
+      toast.success(mensaje);
+      setEditando(false);
+      await alCambiar();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  const botonIcono = "text-gray-300 hover:text-indigo-600 transition disabled:opacity-40";
+
+  return (
+    <Card hover={!editando}>
+      <CardBody className={`pt-5 ${persona.activo ? "" : "opacity-60"}`}>
+        <div className="flex items-start justify-between">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white font-semibold text-sm">
+            {persona.nombre.slice(0, 2).toUpperCase()}
+          </div>
+          <div className="flex items-center gap-2">
+            {persona.activo ? <Badge color="indigo">{persona.rol === "PROFESOR" ? "Profesor" : "Estudiante"}</Badge> : <Badge>Inactivo</Badge>}
+            <button type="button" onClick={() => setEditando((v) => !v)} className={botonIcono} title="Editar" disabled={guardando}>
+              <Pencil size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                guardar(
+                  { activo: !persona.activo },
+                  persona.activo ? `${persona.nombre} quedó desactivado.` : `${persona.nombre} quedó activo de nuevo.`
+                )
+              }
+              className={botonIcono}
+              title={persona.activo ? "Desactivar" : "Reactivar"}
+              disabled={guardando}
+            >
+              <Power size={15} />
+            </button>
+          </div>
+        </div>
+
+        {editando ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              guardar(datos, "Datos actualizados.");
+            }}
+            className="mt-3 space-y-2"
+          >
+            <Campo label="Nombre" value={datos.nombre} onChange={(e) => setDatos({ ...datos, nombre: e.target.value })} />
+            <Campo label="Correo" type="email" value={datos.email} onChange={(e) => setDatos({ ...datos, email: e.target.value })} />
+            <div className="flex gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={guardando}
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                Guardar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDatos({ nombre: persona.nombre, email: persona.email });
+                  setEditando(false);
+                }}
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <p className="font-medium text-gray-900 dark:text-gray-100 mt-3">{persona.nombre}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{persona.email}</p>
+          </>
+        )}
+      </CardBody>
+    </Card>
   );
 }
 

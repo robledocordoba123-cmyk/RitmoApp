@@ -43,6 +43,25 @@ async function reservar(req, res) {
         return { tipo: "ya_reservada" };
       }
 
+      // RN-16: el estudiante no puede estar en dos clases a la vez. Dos
+      // franjas se cruzan si una empieza antes de que la otra termine.
+      const cruce = await tx.reserva.findFirst({
+        where: {
+          estudianteId,
+          estado: "CONFIRMADA",
+          claseId: { not: claseId },
+          clase: {
+            estado: "PROGRAMADA",
+            fechaHoraInicio: { lt: clase.fechaHoraFin },
+            fechaHoraFin: { gt: clase.fechaHoraInicio },
+          },
+        },
+        include: { clase: { include: { ritmo: true } } },
+      });
+      if (cruce) {
+        return { tipo: "cruce", clase: cruce.clase };
+      }
+
       const decremento = await tx.clase.updateMany({
         where: { id: claseId, cuposDisponibles: { gt: 0 } },
         data: { cuposDisponibles: { decrement: 1 } },
@@ -84,6 +103,10 @@ async function reservar(req, res) {
       return res.status(400).json({ error: "No quedan cupos disponibles para esta clase." });
     case "ya_reservada":
       return res.status(409).json({ error: "Ya tienes una reserva para esta clase." });
+    case "cruce":
+      return res.status(409).json({
+        error: `Ya tienes reservada una clase de ${resultado.clase.ritmo.nombre} que se cruza con este horario.`,
+      });
     default:
       return res.status(201).json(resultado.reserva);
   }

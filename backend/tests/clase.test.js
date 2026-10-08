@@ -104,3 +104,51 @@ describe("RF-14 · HU-14: programación de clases (RN-02, RN-03)", () => {
     expect(res.status).toBe(201);
   });
 });
+
+describe("RF-08 · HU-08: catálogo con filtros por ritmo y día", () => {
+  async function clase(ritmoId, inicioISO) {
+    const inicio = new Date(inicioISO);
+    return prisma.clase.create({
+      data: {
+        tenantId: salon.tenantId,
+        ritmoId,
+        salonId: salon.id,
+        profesorId: profesor.id,
+        cupoMaximo: 5,
+        cuposDisponibles: 5,
+        fechaHoraInicio: inicio,
+        fechaHoraFin: new Date(inicio.getTime() + 60 * 60 * 1000),
+      },
+    });
+  }
+
+  function listar(query) {
+    return request(app).get(`/api/clases?${query}`).set("Authorization", `Bearer ${tokenAdmin}`);
+  }
+
+  test("CP-082 · filtra por ritmo y por día de calendario en Colombia (HU-08-CA-01)", async () => {
+    const bachata = await crearRitmo(salon.tenantId, { nombre: "Bachata" });
+    await clase(ritmo.id, "2027-03-05T18:00:00-05:00");
+    await clase(bachata.id, "2027-03-05T20:00:00-05:00");
+    await clase(bachata.id, "2027-03-06T18:00:00-05:00");
+
+    const porRitmo = await listar(`ritmoId=${bachata.id}`);
+    expect(porRitmo.body).toHaveLength(2);
+
+    // 8:00 p. m. en Colombia ya es el día siguiente en UTC; aun así cuenta para el 5.
+    const porDia = await listar("fecha=2027-03-05");
+    expect(porDia.body).toHaveLength(2);
+
+    const ambos = await listar(`ritmoId=${bachata.id}&fecha=2027-03-05`);
+    expect(ambos.body).toHaveLength(1);
+  });
+
+  test("CP-083 · sin resultados responde una lista vacía y rechaza fechas mal escritas (HU-08-CA-02)", async () => {
+    await clase(ritmo.id, "2027-03-05T18:00:00-05:00");
+
+    const vacio = await listar("fecha=2027-04-01");
+    expect(vacio.status).toBe(200);
+    expect(vacio.body).toEqual([]);
+    expect((await listar("fecha=05-03-2027")).status).toBe(400);
+  });
+});
