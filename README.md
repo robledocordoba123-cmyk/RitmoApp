@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/robledocordoba123-cmyk/RitmoApp/actions/workflows/ci.yml/badge.svg)
 
-Plataforma SaaS multi-academia para que las escuelas de baile gestionen clases, horarios, cupos, reservas y asistencia, en lugar de hacerlo con cuadernos, Excel y grupos de WhatsApp.
+Plataforma SaaS multi-academia para que las escuelas de baile gestionen clases, horarios, cupos, reservas, asistencia, pagos y membresías, en lugar de hacerlo con cuadernos, Excel y grupos de WhatsApp.
 
 > **Proyecto de grado** de la Tecnología en Análisis y Desarrollo de Software del SENA (ficha 3229209).
 
@@ -20,10 +20,11 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 
 - **Aislamiento multi-tenant a nivel de ORM.** Una extensión de Prisma ([`tenantPrismaClient.js`](backend/src/config/tenantPrismaClient.js)) agrega el `tenantId` del usuario autenticado a *todas* las consultas de los modelos de negocio. Si alguien olvida filtrar por academia en un controlador, el cliente lo hace igual. Hay pruebas con dos academias que intentan leer y modificar datos de la otra.
 - **Sin sobrecupo bajo concurrencia.** La reserva descuenta el cupo con un `UPDATE` condicional atómico (`WHERE cuposDisponibles > 0`) dentro de una transacción. Una prueba lanza dos solicitudes al mismo tiempo por el último cupo y verifica que solo una gana.
-- **Reglas de agenda.** No se puede programar una clase si el salón o el profesor ya tienen otra en ese horario, ni con más cupos que la capacidad del salón.
+- **Reglas de agenda.** No se puede programar una clase si el salón o el profesor ya tienen otra en ese horario, ni con más cupos que la capacidad del salón. Un estudiante no puede reservar dos clases que se crucen.
+- **Membresías.** Sin membresía vigente no se reserva. Cada pago extiende la membresía desde donde terminaba, y dos pagos registrados a la vez no se pisan (bloqueo de fila en la transacción).
 - **Zonas horarias.** "Hoy" y los rangos de los reportes se calculan en hora de Colombia, no en UTC (una clase de 6:00 p. m. en Bogotá ya es "mañana" en UTC).
-- **Seguridad.** JWT + bcrypt, control de acceso por rol, rate limiting en el login y el registro, `helmet`, CORS restringido por entorno y la API no arranca si faltan variables obligatorias.
-- **47 pruebas automatizadas** (Jest + Supertest) contra PostgreSQL real, sin mocks, que corren en GitHub Actions en cada push.
+- **Seguridad.** JWT + bcrypt, control de acceso por rol, rate limiting en el login, el registro y la recuperación de contraseña, `helmet`, CORS restringido por entorno y la API no arranca si faltan variables obligatorias. El enlace de recuperación vence a los 30 minutos, sirve una sola vez y en la base de datos solo se guarda su hash.
+- **85 pruebas automatizadas** (Jest + Supertest, casos de prueba CP-001 a CP-085) contra PostgreSQL real, sin mocks, que corren en GitHub Actions en cada push.
 
 ## Capturas
 
@@ -44,21 +45,22 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 | Rol | Funciones |
 |---|---|
 | **SuperAdmin** | Ver todas las academias registradas y activarlas o suspenderlas. Si una academia está suspendida, sus usuarios no pueden iniciar sesión. |
-| **Admin de academia** | Registrar su academia, gestionar salones y ritmos, dar de alta profesores y estudiantes, programar y cancelar clases (lista o calendario semanal) y ver el reporte de ocupación. |
+| **Todos** | Iniciar sesión y recuperar la contraseña con un enlace que llega al correo. |
+| **Admin de academia** | Registrar su academia, gestionar salones, ritmos y tarifas, crear, editar y desactivar profesores y estudiantes, programar y cancelar clases (lista o calendario semanal), registrar pagos, ver quién está al día y ver los reportes de ocupación e ingresos. |
 | **Profesor** | Ver sus clases de hoy y las próximas, y tomar asistencia (asistió, inasistencia, excusa) el día de la clase. |
-| **Estudiante** | Ver el catálogo con cupos en tiempo real, reservar y cancelar su reserva (el cupo queda libre para otro). |
+| **Estudiante** | Ver el catálogo con cupos en tiempo real y filtros por ritmo y día, reservar y cancelar (el cupo queda libre para otro), y ver sus pagos y hasta cuándo está vigente su membresía. |
 
 ## Stack
 
 | Capa | Tecnologías |
 |---|---|
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router, Recharts, Framer Motion |
-| Backend | Node.js, Express 5, JWT, bcrypt, helmet, express-rate-limit |
+| Backend | Node.js, Express 5, JWT, bcrypt, helmet, express-rate-limit, correo por la API de Brevo |
 | Datos | PostgreSQL 16, Prisma 7 (driver adapter `@prisma/adapter-pg`) |
 | Pruebas y CI | Jest, Supertest, GitHub Actions |
 | Entorno | Docker Compose (PostgreSQL + pgAdmin) |
 
-Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md).
+Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md). Dentro de la API no hay capas de servicios ni repositorios separadas ([ADR-002](docs/adr/ADR-002-controladores-y-prisma-sin-capa-de-servicios.md)) y el correo sale por la API de Brevo ([ADR-003](docs/adr/ADR-003-correo-por-api-http-brevo.md)).
 
 ## Despliegue
 
@@ -121,7 +123,7 @@ DATABASE_URL="postgresql://ritmoapp:ritmoapp_dev@localhost:5432/ritmoapp_test?sc
 npm test
 ```
 
-Cubren los ocho requisitos funcionales: onboarding, login, panel del SuperAdmin, catálogo de salones y ritmos, programación de clases, reservas y cancelaciones (incluida la prueba de concurrencia), asistencia y reportes. También cubren el aislamiento entre academias.
+Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia y reportes. También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-085) para la matriz de trazabilidad del proyecto.
 
 ## API
 
