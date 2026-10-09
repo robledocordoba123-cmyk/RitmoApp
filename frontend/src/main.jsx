@@ -6,6 +6,9 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import { despertarServidor } from './api/client.js'
+
+despertarServidor()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

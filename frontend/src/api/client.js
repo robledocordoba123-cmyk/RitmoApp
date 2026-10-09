@@ -39,6 +39,13 @@ async function solicitar(ruta, { method = "GET", body, token } = {}) {
   return data;
 }
 
+// El plan gratuito del hosting apaga la API tras 15 minutos sin uso. Con esta
+// llamada, la API empieza a encender apenas se abre la página, mientras la
+// persona lee o escribe su correo, y no hasta que pulsa "Ingresar".
+function despertarServidor() {
+  fetch(`${BASE_URL}/health`).catch(() => {});
+}
+
 const api = {
   get: (ruta, token) => solicitar(ruta, { token }),
   post: (ruta, body, token) => solicitar(ruta, { method: "POST", body, token }),
@@ -47,4 +54,4 @@ const api = {
   delete: (ruta, token) => solicitar(ruta, { method: "DELETE", token }),
 };
 
-export { api, ApiError, cuandoVenzaLaSesion };
+export { api, ApiError, cuandoVenzaLaSesion, despertarServidor };
