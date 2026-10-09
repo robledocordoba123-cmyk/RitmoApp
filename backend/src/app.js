@@ -5,9 +5,16 @@ const routes = require("./routes");
 
 const app = express();
 
-// Render (y casi cualquier hosting) pone un proxy delante de la app: sin esto,
-// el rate limit vería la IP del proxy y bloquearía a todos los usuarios juntos.
-if (process.env.NODE_ENV === "production") {
+// Render pone proxies delante de la app (su balanceador y la red de Cloudflare).
+// "trust proxy" dice cuántos saltos de X-Forwarded-For son confiables para
+// sacar la IP real del usuario. Si el número es menor que los proxies reales,
+// req.ip termina siendo la IP de un proxy que cambia en cada petición y el
+// límite de intentos reparte los intentos en varios contadores (hallazgo H-01
+// de SEG-07). Se configura con TRUST_PROXY; en producción, por defecto, 1.
+const saltosDeProxy = Number.parseInt(process.env.TRUST_PROXY ?? "", 10);
+if (!Number.isNaN(saltosDeProxy)) {
+  app.set("trust proxy", saltosDeProxy);
+} else if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
