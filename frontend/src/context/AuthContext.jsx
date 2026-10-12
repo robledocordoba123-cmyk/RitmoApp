@@ -37,8 +37,8 @@ export function AuthProvider({ children }) {
     return data.usuario;
   }
 
-  async function onboarding(academia, admin) {
-    const data = await api.post("/auth/onboarding", { academia, admin });
+  async function onboarding(academia, admin, aceptaPoliticaDatos) {
+    const data = await api.post("/auth/onboarding", { academia, admin, aceptaPoliticaDatos });
     setSesion({ token: data.token, usuario: data.usuario });
     return data;
   }

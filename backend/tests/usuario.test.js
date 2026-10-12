@@ -51,7 +51,7 @@ describe("RF-17 · HU-17: el admin crea profesores y estudiantes", () => {
     const res = await request(app)
       .post("/api/usuarios")
       .set("Authorization", `Bearer ${token}`)
-      .send({ nombre: "Profe Nuevo", email: "profenuevo@usuarios.test", password: "Prueba123!", rol: "PROFESOR" });
+      .send({ nombre: "Profe Nuevo", email: "profenuevo@usuarios.test", password: "Prueba123!", rol: "PROFESOR", autorizacionDatos: true });
 
     expect(res.status).toBe(201);
     expect(res.body.rol).toBe("PROFESOR");
@@ -70,7 +70,7 @@ describe("RF-17 · HU-17: el admin crea profesores y estudiantes", () => {
     const res = await request(app)
       .post("/api/usuarios")
       .set("Authorization", `Bearer ${token}`)
-      .send({ nombre: "Otro", email: "repetido2@usuarios.test", password: "Prueba123!", rol: "ESTUDIANTE" });
+      .send({ nombre: "Otro", email: "repetido2@usuarios.test", password: "Prueba123!", rol: "ESTUDIANTE", autorizacionDatos: true });
 
     expect(res.status).toBe(409);
   });
@@ -83,7 +83,7 @@ describe("RF-17 · HU-17: el admin crea profesores y estudiantes", () => {
     const res = await request(app)
       .post("/api/usuarios")
       .set("Authorization", `Bearer ${token}`)
-      .send({ nombre: "Intento", email: "intento@usuarios.test", password: "Prueba123!", rol: "ADMIN_ACADEMIA" });
+      .send({ nombre: "Intento", email: "intento@usuarios.test", password: "Prueba123!", rol: "ADMIN_ACADEMIA", autorizacionDatos: true });
 
     expect(res.status).toBe(400);
   });
@@ -96,7 +96,7 @@ describe("RF-17 · HU-17: el admin crea profesores y estudiantes", () => {
     const res = await request(app)
       .post("/api/usuarios")
       .set("Authorization", `Bearer ${token}`)
-      .send({ nombre: "X", email: "x@usuarios.test", password: "Prueba123!", rol: "ESTUDIANTE" });
+      .send({ nombre: "X", email: "x@usuarios.test", password: "Prueba123!", rol: "ESTUDIANTE", autorizacionDatos: true });
 
     expect(res.status).toBe(403);
   });
