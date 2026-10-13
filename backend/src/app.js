@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const routes = require("./routes");
+const { registroDePeticiones } = require("./middlewares/registro");
 
 const app = express();
 
@@ -22,6 +23,10 @@ const origenesPermitidos = (process.env.CORS_ORIGIN || "")
   .map((origen) => origen.trim())
   .filter(Boolean);
 app.use(cors(origenesPermitidos.length > 0 ? { origin: origenesPermitidos } : {}));
+
+// Una línea de log por petición; 401, 403 y 429 quedan como eventos de seguridad.
+// Va antes de express.json para registrar también los cuerpos mal formados.
+app.use(registroDePeticiones);
 
 app.use(express.json({ limit: "100kb" }));
 
