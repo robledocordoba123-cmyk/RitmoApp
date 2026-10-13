@@ -1,6 +1,6 @@
 # ADR-001 · Arquitectura de tres capas para RitmoApp
 
-- **Estado:** Aceptada
+- **Estado:** Aceptada · complementada por [ADR-002](ADR-002-controladores-y-prisma-sin-capa-de-servicios.md) (organización interna de la API) y [ADR-003](ADR-003-correo-por-api-http-brevo.md) (envío de correo)
 - **Fecha:** 14/08/2026 (decisión tomada en GA1; formalizada como ADR en GA2; confirmada con el stack técnico definido en la asignatura de Documentación)
 - **Responsables:** Equipo RitmoApp — Manuela Córdoba Robledo, Davier Andrés Quinto Bejarano (equipo vigente); Alejandro Roque Morales participó en la decisión original antes de su salida de la ficha.
 
@@ -46,7 +46,7 @@ La comunicación entre capas es siempre descendente y por API: el frontend nunca
 **Negativas / riesgos aceptados**
 
 - Todo el backend crece como una sola aplicación: si el volumen de academias creciera mucho, escalar por dominio (por ejemplo, separar pagos del resto) requeriría una migración posterior hacia servicios independientes.
-- El aislamiento de datos entre academias (RN-04 / RNF-01) depende de que cada consulta a PostgreSQL filtre correctamente por `tenantId`; un error de implementación en el backend podría filtrar datos entre academias. Se mitiga con un middleware que inyecta el `tenantId` del usuario autenticado en cada operación (pendiente de implementar — ver README, sección "Lo que sigue").
+- El aislamiento de datos entre academias (RN-04 / RNF-01) depende de que cada consulta a PostgreSQL filtre correctamente por `tenantId`; un error de implementación en el backend podría filtrar datos entre academias. Se mitiga con un middleware que inyecta el `tenantId` del usuario autenticado en cada operación (implementado en `config/tenantPrismaClient.js` y verificado por las pruebas CP-045 a CP-047; ver ADR-002).
 - La concurrencia sobre el último cupo disponible (RN-01) requiere transacciones explícitas en el motor de agendamiento; si se implementa sin transacción atómica, es posible el overbooking.
 
 ## Referencias
