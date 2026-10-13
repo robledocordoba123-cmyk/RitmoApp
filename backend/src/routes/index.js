@@ -13,6 +13,12 @@ const pagoRoutes = require("./pago.routes");
 const router = Router();
 
 router.get("/health", (req, res) => res.json({ estado: "ok" }));
+
+// Diagnóstico temporal para ajustar TRUST_PROXY: muestra qué IP ve la API.
+// Solo existe si DIAGNOSTICO_IP=true; se apaga en cuanto termina el ajuste.
+if (process.env.DIAGNOSTICO_IP === "true") {
+  router.get("/diagnostico/ip", (req, res) => res.json({ ip: req.ip, cadena: req.ips }));
+}
 router.use("/auth", authRoutes);
 router.use("/salones", salonRoutes);
 router.use("/ritmos", ritmoRoutes);
