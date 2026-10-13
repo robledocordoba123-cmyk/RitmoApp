@@ -1,0 +1,22 @@
+# Mantiene encendida la API de la demo pública en horario diurno.
+# El plan gratuito de Render apaga el servicio tras 15 minutos sin uso y tarda
+# cerca de un minuto en volver a encender; quien revise la demo (por ejemplo,
+# una empresa) pensaría que no funciona. Se consulta /api/health cada 5 minutos
+# de 7:00 a 21:00, hora de Colombia (UTC-5).
+# No se mantiene las 24 horas porque las 750 horas gratuitas al mes de Render
+# se comparten entre todos los servicios de la cuenta.
+name: Mantener demo activa
+
+on:
+  schedule:
+    - cron: "*/5 12-23 * * *" # 7:00 a 18:59 en Colombia
+    - cron: "*/5 0-1 * * *"   # 19:00 a 20:59 en Colombia
+  workflow_dispatch:
+
+jobs:
+  despertar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Consultar /api/health
+        run: curl --silent --show-error --fail --max-time 120 https://ritmoapp-api.onrender.com/api/health
