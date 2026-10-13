@@ -1,0 +1,27 @@
+# Revisa cada semana si hay versiones nuevas de las dependencias, sobre todo
+# las que corrigen fallas de seguridad, y abre un Pull Request con la
+# actualización para revisarla como cualquier otro cambio.
+# Seguimiento de la auditoría de dependencias de SEG-07 (EV-SEG-07).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Bogota
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Bogota
