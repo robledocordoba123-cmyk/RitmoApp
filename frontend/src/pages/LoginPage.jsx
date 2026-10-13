@@ -79,9 +79,11 @@ export default function LoginPage() {
 
           <form onSubmit={manejarSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo</label>
+              <label htmlFor="login-correo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo</label>
               <input
+                id="login-correo"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -90,13 +92,15 @@ export default function LoginPage() {
             </div>
             <div>
               <div className="flex items-baseline justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña</label>
                 <Link to="/recuperar-contrasena" className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
               <input
+                id="login-password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
