@@ -27,6 +27,8 @@ async function listarInscritos(req, res) {
   const reservas = await req.db.reserva.findMany({
     where: { claseId, estado: "CONFIRMADA" },
     include: { estudiante: { select: { id: true, nombre: true, email: true } } },
+    // En orden alfabético, como una lista para llamar a lista.
+    orderBy: { estudiante: { nombre: "asc" } },
   });
   const asistencias = await req.db.asistencia.findMany({ where: { claseId } });
   const asistenciaPorEstudiante = new Map(asistencias.map((a) => [a.estudianteId, a.estado]));
