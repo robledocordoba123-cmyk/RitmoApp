@@ -1,12 +1,17 @@
 // RF-18: catálogo de estilos de baile que ofrece cada academia.
 
+// Devuelve el nombre limpio, o null si no es un texto con contenido.
+function nombreValido(nombre) {
+  return typeof nombre === "string" && nombre.trim() ? nombre.trim() : null;
+}
+
 async function listar(req, res) {
   const ritmos = await req.db.ritmo.findMany({ orderBy: { nombre: "asc" } });
   res.json(ritmos);
 }
 
 async function crear(req, res) {
-  const { nombre } = req.body;
+  const nombre = nombreValido(req.body.nombre);
 
   if (!nombre) {
     return res.status(400).json({ error: "nombre es obligatorio." });
@@ -18,7 +23,11 @@ async function crear(req, res) {
 
 async function actualizar(req, res) {
   const { id } = req.params;
-  const { nombre } = req.body;
+  const nombre = nombreValido(req.body.nombre);
+
+  if (!nombre) {
+    return res.status(400).json({ error: "nombre es obligatorio." });
+  }
 
   try {
     const ritmo = await req.db.ritmo.update({ where: { id }, data: { nombre } });
