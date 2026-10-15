@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Rocket } from "lucide-react";
 import registroDance from "../assets/registro-dance.jpg";
@@ -90,11 +90,15 @@ export default function OnboardingPage() {
   );
 }
 
+// useId conecta cada etiqueta con su campo: así un lector de pantalla
+// anuncia "Correo" al enfocar el campo, y al tocar la etiqueta se enfoca.
 function Campo({ label, type = "text", value, onChange }) {
+  const id = useId();
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <input
+        id={id}
         type={type}
         required
         value={value}

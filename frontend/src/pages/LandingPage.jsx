@@ -300,12 +300,12 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      <footer className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-400 dark:text-gray-600">
+      <footer className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500 dark:text-gray-400">
         <span>© {new Date().getFullYear()} RitmoApp</span>
         <span>Proyecto formativo SENA · Ficha 3229209</span>
         <span className="text-xs">
           Foto de portada:{" "}
-          <a href="https://unsplash.com/photos/spmbpgtvOiw" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600 dark:hover:text-gray-400">
+          <a href="https://unsplash.com/photos/spmbpgtvOiw" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700 dark:hover:text-gray-300">
             Unsplash
           </a>
         </span>
