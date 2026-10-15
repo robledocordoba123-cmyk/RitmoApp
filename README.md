@@ -67,10 +67,24 @@ Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa p
 | Capa | Servicio | Configuración |
 |---|---|---|
 | Frontend | Vercel | Carpeta `frontend`, variables `VITE_API_URL` y `VITE_MODO_DEMO`. Se publica solo con cada merge a `main`. |
-| API | Render (Ohio) | Definida como código en [`render.yaml`](render.yaml). Al arrancar aplica migraciones y recarga los datos de demo. |
+| API | Render (Ohio) | Definida como código en [`render.yaml`](render.yaml). La demo pública arranca con `npm run start:demo`: aplica migraciones y recarga los datos de demo. |
 | Base de datos | Neon, PostgreSQL 16 (Ohio) | Misma región que la API. La cadena de conexión solo vive en las variables de Render, nunca en el repositorio. |
 
 `main` está protegida: todo cambio entra por Pull Request con revisión y con las pruebas de CI en verde.
+
+### Instalación para una academia real
+
+La demo pública recarga sus datos en cada arranque y crea cuentas con la contraseña de prueba. Una academia real no puede arrancar así:
+
+1. En Render, usar como comando de inicio `npm run start:produccion` (solo aplica migraciones y enciende la API, sin datos de demo).
+2. Crear la cuenta SuperAdmin una sola vez, desde la consola de Render (Shell) o con la base apuntada desde local:
+   ```bash
+   SUPERADMIN_EMAIL=correo@real.co SUPERADMIN_PASSWORD='una-clave-larga' npm run crear:superadmin
+   ```
+   La contraseña no puede ser la de prueba y queda guardada solo cifrada.
+3. Registrar la academia desde la página de inicio (registro público) y aceptar la política de datos.
+
+Como protección, en producción (`NODE_ENV=production`) los seeds se niegan a correr si no se les pasa `--permitir-demo`, que solo usa `start:demo`.
 
 ## Cómo correrlo en local
 
