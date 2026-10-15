@@ -10,7 +10,7 @@ import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
-const VACIO = { nombre: "", email: "", password: "", rol: "PROFESOR" };
+const VACIO = { nombre: "", email: "", password: "", rol: "PROFESOR", autorizacionDatos: false };
 
 export default function EquipoPage() {
   const { token } = useAuth();
@@ -85,6 +85,24 @@ export default function EquipoPage() {
             <Campo label="Nombre" value={form.nombre} onChange={cambiar("nombre")} />
             <Campo label="Correo" type="email" value={form.email} onChange={cambiar("email")} />
             <Campo label="Contraseña" type="password" value={form.password} onChange={cambiar("password")} />
+            {/* Ley 1581: la academia confirma que tiene la autorización antes de crear la cuenta. */}
+            <label className="col-span-2 sm:col-span-4 flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <input
+                type="checkbox"
+                required
+                checked={form.autorizacionDatos}
+                onChange={(e) => setForm((prev) => ({ ...prev, autorizacionDatos: e.target.checked }))}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span>
+                Confirmo que la academia tiene la autorización de esta persona (o de su representante legal, si es menor de edad)
+                para tratar sus datos según la{" "}
+                <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline">
+                  política de tratamiento de datos
+                </a>
+                .
+              </span>
+            </label>
             <div className="col-span-2 sm:col-span-4">
               <Button type="submit" icon={Plus} disabled={enviando}>
                 Agregar {form.rol === "PROFESOR" ? "profesor" : "estudiante"}

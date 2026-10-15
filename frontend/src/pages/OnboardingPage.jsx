@@ -8,6 +8,7 @@ export default function OnboardingPage() {
   const { onboarding } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ nombreAcademia: "", nit: "", nombreAdmin: "", email: "", password: "" });
+  const [aceptaPolitica, setAceptaPolitica] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
@@ -22,7 +23,8 @@ export default function OnboardingPage() {
     try {
       await onboarding(
         { nombre: form.nombreAcademia, nit: form.nit },
-        { nombre: form.nombreAdmin, email: form.email, password: form.password }
+        { nombre: form.nombreAdmin, email: form.email, password: form.password },
+        aceptaPolitica
       );
       navigate("/admin/inicio");
     } catch (err) {
@@ -66,6 +68,24 @@ export default function OnboardingPage() {
             <Campo label="Tu nombre" value={form.nombreAdmin} onChange={cambiar("nombreAdmin")} />
             <Campo label="Correo" type="email" value={form.email} onChange={cambiar("email")} />
             <Campo label="Contraseña" type="password" value={form.password} onChange={cambiar("password")} />
+
+            {/* Ley 1581: sin aceptar la política no se crea la academia (el backend también lo exige). */}
+            <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <input
+                type="checkbox"
+                required
+                checked={aceptaPolitica}
+                onChange={(e) => setAceptaPolitica(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span>
+                Acepto la{" "}
+                <Link to="/privacidad" target="_blank" className="text-indigo-600 dark:text-indigo-400 font-medium underline">
+                  política de tratamiento de datos
+                </Link>{" "}
+                y me comprometo a pedir la autorización de las personas que registre en mi academia.
+              </span>
+            </label>
 
             {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
 

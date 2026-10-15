@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
 const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
+const { datosDeAutorizacion } = require("../utils/privacidad");
 
 const SALT_ROUNDS = 10;
 
@@ -42,6 +43,14 @@ async function crear(req, res) {
   if (!passwordValida(password)) {
     return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
   }
+  // Ley 1581: la academia es la responsable de los datos de su equipo y es
+  // quien obtiene la autorización (del representante legal si la persona es
+  // menor de edad). El admin confirma que la tiene antes de crear la cuenta.
+  if (req.body.autorizacionDatos !== true) {
+    return res.status(400).json({
+      error: "Confirma que la academia tiene la autorización de esta persona para el tratamiento de sus datos.",
+    });
+  }
 
   const yaExiste = await prisma.user.findUnique({ where: { email } });
   if (yaExiste) {
@@ -50,7 +59,7 @@ async function crear(req, res) {
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const usuario = await prisma.user.create({
-    data: { tenantId: req.user.tenantId, nombre, email, passwordHash, rol },
+    data: { tenantId: req.user.tenantId, nombre, email, passwordHash, rol, ...datosDeAutorizacion() },
     select: { id: true, nombre: true, email: true, rol: true, createdAt: true },
   });
 

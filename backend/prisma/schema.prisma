@@ -79,6 +79,13 @@ model User {
   passwordHash String
   rol          Rol
   activo       Boolean  @default(true)
+  // Ley 1581 de 2012: prueba de la autorización para tratar sus datos.
+  // En el administrador es su aceptación al registrar la academia; en
+  // profesores y estudiantes, la confirmación del administrador de que la
+  // academia la tiene (del representante legal si es menor de edad).
+  // Null en usuarios creados antes de que existiera la política.
+  autorizacionDatosEn  DateTime?
+  versionPoliticaDatos String?
   createdAt    DateTime @default(now())
 
   clasesComoProfesor Clase[]      @relation("ProfesorClases")

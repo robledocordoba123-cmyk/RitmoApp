@@ -18,6 +18,7 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
       .send({
         academia: { nombre: "Academia Nueva", nit: "900111222-1" },
         admin: { nombre: "Admin Nuevo", email: "admin@academianueva.test", password: "Prueba123!" },
+        aceptaPoliticaDatos: true,
       });
 
     expect(res.status).toBe(201);
@@ -38,6 +39,7 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
       .send({
         academia: { nombre: "Otra academia", nit: "900333444-1" },
         admin: { nombre: "Otro Admin", email: "otro@test.com", password: "Prueba123!" },
+        aceptaPoliticaDatos: true,
       });
 
     expect(res.status).toBe(409);
@@ -52,6 +54,7 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
       .send({
         academia: { nombre: "Academia Nueva 2", nit: "900555666-1" },
         admin: { nombre: "Admin", email: "repetido@test.com", password: "Prueba123!" },
+        aceptaPoliticaDatos: true,
       });
 
     expect(res.status).toBe(409);
@@ -66,6 +69,7 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
       .send({
         academia: { nombre: "Academia Nueva 3", nit: "900777888-1" },
         admin: { nombre: "Admin", email: "  Repetido@Test.com ", password: "Prueba123!" },
+        aceptaPoliticaDatos: true,
       });
 
     expect(res.status).toBe(409);
@@ -77,6 +81,7 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
       .send({
         academia: { nombre: "Academia Corta", nit: "900999000-1" },
         admin: { nombre: "Admin", email: "corta@test.com", password: "123" },
+        aceptaPoliticaDatos: true,
       });
 
     expect(res.status).toBe(400);

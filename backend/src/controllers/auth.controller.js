@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
 const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
+const { datosDeAutorizacion } = require("../utils/privacidad");
 
 const SALT_ROUNDS = 10;
 
@@ -22,6 +23,11 @@ async function onboarding(req, res) {
   }
   if (!passwordValida(admin.password)) {
     return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
+  }
+  // Ley 1581: la academia no se crea si su administrador no acepta la
+  // política de tratamiento de datos. Debe ser true explícito, no "algo".
+  if (req.body.aceptaPoliticaDatos !== true) {
+    return res.status(400).json({ error: "Debes aceptar la política de tratamiento de datos para registrar la academia." });
   }
 
   const emailAdmin = normalizarEmail(admin.email);
@@ -52,6 +58,7 @@ async function onboarding(req, res) {
         email: emailAdmin,
         passwordHash,
         rol: "ADMIN_ACADEMIA",
+        ...datosDeAutorizacion(),
       },
     });
 

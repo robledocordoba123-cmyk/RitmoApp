@@ -12,6 +12,7 @@ const LoginPage = lazy(() => import("./pages/LoginPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const RecuperarContrasenaPage = lazy(() => import("./pages/RecuperarContrasenaPage"));
 const RestablecerContrasenaPage = lazy(() => import("./pages/RestablecerContrasenaPage"));
+const PrivacidadPage = lazy(() => import("./pages/PrivacidadPage"));
 
 const EstudianteDashboard = lazy(() => import("./pages/estudiante/DashboardPage"));
 const CatalogoPage = lazy(() => import("./pages/estudiante/CatalogoPage"));
@@ -75,6 +76,7 @@ export default function App() {
         />
         <Route path="/recuperar-contrasena" element={<RecuperarContrasenaPage />} />
         <Route path="/restablecer-contrasena" element={<RestablecerContrasenaPage />} />
+        <Route path="/privacidad" element={<PrivacidadPage />} />
         <Route
           path="/registro-academia"
           element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <OnboardingPage />}
