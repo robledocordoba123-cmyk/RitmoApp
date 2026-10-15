@@ -1,6 +1,7 @@
 // Datos de prueba mínimos para desarrollar sin tener que crear todo a mano cada vez.
 // RNF-05: el entorno debe poder reconstruirse completo con migraciones + este seed.
 require("dotenv/config");
+require("./permitir-demo").exigirPermisoDeDemo("seed.js");
 const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("../generated/prisma");
 const { PrismaPg } = require("@prisma/adapter-pg");

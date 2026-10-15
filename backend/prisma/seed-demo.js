@@ -12,6 +12,7 @@
 // cupoMaximo - reservas confirmadas (RN-01). Los pagos siguen RN-05: cada
 // pago extiende la membresía desde donde terminaba el anterior.
 require("dotenv/config");
+require("./permitir-demo").exigirPermisoDeDemo("seed-demo.js");
 const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("../generated/prisma");
 const { PrismaPg } = require("@prisma/adapter-pg");
