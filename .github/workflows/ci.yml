@@ -48,7 +48,7 @@ jobs:
       - run: npm test
 
   frontend:
-    name: Frontend (lint + pruebas + build)
+    name: Frontend (lint + build)
     runs-on: ubuntu-latest
 
     defaults:
