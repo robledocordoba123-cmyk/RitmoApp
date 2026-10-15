@@ -47,8 +47,10 @@ async function crearClaseConReserva(fechaHoraInicio) {
 
 describe("RF-16 · HU-16: registro de asistencia (RN-12)", () => {
   test("CP-035 · el profesor asignado registra asistencia de una clase de hoy", async () => {
-    const haceDosHoras = new Date(Date.now() - 2 * 60 * 60 * 1000);
-    const clase = await crearClaseConReserva(haceDosHoras);
+    // 12:01 a. m. de hoy en Bogotá (sin horario de verano, siempre UTC-5). Antes
+    // usaba "hace dos horas" y la prueba fallaba entre las 12 y las 2 a. m.
+    const hoyEnBogota = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
+    const clase = await crearClaseConReserva(new Date(`${hoyEnBogota}T00:01:00-05:00`));
 
     const res = await request(app)
       .post(`/api/clases/${clase.id}/asistencia`)
