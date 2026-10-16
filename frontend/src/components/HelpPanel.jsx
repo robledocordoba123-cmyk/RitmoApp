@@ -16,6 +16,7 @@ const CONTENIDO_AYUDA = {
       "Programa tus clases asignando salón, ritmo, profesor y horario.",
       "Crea tus planes en “Tarifas” y registra cada pago en “Pagos”.",
       "Revisa “Reportes” para ver qué tan lleno está cada salón y cuánto has recibido.",
+      "En “Bitácora” ves quién hizo cada cambio en tu academia y cuándo.",
     ],
     preguntas: [
       { q: "¿Por qué no puedo programar una clase?", a: "Necesitas al menos un salón, un ritmo y un profesor registrado en tu academia antes de poder programar una clase." },
