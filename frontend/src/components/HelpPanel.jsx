@@ -45,6 +45,7 @@ const CONTENIDO_AYUDA = {
       "Reserva tu cupo con un clic mientras haya disponibilidad.",
       "Revisa tus reservas activas en “Mis reservas”.",
       "En “Mis pagos” ves hasta cuándo está vigente tu membresía.",
+      "En “Mi asistencia” ves las clases a las que fuiste y tu porcentaje.",
     ],
     preguntas: [
       { q: "¿Por qué no pude reservar una clase?", a: "Puede ser que tu membresía esté vencida, que el cupo se haya agotado justo antes que tú, que la clase ya haya pasado, o que ya tengas una reserva para esa misma clase." },

@@ -2,6 +2,7 @@ const { Router } = require("express");
 const authRoutes = require("./auth.routes");
 const salonRoutes = require("./salon.routes");
 const ritmoRoutes = require("./ritmo.routes");
+const asistenciaRoutes = require("./asistencia.routes");
 const claseRoutes = require("./clase.routes");
 const reservaRoutes = require("./reserva.routes");
 const superadminRoutes = require("./superadmin.routes");
@@ -29,5 +30,6 @@ router.use("/reportes", reporteRoutes);
 router.use("/usuarios", usuarioRoutes);
 router.use("/tarifas", tarifaRoutes);
 router.use("/pagos", pagoRoutes);
+router.use("/asistencias", asistenciaRoutes);
 
 module.exports = router;

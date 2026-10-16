@@ -19,6 +19,7 @@ import {
   Users2,
   Tags,
   Wallet,
+  CalendarCheck,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -48,6 +49,7 @@ const ENLACES_POR_ROL = {
     { to: "/estudiante/catalogo", label: "Catálogo", icon: CalendarDays },
     { to: "/estudiante/reservas", label: "Mis reservas", icon: Ticket },
     { to: "/estudiante/pagos", label: "Mis pagos", icon: Wallet },
+    { to: "/estudiante/asistencia", label: "Mi asistencia", icon: CalendarCheck },
   ],
 };
 

@@ -18,6 +18,7 @@ const EstudianteDashboard = lazy(() => import("./pages/estudiante/DashboardPage"
 const CatalogoPage = lazy(() => import("./pages/estudiante/CatalogoPage"));
 const MisReservasPage = lazy(() => import("./pages/estudiante/MisReservasPage"));
 const MisPagosPage = lazy(() => import("./pages/estudiante/MisPagosPage"));
+const MiAsistenciaPage = lazy(() => import("./pages/estudiante/MiAsistenciaPage"));
 
 const AdminDashboard = lazy(() => import("./pages/admin/DashboardPage"));
 const SalonesPage = lazy(() => import("./pages/admin/SalonesPage"));
@@ -86,6 +87,7 @@ export default function App() {
         {ruta("/estudiante/catalogo", ["ESTUDIANTE"], CatalogoPage)}
         {ruta("/estudiante/reservas", ["ESTUDIANTE"], MisReservasPage)}
         {ruta("/estudiante/pagos", ["ESTUDIANTE"], MisPagosPage)}
+        {ruta("/estudiante/asistencia", ["ESTUDIANTE"], MiAsistenciaPage)}
 
         {ruta("/admin/inicio", ["ADMIN_ACADEMIA"], AdminDashboard)}
         {ruta("/admin/salones", ["ADMIN_ACADEMIA"], SalonesPage)}
