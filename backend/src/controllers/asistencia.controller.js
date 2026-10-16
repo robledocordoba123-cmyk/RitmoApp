@@ -98,4 +98,41 @@ async function registrar(req, res) {
   res.json(resultado);
 }
 
-module.exports = { listarInscritos, registrar };
+// RF-11 · HU-11: historial de asistencia del estudiante. Une sus reservas
+// confirmadas de clases que ya empezaron con la asistencia que registró el
+// profesor; si el profesor todavía no la registró, el estado queda en null
+// ("Sin registrar"). req.db y el filtro por estudianteId hacen que nadie vea
+// el historial de otro estudiante ni de otra academia (RN-04).
+async function miHistorial(req, res) {
+  const estudianteId = req.user.id;
+  const [reservas, asistencias] = await Promise.all([
+    req.db.reserva.findMany({
+      where: { estudianteId, estado: "CONFIRMADA", clase: { fechaHoraInicio: { lte: new Date() }, estado: { not: "CANCELADA" } } },
+      include: { clase: { include: { ritmo: true, salon: true, profesor: { select: { nombre: true } } } } },
+    }),
+    req.db.asistencia.findMany({ where: { estudianteId } }),
+  ]);
+  const estadoPorClase = new Map(asistencias.map((a) => [a.claseId, a.estado]));
+
+  const registros = reservas
+    .map((r) => ({
+      claseId: r.clase.id,
+      ritmo: r.clase.ritmo.nombre,
+      salon: r.clase.salon.nombre,
+      profesor: r.clase.profesor.nombre,
+      fechaHoraInicio: r.clase.fechaHoraInicio,
+      estado: estadoPorClase.get(r.clase.id) || null,
+    }))
+    .sort((a, b) => b.fechaHoraInicio - a.fechaHoraInicio);
+
+  const contar = (estado) => registros.filter((r) => r.estado === estado).length;
+  const resumen = { asistio: contar("ASISTIO"), inasistencia: contar("INASISTENCIA"), excusa: contar("EXCUSA"), sinRegistrar: contar(null) };
+  const registradas = resumen.asistio + resumen.inasistencia + resumen.excusa;
+  // El porcentaje solo cuenta las clases con asistencia registrada: una clase
+  // que el profesor no ha marcado no debe bajar el porcentaje del estudiante.
+  resumen.porcentajeAsistencia = registradas === 0 ? null : Math.round((resumen.asistio * 100) / registradas);
+
+  res.json({ resumen, registros });
+}
+
+module.exports = { listarInscritos, registrar, miHistorial };
