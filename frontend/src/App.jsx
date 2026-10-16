@@ -31,6 +31,7 @@ const PagosPage = lazy(() => import("./pages/admin/PagosPage"));
 const ProfesorDashboard = lazy(() => import("./pages/profesor/DashboardPage"));
 const MisClasesPage = lazy(() => import("./pages/profesor/MisClasesPage"));
 const AsistenciaPage = lazy(() => import("./pages/profesor/AsistenciaPage"));
+const EscanearQRPage = lazy(() => import("./pages/profesor/EscanearQRPage"));
 
 const SuperadminDashboard = lazy(() => import("./pages/superadmin/DashboardPage"));
 const AcademiasPage = lazy(() => import("./pages/superadmin/AcademiasPage"));
@@ -99,6 +100,7 @@ export default function App() {
         {ruta("/profesor/inicio", ["PROFESOR"], ProfesorDashboard)}
         {ruta("/profesor/clases", ["PROFESOR"], MisClasesPage)}
         {ruta("/profesor/clases/:id/asistencia", ["PROFESOR"], AsistenciaPage)}
+        {ruta("/profesor/clases/:id/escanear", ["PROFESOR"], EscanearQRPage)}
 
         {ruta("/superadmin/inicio", ["SUPERADMIN"], SuperadminDashboard)}
         {ruta("/superadmin/academias", ["SUPERADMIN"], AcademiasPage)}
