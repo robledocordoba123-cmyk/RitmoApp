@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, ClipboardCheck, Save } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ClipboardCheck, Save } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -20,11 +20,18 @@ export default function AsistenciaPage() {
   const [inscritos, setInscritos] = useState(null);
   const [seleccion, setSeleccion] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
 
+  // DEF-04: si la API rechaza la consulta (otro profesor, clase de otra academia
+  // o sin conexión) se muestra el motivo en vez de dejar la pantalla cargando.
   async function cargar() {
-    const data = await api.get(`/clases/${id}/inscritos`, token);
-    setInscritos(data);
-    setSeleccion(Object.fromEntries(data.map((i) => [i.estudianteId, i.estadoAsistencia || "ASISTIO"])));
+    try {
+      const data = await api.get(`/clases/${id}/inscritos`, token);
+      setInscritos(data);
+      setSeleccion(Object.fromEntries(data.map((i) => [i.estudianteId, i.estadoAsistencia || "ASISTIO"])));
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   useEffect(() => {
@@ -56,7 +63,9 @@ export default function AsistenciaPage() {
       </Link>
       <PageHeader title="Registrar asistencia" />
 
-      {inscritos === null ? (
+      {error ? (
+        <EmptyState icon={AlertTriangle} title="No se pudo abrir esta clase" description={error} />
+      ) : inscritos === null ? (
         <SkeletonList />
       ) : inscritos.length === 0 ? (
         <EmptyState icon={ClipboardCheck} title="Nadie ha reservado esta clase todavía" />
