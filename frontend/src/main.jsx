@@ -8,8 +8,13 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { despertarServidor } from './api/client.js'
 
+// La API gratuita de Render se apaga tras 15 minutos sin uso; se empieza a
+// despertar apenas carga la página, mientras la persona lee o escribe.
 despertarServidor()
 
+// Orden de los proveedores: el router primero (las pantallas navegan), luego
+// el tema (modo oscuro) y la sesión. Toaster muestra los avisos breves de
+// éxito o error en la esquina superior derecha.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

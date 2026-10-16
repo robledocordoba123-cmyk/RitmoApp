@@ -52,6 +52,8 @@ function ChecklistArranque({ salones, ritmos, profesores, clases }) {
   );
 }
 
+// UI-11 · HU-20: inicio del administrador con los indicadores de la academia,
+// las próximas clases y la ocupación general.
 export default function DashboardPage() {
   const { token, usuario } = useAuth();
   const [datos, setDatos] = useState(null);

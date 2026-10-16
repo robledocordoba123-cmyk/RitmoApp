@@ -1,3 +1,6 @@
+// Insignia de estado en una palabra: Al día, Vencida, Confirmada, Programada,
+// Suspendida... El color sigue la convención de DOC-05: verde bien, rojo
+// bloqueo o error, ámbar aviso e índigo información.
 const COLORES = {
   gray: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   green: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400",

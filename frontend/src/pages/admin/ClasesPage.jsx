@@ -15,6 +15,9 @@ const VACIO = { ritmoId: "", salonId: "", profesorId: "", cupoMaximo: "", fecha:
 
 const ESTADO_BADGE = { PROGRAMADA: "green", CANCELADA: "red", FINALIZADA: "gray" };
 
+// UI-12 · HU-14: el administrador programa clases (ritmo, salón, profesor, cupo
+// y horario) y las ve en lista o en calendario semanal con su ocupación. Los
+// cruces de salón (RN-02) y de profesor (RN-03) los rechaza la API.
 export default function ClasesPage() {
   const { token } = useAuth();
   const [clases, setClases] = useState(null);

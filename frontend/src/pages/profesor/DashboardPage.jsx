@@ -16,6 +16,8 @@ function esHoy(fecha) {
   return f.getFullYear() === hoy.getFullYear() && f.getMonth() === hoy.getMonth() && f.getDate() === hoy.getDate();
 }
 
+// UI-19 · HU-15: inicio del profesor con sus clases de hoy, para tomar
+// asistencia, y las próximas.
 export default function DashboardPage() {
   const { token, usuario } = useAuth();
   const [misClases, setMisClases] = useState(null);
