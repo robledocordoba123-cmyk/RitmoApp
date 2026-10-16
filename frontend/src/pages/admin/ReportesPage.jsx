@@ -8,6 +8,7 @@ import { Card, CardHeader, CardBody } from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 import OcupacionChart from "../../components/OcupacionChart";
+import ReporteAsistencia from "../../components/ReporteAsistencia";
 import { pesos, MEDIOS_DE_PAGO } from "../../utils/formato";
 
 function primerDiaDelMes() {
@@ -29,6 +30,7 @@ export default function ReportesPage() {
   const [ingresos, setIngresos] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [verTabla, setVerTabla] = useState(false);
+  const [rangoConsultado, setRangoConsultado] = useState(null);
 
   async function consultar(e) {
     e?.preventDefault();
@@ -41,6 +43,7 @@ export default function ReportesPage() {
       ]);
       setReporte(ocupacion);
       setIngresos(dinero);
+      setRangoConsultado({ desde, hasta });
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -56,7 +59,7 @@ export default function ReportesPage() {
 
   return (
     <div>
-      <PageHeader title="Reportes" subtitle="Ocupación de cada salón e ingresos de la academia en el rango que elijas." />
+      <PageHeader title="Reportes" subtitle="Ocupación de cada salón, ingresos y asistencia de la academia en el rango que elijas." />
 
       <Card className="mb-6">
         <CardBody className="pt-5">
@@ -171,6 +174,8 @@ export default function ReportesPage() {
           </CardBody>
         </Card>
       )}
+
+      <ReporteAsistencia rango={rangoConsultado} />
     </div>
   );
 }
