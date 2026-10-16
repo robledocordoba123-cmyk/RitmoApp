@@ -1,3 +1,6 @@
+// Lo que se muestra cuando una lista no tiene datos, en vez de dejar un hueco:
+// ícono, título, explicación y, si aplica, la acción siguiente (por ejemplo
+// "Todavía no tienes salones"). DOC-05, estados de la interfaz.
 export default function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-14 px-6 rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-900/40">

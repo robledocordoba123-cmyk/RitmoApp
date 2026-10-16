@@ -9,6 +9,10 @@ import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
+// UI-13 · HU-18: el administrador crea y elimina los salones de su academia.
+// La capacidad del salón limita el cupo de las clases que se programen en él
+// (RF-05). Si un salón tiene clases, la API no deja eliminarlo y el aviso
+// muestra el motivo.
 export default function SalonesPage() {
   const { token } = useAuth();
   const [salones, setSalones] = useState(null);
@@ -24,6 +28,7 @@ export default function SalonesPage() {
     cargar();
   }, []);
 
+  // La capacidad se envía como número: la API exige un entero positivo (DEF-03).
   async function crear(e) {
     e.preventDefault();
     setEnviando(true);

@@ -8,6 +8,7 @@ const CAMPO =
 
 // RF-05 · HU-05: el usuario pide un enlace para crear una nueva contraseña.
 // La respuesta es la misma exista o no el correo (no revela quién está registrado).
+// Pantalla UI-04 de DOC-05 (HU-05).
 export default function RecuperarContrasenaPage() {
   const [email, setEmail] = useState("");
   const [enviado, setEnviado] = useState("");

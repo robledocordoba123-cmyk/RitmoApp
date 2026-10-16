@@ -1,5 +1,9 @@
 import { motion } from "framer-motion";
 
+// Tarjeta base de la interfaz (DOC-05, sección 4.2). Card es el contenedor;
+// CardHeader pone título, subtítulo y una acción opcional a la derecha;
+// CardBody da el espacio interior. Con hover=true la tarjeta sube un poco al
+// pasar el mouse (catálogo de clases).
 export function Card({ children, className = "", hover = false }) {
   const Componente = hover ? motion.div : "div";
   const propsHover = hover ? { whileHover: { y: -3, transition: { duration: 0.15 } } } : {};

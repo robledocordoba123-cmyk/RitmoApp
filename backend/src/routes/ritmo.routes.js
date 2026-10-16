@@ -5,6 +5,7 @@ const ritmoController = require("../controllers/ritmo.controller");
 
 const router = Router();
 
+// RF-18 · HU-18: catálogo de ritmos. Solo el administrador de la academia.
 router.use(requireAuth, requireRole("ADMIN_ACADEMIA"), requireTenant);
 
 router.get("/", ritmoController.listar);

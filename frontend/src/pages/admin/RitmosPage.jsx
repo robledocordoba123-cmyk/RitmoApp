@@ -9,6 +9,9 @@ import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
+// UI-14 · HU-18: catálogo de estilos de baile de la academia (Salsa, Bachata...).
+// Son los que se eligen al programar una clase y los que filtra el estudiante
+// en el catálogo. Un ritmo con clases no se puede eliminar.
 export default function RitmosPage() {
   const { token } = useAuth();
   const [ritmos, setRitmos] = useState(null);

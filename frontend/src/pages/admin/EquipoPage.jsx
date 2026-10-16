@@ -12,6 +12,9 @@ import { SkeletonList } from "../../components/ui/Skeleton";
 
 const VACIO = { nombre: "", email: "", password: "", rol: "PROFESOR", autorizacionDatos: false };
 
+// UI-15 · HU-17: el administrador crea, edita, desactiva y reactiva profesores
+// y estudiantes. Solo puede crear esos dos roles (CP-019) y debe confirmar que
+// tiene la autorización de datos de la persona (Ley 1581).
 export default function EquipoPage() {
   const { token } = useAuth();
   const [tab, setTab] = useState("PROFESOR");

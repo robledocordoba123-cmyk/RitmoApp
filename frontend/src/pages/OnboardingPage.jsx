@@ -4,6 +4,9 @@ import { Sparkles, Rocket } from "lucide-react";
 import registroDance from "../assets/registro-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 
+// UI-03 · HU-01: una academia nueva se registra sola y crea la cuenta de su
+// administrador. Debe aceptar la política de tratamiento de datos (Ley 1581,
+// PR #15); la API guarda la fecha y la versión aceptadas.
 export default function OnboardingPage() {
   const { onboarding } = useAuth();
   const navigate = useNavigate();

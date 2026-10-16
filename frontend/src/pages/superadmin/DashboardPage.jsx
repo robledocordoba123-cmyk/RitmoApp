@@ -7,6 +7,9 @@ import PageHeader from "../../components/ui/PageHeader";
 import StatCard from "../../components/ui/StatCard";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
+// UI-22 · HU-02: panorama de la plataforma para el SuperAdmin (academias
+// totales, activas, suspendidas y usuarios), calculado con la misma lista de
+// academias que usa UI-23.
 export default function DashboardPage() {
   const { token } = useAuth();
   const [tenants, setTenants] = useState(null);

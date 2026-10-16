@@ -21,6 +21,8 @@ const PASSWORD_DEMO = "Prueba123!";
 // esto, se avisa en vez de dejar el botón girando sin explicación.
 const MS_ANTES_DE_AVISAR = 4000;
 
+// UI-02 · HU-04: inicio de sesión para los cuatro roles. Después del login,
+// rutaInicioPara lleva a cada rol a su propio panel.
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();

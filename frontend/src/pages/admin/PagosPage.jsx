@@ -19,6 +19,7 @@ const VACIO = { estudianteId: "", tarifaId: "", medio: "EFECTIVO", monto: "", re
 
 // RF-19 · HU-19: el admin registra los pagos que recibe en la academia y ve
 // quién está al día (RN-05). No hay pasarela en línea (fuera de alcance).
+// Pantalla UI-17 de DOC-05.
 export default function PagosPage() {
   const { token } = useAuth();
   const [estudiantes, setEstudiantes] = useState(null);

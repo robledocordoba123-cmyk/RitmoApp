@@ -14,6 +14,9 @@ const ESTADOS = ["ASISTIO", "INASISTENCIA", "EXCUSA"];
 const ETIQUETA = { ASISTIO: "Asistió", INASISTENCIA: "Inasistencia", EXCUSA: "Excusa" };
 const COLOR = { ASISTIO: "text-green-700 bg-green-50", INASISTENCIA: "text-red-700 bg-red-50", EXCUSA: "text-amber-700 bg-amber-50" };
 
+// UI-21 · HU-15 y HU-16: lista de inscritos de una clase (en orden alfabético)
+// para marcar Asistió, Inasistencia o Excusa. Solo el profesor asignado y solo
+// el día de la clase (RN-12); esas reglas las valida la API.
 export default function AsistenciaPage() {
   const { id } = useParams();
   const { token } = useAuth();

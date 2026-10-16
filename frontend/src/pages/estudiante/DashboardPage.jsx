@@ -10,6 +10,8 @@ import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 import AvisoMembresia from "../../components/AvisoMembresia";
 
+// UI-07: inicio del estudiante con sus reservas activas, la próxima clase y el
+// aviso de membresía, que se ve aquí aunque no entre al catálogo (HU-13-CA-03).
 export default function DashboardPage() {
   const { token, usuario } = useAuth();
   const [datos, setDatos] = useState(null);
