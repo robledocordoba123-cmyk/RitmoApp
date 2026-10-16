@@ -3,6 +3,7 @@ const prisma = require("../../src/config/prisma");
 // Orden que respeta las llaves foráneas: primero lo que depende de una
 // clase o de un usuario, al final tenant (de quien todo depende).
 async function limpiarBD() {
+  await prisma.notificacionEnviada.deleteMany();
   await prisma.pago.deleteMany();
   await prisma.tarifa.deleteMany();
   await prisma.asistencia.deleteMany();
