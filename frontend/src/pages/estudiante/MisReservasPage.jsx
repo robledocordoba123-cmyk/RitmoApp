@@ -9,6 +9,12 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+import CodigoQR from "../../components/CodigoQR";
+
+// El QR de asistencia se ofrece el día de la clase, si la reserva y la clase
+// siguen activas (la API igual lo valida).
+const conQrHoy = (r) =>
+  r.estado === "CONFIRMADA" && r.clase.estado !== "CANCELADA" && new Date(r.clase.fechaHoraInicio).toDateString() === new Date().toDateString();
 
 // Lo que ve el estudiante combina el estado de su reserva con el de la clase:
 // si la academia canceló la clase, la reserva sigue "CONFIRMADA" en BD pero
@@ -73,11 +79,15 @@ export default function MisReservasPage() {
                       {new Date(r.clase.fechaHoraInicio).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" })}
                     </p>
                   </div>
-                  {estado.texto === "Confirmada" && (
-                    <div className="mt-4">
-                      <Button variant="danger" icon={XCircle} disabled={cancelandoId === r.id} onClick={() => cancelar(r)}>
-                        {cancelandoId === r.id ? "Cancelando..." : "Cancelar reserva"}
-                      </Button>
+                  {(estado.texto === "Confirmada" || conQrHoy(r)) && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {/* El QR sigue disponible si la clase ya empezó: quien llega tarde también lo muestra. */}
+                      {conQrHoy(r) && <CodigoQR reserva={r} />}
+                      {estado.texto === "Confirmada" && (
+                        <Button variant="danger" icon={XCircle} disabled={cancelandoId === r.id} onClick={() => cancelar(r)}>
+                          {cancelandoId === r.id ? "Cancelando..." : "Cancelar reserva"}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardBody>
