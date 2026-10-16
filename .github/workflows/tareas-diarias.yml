@@ -1,0 +1,30 @@
+# Tareas diarias de RitmoApp (OE-6): recordatorio de las clases de mañana y
+# aviso de membresías que vencen en 3 días. El plan gratuito de Render apaga la
+# API cuando no se usa, así que no puede tener su propio reloj; este workflow
+# la llama una vez al día a las 7:00 a. m. de Colombia (12:00 UTC).
+# Necesita el secreto TAREAS_TOKEN en GitHub, igual al de Render.
+# Si la tarea corre dos veces el mismo día, no se repiten los correos
+# (tabla notificaciones_enviadas).
+name: Tareas diarias
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  notificaciones:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enviar recordatorios y avisos
+        env:
+          TAREAS_TOKEN: ${{ secrets.TAREAS_TOKEN }}
+        run: |
+          if [ -z "$TAREAS_TOKEN" ]; then
+            echo "Falta el secreto TAREAS_TOKEN; no se envían notificaciones."
+            exit 0
+          fi
+          curl --silent --show-error --fail --max-time 150 --retry 2 --retry-delay 30 \
+            -X POST -H "Authorization: Bearer $TAREAS_TOKEN" \
+            https://ritmoapp-api.onrender.com/api/tareas/diarias

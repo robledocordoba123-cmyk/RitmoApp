@@ -259,3 +259,14 @@ model TokenRecuperacion {
   @@index([userId])
   @@map("tokens_recuperacion")
 }
+
+// Registro de las notificaciones programadas que ya se enviaron (recordatorio
+// de clase, membresía por vencer). La clave es única: si la tarea diaria corre
+// dos veces, el segundo intento choca con la clave y ese correo no se repite.
+model NotificacionEnviada {
+  id        String   @id @default(uuid())
+  clave     String   @unique
+  enviadaEn DateTime @default(now())
+
+  @@map("notificaciones_enviadas")
+}

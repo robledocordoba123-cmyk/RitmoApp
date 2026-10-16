@@ -69,4 +69,100 @@ function enviarComprobantePago(pago, estudiante) {
   });
 }
 
-module.exports = { avisarClaseCancelada, enviarComprobantePago };
+// ── Tarea diaria (la llama GitHub Actions a las 7:00 a. m. de Colombia) ──
+
+const DIAS_AVISO_MEMBRESIA = 3;
+const UN_DIA_MS = 24 * 60 * 60 * 1000;
+const DIA_ISO = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA });
+
+// Inicio y fin de un día de Colombia (UTC-5, sin horario de verano), a "dias"
+// de hoy. Sirve para buscar "las clases de mañana" sin depender de la hora UTC.
+function rangoDelDia(ahora, dias) {
+  const fecha = DIA_ISO.format(new Date(ahora.getTime() + dias * UN_DIA_MS));
+  const inicio = new Date(`${fecha}T00:00:00-05:00`);
+  return { fecha, inicio, fin: new Date(inicio.getTime() + UN_DIA_MS) };
+}
+
+// Anota la notificación antes de enviarla. Si la clave ya existía (la tarea
+// corrió dos veces el mismo día), Prisma lanza P2002 y no se envía de nuevo.
+async function primeraVez(prisma, clave) {
+  try {
+    await prisma.notificacionEnviada.create({ data: { clave } });
+    return true;
+  } catch (err) {
+    if (err.code === "P2002") return false;
+    throw err;
+  }
+}
+
+// Recordatorio a cada estudiante con reserva confirmada en una clase de
+// mañana. Usa el cliente global de Prisma: la tarea recorre todas las
+// academias activas, cada correo va solo al estudiante de esa reserva.
+async function enviarRecordatoriosDeClase(prisma, ahora = new Date()) {
+  const { inicio, fin } = rangoDelDia(ahora, 1);
+  const reservas = await prisma.reserva.findMany({
+    where: {
+      estado: "CONFIRMADA",
+      estudiante: { activo: true },
+      tenant: { estado: "ACTIVA" },
+      clase: { estado: "PROGRAMADA", fechaHoraInicio: { gte: inicio, lt: fin } },
+    },
+    include: { estudiante: { select: { nombre: true, email: true } }, clase: { include: { ritmo: true, salon: true } } },
+  });
+
+  let enviados = 0;
+  for (const r of reservas) {
+    if (!(await primeraVez(prisma, `recordatorio:${r.claseId}:${r.estudianteId}`))) continue;
+    const cuando = FECHA_HORA.format(r.clase.fechaHoraInicio);
+    const nombreClase = `${r.clase.ritmo.nombre} en ${r.clase.salon.nombre}`;
+    enviarSinEsperar({
+      para: r.estudiante.email,
+      asunto: `Mañana tienes clase: ${r.clase.ritmo.nombre}`,
+      texto: `Hola, ${r.estudiante.nombre}.
+
+Te recordamos que el ${cuando} tienes clase de ${nombreClase}.
+Si no puedes ir, cancela tu reserva en RitmoApp para que otra persona use el cupo.`,
+      html:
+        `<p>Hola, ${escaparHtml(r.estudiante.nombre)}.</p>` +
+        `<p>Te recordamos que el <b>${cuando}</b> tienes clase de <b>${escaparHtml(nombreClase)}</b>.</p>` +
+        "<p>Si no puedes ir, cancela tu reserva en RitmoApp para que otra persona use el cupo.</p>",
+    });
+    enviados += 1;
+  }
+  return enviados;
+}
+
+// RN-05 · HU-13: aviso a los estudiantes cuya membresía vence dentro de
+// DIAS_AVISO_MEMBRESIA días, para que paguen antes de quedarse sin reservar.
+async function avisarMembresiasPorVencer(prisma, ahora = new Date()) {
+  const { fecha, inicio, fin } = rangoDelDia(ahora, DIAS_AVISO_MEMBRESIA);
+  const ultimos = await prisma.pago.groupBy({ by: ["estudianteId"], _max: { vigenteHasta: true } });
+  const porVencer = ultimos.filter((u) => u._max.vigenteHasta >= inicio && u._max.vigenteHasta < fin);
+  if (porVencer.length === 0) return 0;
+
+  const estudiantes = await prisma.user.findMany({
+    where: { id: { in: porVencer.map((u) => u.estudianteId) }, activo: true, rol: "ESTUDIANTE", tenant: { estado: "ACTIVA" } },
+    select: { id: true, nombre: true, email: true },
+  });
+
+  let enviados = 0;
+  for (const e of estudiantes) {
+    if (!(await primeraVez(prisma, `membresia:${e.id}:${fecha}`))) continue;
+    const hasta = FECHA.format(porVencer.find((u) => u.estudianteId === e.id)._max.vigenteHasta);
+    enviarSinEsperar({
+      para: e.email,
+      asunto: "Tu membresía vence en 3 días",
+      texto: `Hola, ${e.nombre}.
+
+Tu membresía en la academia vence el ${hasta}. Renuévala en la academia para seguir reservando tus clases sin interrupciones.`,
+      html:
+        `<p>Hola, ${escaparHtml(e.nombre)}.</p>` +
+        `<p>Tu membresía en la academia vence el <b>${hasta}</b>.</p>` +
+        "<p>Renuévala en la academia para seguir reservando tus clases sin interrupciones.</p>",
+    });
+    enviados += 1;
+  }
+  return enviados;
+}
+
+module.exports = { avisarClaseCancelada, enviarComprobantePago, enviarRecordatoriosDeClase, avisarMembresiasPorVencer, rangoDelDia };
