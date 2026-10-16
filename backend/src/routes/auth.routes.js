@@ -5,6 +5,9 @@ const { limiteLogin, limiteRegistro, limiteRecuperacion } = require("../middlewa
 
 const router = Router();
 
+// Rutas públicas (sin token). Cada una tiene su límite de intentos por IP
+// (middlewares/rateLimit.js): registro de academias (HU-01), login (HU-04,
+// RNF-07) y recuperación de contraseña (HU-05).
 router.post("/onboarding", limiteRegistro, onboarding);
 router.post("/login", limiteLogin, login);
 router.post("/recuperar", limiteRecuperacion, solicitar);
