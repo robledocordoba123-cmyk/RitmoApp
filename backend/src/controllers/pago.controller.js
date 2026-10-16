@@ -4,6 +4,7 @@
 // RF-12 · HU-12: el estudiante consulta sus pagos y el estado de su membresía.
 const prisma = require("../config/prisma");
 const { estadoMembresia, calcularEstado, calcularVigencia } = require("../utils/membresia");
+const notificaciones = require("../utils/notificaciones");
 
 const MEDIOS = ["EFECTIVO", "TRANSFERENCIA", "TARJETA", "OTRO"];
 
@@ -31,7 +32,7 @@ async function registrar(req, res) {
   // que un admin no pueda registrar pagos a estudiantes de otra academia.
   const estudiante = await prisma.user.findFirst({
     where: { id: estudianteId, tenantId: req.user.tenantId, rol: "ESTUDIANTE", activo: true },
-    select: { id: true },
+    select: { id: true, nombre: true, email: true },
   });
   if (!estudiante) {
     return res.status(404).json({ error: "El estudiante no existe en esta academia." });
@@ -76,6 +77,7 @@ async function registrar(req, res) {
     });
   });
 
+  notificaciones.enviarComprobantePago(pago, estudiante);
   res.status(201).json({ pago, membresia: calcularEstado(pago.vigenteHasta) });
 }
 
