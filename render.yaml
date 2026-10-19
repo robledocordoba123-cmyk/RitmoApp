@@ -42,3 +42,7 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+      # Clave de las tareas diarias (POST /api/tareas/diarias). Debe ser la misma
+      # que el secreto TAREAS_TOKEN de GitHub. Si falta, la ruta responde 404.
+      - key: TAREAS_TOKEN
+        sync: false
