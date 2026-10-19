@@ -14,8 +14,10 @@ services:
     # --include=dev: el CLI de Prisma (migraciones) es devDependency y con
     # NODE_ENV=production npm lo omitiría.
     buildCommand: npm ci --include=dev && npx prisma generate
-    # Aplica migraciones pendientes, recarga los datos de demostración (la
-    # agenda queda siempre alrededor de "hoy") y arranca la API.
+    # Demo pública: aplica migraciones pendientes, recarga los datos de
+    # demostración (la agenda queda siempre alrededor de "hoy") y arranca la API.
+    # Para una academia real se usa `npm run start:produccion` (sin datos de demo)
+    # y el SuperAdmin se crea una vez con `npm run crear:superadmin` (ver README).
     startCommand: npm run start:demo
     healthCheckPath: /api/health
     autoDeploy: true
@@ -28,6 +30,10 @@ services:
         value: 8h
       - key: TZ_ACADEMIAS
         value: America/Bogota
+      # Saltos de proxy delante de la API en Render (Cloudflare, balanceador y
+      # proxy interno). Con menos, el límite de intentos no ve la IP real (DEF-01).
+      - key: TRUST_PROXY
+        value: "3"
       # Render genera un secreto largo y aleatorio; nadie necesita conocerlo.
       - key: JWT_SECRET
         generateValue: true
