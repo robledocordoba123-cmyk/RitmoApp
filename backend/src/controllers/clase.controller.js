@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const notificaciones = require("../utils/notificaciones");
 
 // RF-14: el administrador de academia programa una clase asignando ritmo,
 // salón, profesor, cupo y horario. RN-02 (salón sin cruce) y RN-03
@@ -98,21 +99,26 @@ async function listar(req, res) {
   res.json(clases);
 }
 
+// Al cancelar una clase que todavía no empieza se avisa por correo a los
+// estudiantes con reserva confirmada (OE-6). Cancelar una clase ya cancelada
+// no vuelve a avisar, y una clase que ya pasó no avisa a nadie.
 async function cancelar(req, res) {
   const { id } = req.params;
 
-  try {
-    const clase = await req.db.clase.update({
-      where: { id },
-      data: { estado: "CANCELADA" },
-    });
-    res.json(clase);
-  } catch (err) {
-    if (err.code === "P2025") {
-      return res.status(404).json({ error: "Clase no encontrada en esta academia." });
-    }
-    throw err;
+  const antes = await req.db.clase.findUnique({ where: { id }, include: { ritmo: true, salon: true } });
+  if (!antes) {
+    return res.status(404).json({ error: "Clase no encontrada en esta academia." });
   }
+  if (antes.estado === "CANCELADA") {
+    const { ritmo, salon, ...clase } = antes;
+    return res.json(clase);
+  }
+
+  const clase = await req.db.clase.update({ where: { id }, data: { estado: "CANCELADA" } });
+  if (antes.fechaHoraInicio > new Date()) {
+    await notificaciones.avisarClaseCancelada(req.db, antes);
+  }
+  res.json(clase);
 }
 
 module.exports = { crear, listar, cancelar };
