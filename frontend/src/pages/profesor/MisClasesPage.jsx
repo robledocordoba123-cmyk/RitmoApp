@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ClipboardList, DoorOpen, CalendarDays, ArrowRight } from "lucide-react";
+import { ClipboardList, DoorOpen, CalendarDays, ArrowRight, QrCode } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import PageHeader from "../../components/ui/PageHeader";
@@ -49,6 +49,12 @@ export default function MisClasesPage() {
                   className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-800"
                 >
                   Tomar asistencia <ArrowRight size={14} />
+                </Link>
+                <Link
+                  to={`/profesor/clases/${c.id}/escanear`}
+                  className="mt-3 ml-4 inline-flex items-center gap-1 text-sm font-medium text-fuchsia-600 hover:text-fuchsia-800"
+                >
+                  <QrCode size={14} /> Escanear QR
                 </Link>
               </CardBody>
             </Card>

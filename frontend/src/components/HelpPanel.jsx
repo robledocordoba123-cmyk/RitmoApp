@@ -33,9 +33,11 @@ const CONTENIDO_AYUDA = {
       "En “Mis clases” verás todas las clases que tienes asignadas.",
       "El día de cada clase, entra y elige “Tomar asistencia”.",
       "Marca a cada estudiante como Asistió, Inasistencia o Excusa.",
+      "O usa “Escanear QR”: cada estudiante te muestra su código en “Mis reservas” y queda en Asistió.",
     ],
     preguntas: [
       { q: "¿Puedo registrar asistencia de un día anterior?", a: "No. La asistencia solo se puede registrar el mismo día calendario de la clase, ni antes ni después." },
+      { q: "¿Por qué el QR de un estudiante no funciona?", a: "El código solo sirve el día de la clase, desde 30 minutos antes de que empiece, en la clase que reservó y si su reserva sigue activa. Si no funciona, márcalo a mano en “Tomar asistencia”." },
       { q: "¿Por qué no veo a un estudiante en la lista?", a: "Solo aparecen los estudiantes con una reserva confirmada para esa clase específica." },
     ],
   },
