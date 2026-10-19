@@ -9,6 +9,7 @@ async function limpiarBD() {
   await prisma.asistencia.deleteMany();
   await prisma.reserva.deleteMany();
   await prisma.clase.deleteMany();
+  await prisma.bitacora.deleteMany();
   await prisma.salon.deleteMany();
   await prisma.ritmo.deleteMany();
   await prisma.user.deleteMany();

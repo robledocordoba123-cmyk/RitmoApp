@@ -123,6 +123,9 @@ async function main() {
   // --- Agenda y pagos: se regeneran completos --------------------------------
   // Los pagos van primero: apuntan a usuarios y tarifas que se limpian abajo.
   await prisma.pago.deleteMany({ where: { tenantId: academia.id } });
+  // La bitácora de la demo también se reinicia: apunta a usuarios que los
+  // visitantes crearon y que se borran más abajo.
+  await prisma.bitacora.deleteMany({ where: { tenantId: academia.id } });
   await prisma.asistencia.deleteMany({ where: { tenantId: academia.id } });
   await prisma.reserva.deleteMany({ where: { tenantId: academia.id } });
   await prisma.clase.deleteMany({ where: { tenantId: academia.id } });

@@ -25,6 +25,7 @@ const SalonesPage = lazy(() => import("./pages/admin/SalonesPage"));
 const RitmosPage = lazy(() => import("./pages/admin/RitmosPage"));
 const ClasesPage = lazy(() => import("./pages/admin/ClasesPage"));
 const ReportesPage = lazy(() => import("./pages/admin/ReportesPage"));
+const BitacoraPage = lazy(() => import("./pages/admin/BitacoraPage"));
 const EquipoPage = lazy(() => import("./pages/admin/EquipoPage"));
 const TarifasPage = lazy(() => import("./pages/admin/TarifasPage"));
 const PagosPage = lazy(() => import("./pages/admin/PagosPage"));
@@ -94,6 +95,7 @@ export default function App() {
         {ruta("/admin/ritmos", ["ADMIN_ACADEMIA"], RitmosPage)}
         {ruta("/admin/clases", ["ADMIN_ACADEMIA"], ClasesPage)}
         {ruta("/admin/reportes", ["ADMIN_ACADEMIA"], ReportesPage)}
+        {ruta("/admin/bitacora", ["ADMIN_ACADEMIA"], BitacoraPage)}
         {ruta("/admin/equipo", ["ADMIN_ACADEMIA"], EquipoPage)}
         {ruta("/admin/tarifas", ["ADMIN_ACADEMIA"], TarifasPage)}
         {ruta("/admin/pagos", ["ADMIN_ACADEMIA"], PagosPage)}

@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const { registrarEnBitacora } = require("../middlewares/bitacora");
+const bitacoraRoutes = require("./bitacora.routes");
 const authRoutes = require("./auth.routes");
 const salonRoutes = require("./salon.routes");
 const ritmoRoutes = require("./ritmo.routes");
@@ -13,6 +15,10 @@ const pagoRoutes = require("./pago.routes");
 const tareasRoutes = require("./tareas.routes");
 
 const router = Router();
+
+// HU-21: anota en la bitácora cada cambio exitoso de cualquier ruta de abajo.
+router.use(registrarEnBitacora);
+router.use("/bitacora", bitacoraRoutes);
 
 router.get("/health", (req, res) => res.json({ estado: "ok" }));
 

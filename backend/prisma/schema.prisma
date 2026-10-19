@@ -65,6 +65,7 @@ model Tenant {
   asistencias Asistencia[]
   tarifas   Tarifa[]
   pagos     Pago[]
+  bitacora  Bitacora[]
 
   @@map("tenants")
 }
@@ -95,6 +96,7 @@ model User {
   pagos               Pago[]       @relation("PagosEstudiante")
   pagosRegistrados    Pago[]       @relation("PagosRegistradosPor")
   tokensRecuperacion  TokenRecuperacion[]
+  bitacora            Bitacora[]
 
   @@index([tenantId])
   @@map("users")
@@ -242,6 +244,24 @@ model Pago {
   @@index([tenantId])
   @@index([estudianteId, vigenteHasta])
   @@map("pagos")
+}
+
+// Bitácora de auditoría. RF-21 · HU-21: quién hizo cada cambio en la academia
+// y cuándo. La llena el middleware middlewares/bitacora.js después de cada
+// cambio exitoso; la API no tiene rutas para editarla ni borrarla.
+model Bitacora {
+  id         String   @id @default(uuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  usuarioId  String
+  usuario    User     @relation(fields: [usuarioId], references: [id])
+  accion     String
+  detalle    String?
+  entidadId  String?
+  fecha      DateTime @default(now())
+
+  @@index([tenantId, fecha])
+  @@map("bitacora")
 }
 
 // Enlace para recuperar la contraseña. RF-05 · HU-05, RN-07: vence a los 30
