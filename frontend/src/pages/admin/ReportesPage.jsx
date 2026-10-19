@@ -21,6 +21,8 @@ function hoyISO() {
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
 }
 
+// UI-18 · HU-20: ocupación por salón e ingresos por tarifa y medio de pago en
+// un rango de fechas. Si no hay datos en el rango se muestra un estado vacío.
 export default function ReportesPage() {
   const { token } = useAuth();
   const [desde, setDesde] = useState(primerDiaDelMes());

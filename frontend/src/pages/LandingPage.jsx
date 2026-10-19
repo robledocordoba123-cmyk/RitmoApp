@@ -16,6 +16,8 @@ import {
   Smile,
 } from "lucide-react";
 
+// Textos de la página en arreglos, para cambiar el contenido sin tocar el
+// diseño de las secciones.
 const CARACTERISTICAS = [
   {
     icon: CalendarCheck2,
@@ -71,6 +73,8 @@ const PREGUNTAS = [
   },
 ];
 
+// Hace aparecer cada bloque con una animación suave cuando entra en pantalla,
+// una sola vez (once: true) para no distraer al volver a subir.
 function Reveal({ children, delay = 0 }) {
   return (
     <motion.div
@@ -85,6 +89,8 @@ function Reveal({ children, delay = 0 }) {
 }
 
 
+// UI-01 · Página de inicio (pública). Presenta RitmoApp a una academia que no
+// la conoce y la lleva a registrarse (HU-01) o a entrar a la demo (DOC-05).
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
@@ -110,6 +116,7 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* Portada: qué es RitmoApp y botones para registrarse o probar la demo. */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 dark:from-indigo-950/40 dark:via-gray-950 dark:to-fuchsia-950/20" />
         <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-20 grid lg:grid-cols-2 gap-12 items-center">
@@ -210,6 +217,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Características principales (CARACTERISTICAS). */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {CARACTERISTICAS.map((c, i) => (
@@ -226,6 +234,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Cómo funciona: los tres pasos desde el registro hasta la primera reserva. */}
       <section className="bg-gray-50 dark:bg-gray-900/40 border-y border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-6 py-16">
           <Reveal>
@@ -250,6 +259,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Un panel por rol: administrador, profesor y estudiante. */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <Reveal>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 text-center mb-2">Un panel para cada rol</h2>
@@ -270,6 +280,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Preguntas frecuentes (AccordionItem). */}
       <section className="bg-gray-50 dark:bg-gray-900/40 border-y border-gray-100 dark:border-gray-800">
         <div className="max-w-2xl mx-auto px-6 py-16">
           <Reveal>
@@ -285,6 +296,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Cierre: llamado final a registrar la academia. */}
       <section className="max-w-3xl mx-auto px-6 py-20 text-center">
         <Reveal>
           <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-100">

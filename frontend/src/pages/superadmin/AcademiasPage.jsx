@@ -9,6 +9,9 @@ import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
+// UI-23 · HU-02 y HU-03: lista de academias registradas con su estado. El
+// SuperAdmin las suspende o reactiva sin borrar sus datos (RN-06); solo ve
+// datos generales, nunca los estudiantes o pagos de una academia (RN-04).
 export default function AcademiasPage() {
   const { token } = useAuth();
   const [academias, setAcademias] = useState(null);

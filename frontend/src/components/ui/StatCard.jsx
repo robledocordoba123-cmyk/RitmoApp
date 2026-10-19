@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import AnimatedNumber from "./AnimatedNumber";
 
+// Indicador numérico de los paneles de inicio (clases programadas, reservas,
+// pagos al día...). Props: icon (ícono de lucide), label, value (se anima al
+// cambiar), hint (texto pequeño opcional) y tone (indigo, green, amber o rose).
 export default function StatCard({ icon: Icon, label, value, hint, tone = "indigo" }) {
   const tonos = {
     indigo: "bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none",

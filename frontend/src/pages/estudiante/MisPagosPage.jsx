@@ -11,6 +11,7 @@ import AvisoMembresia from "../../components/AvisoMembresia";
 import { pesos, fecha, MEDIOS_DE_PAGO, ESTADOS_MEMBRESIA } from "../../utils/formato";
 
 // RF-12 · HU-12: estado de la membresía e historial de pagos del estudiante.
+// Pantalla UI-10 de DOC-05.
 export default function MisPagosPage() {
   const { token } = useAuth();
   const [datos, setDatos] = useState(null);

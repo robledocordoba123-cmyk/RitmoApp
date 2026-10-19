@@ -16,6 +16,7 @@ const CAMPO =
 
 // RF-18 · HU-18: los planes que vende la academia. Una tarifa con pagos no se
 // borra (RN-13): se desactiva para que no se use en pagos nuevos.
+// Pantalla UI-16 de DOC-05 (HU-18).
 export default function TarifasPage() {
   const { token } = useAuth();
   const [tarifas, setTarifas] = useState(null);

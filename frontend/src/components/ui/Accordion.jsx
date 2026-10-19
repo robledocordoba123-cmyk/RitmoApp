@@ -2,6 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
+// Pregunta que se despliega al hacer clic. La usan el panel de ayuda (HelpPanel)
+// y las preguntas frecuentes de la página de inicio.
+// Props: pregunta (texto del botón) y respuesta (texto que se muestra al abrir).
 export default function AccordionItem({ pregunta, respuesta }) {
   const [abierta, setAbierta] = useState(false);
   return (

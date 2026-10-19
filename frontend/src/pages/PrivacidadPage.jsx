@@ -9,6 +9,9 @@ const VERSION = "1.0";
 const VIGENTE_DESDE = "12 de octubre de 2026";
 const CORREO_CONTACTO = "robledocordoba123@gmail.com";
 
+// UI-06 · Ley 1581 de 2012: política de tratamiento de datos personales,
+// pública. Su VERSION debe ser la misma que VERSION_POLITICA_DATOS del backend,
+// en backend/src/utils/privacidad.js.
 export default function PrivacidadPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">

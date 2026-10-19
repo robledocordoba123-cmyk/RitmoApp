@@ -7,6 +7,9 @@ const VARIANTES = {
   ghost: "text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800",
 };
 
+// Botón de la app. variant="primary" (degradado, la acción principal de la
+// pantalla) o "secondary" (borde gris). icon recibe un ícono de lucide y el
+// resto de props pasan al <button> (type, onClick, disabled...).
 export default function Button({ variant = "primary", icon: Icon, className = "", children, ...props }) {
   return (
     <motion.button

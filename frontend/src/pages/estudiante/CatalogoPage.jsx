@@ -9,6 +9,9 @@ import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 import AvisoMembresia from "../../components/AvisoMembresia";
 
+// UI-08 · HU-08, HU-09 y HU-13: catálogo de clases futuras con filtros y
+// reserva en un clic. El botón explica por qué no se puede reservar (sin cupos
+// o membresía vencida); la API vuelve a validar todo al reservar (CU-03).
 export default function CatalogoPage() {
   const { token } = useAuth();
   const [clases, setClases] = useState(null);

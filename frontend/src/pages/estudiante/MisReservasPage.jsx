@@ -20,6 +20,8 @@ function estadoVisible(reserva) {
   return { texto: "Confirmada", color: "green" };
 }
 
+// UI-09 · HU-10: reservas del estudiante con su estado. Solo se cancela una
+// clase que no ha empezado; la reserva cancelada no se borra, queda marcada.
 export default function MisReservasPage() {
   const { token } = useAuth();
   const [reservas, setReservas] = useState(null);

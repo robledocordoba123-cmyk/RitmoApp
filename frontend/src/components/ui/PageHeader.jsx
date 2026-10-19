@@ -1,3 +1,7 @@
+// Título y subtítulo de cada pantalla, con una acción opcional a la derecha
+// (por ejemplo el selector Lista / Calendario de Clases). Mantener el mismo
+// encabezado en todas las pantallas es parte del principio de consistencia
+// de DOC-05.
 export default function PageHeader({ title, subtitle, action }) {
   return (
     <div className="flex items-start justify-between gap-4 mb-6">

@@ -8,11 +8,16 @@ import { Card, CardBody } from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
 
+// UI-20 · HU-15: todas las clases asignadas al profesor, con el enlace para
+// tomar asistencia (UI-21).
 export default function MisClasesPage() {
   const { token, usuario } = useAuth();
   const [clases, setClases] = useState(null);
 
   useEffect(() => {
+    // GET /clases devuelve las clases de la academia; aquí se dejan solo las del
+    // profesor que inició sesión. La API igual impide ver o registrar la
+    // asistencia de una clase ajena (403).
     api.get("/clases", token).then((data) => setClases(data.filter((c) => c.profesor.id === usuario.id)));
   }, []);
 

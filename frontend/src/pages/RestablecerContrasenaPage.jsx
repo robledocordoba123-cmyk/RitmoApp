@@ -10,6 +10,7 @@ const CAMPO =
 
 // RF-05 · HU-05: página a la que llega el enlace del correo. El token viaja
 // en la URL y la API decide si sigue vigente (RN-07).
+// Pantalla UI-05 de DOC-05 (HU-05).
 export default function RestablecerContrasenaPage() {
   const [parametros] = useSearchParams();
   const token = parametros.get("token");
