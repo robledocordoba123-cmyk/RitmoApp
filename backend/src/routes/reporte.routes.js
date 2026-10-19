@@ -11,5 +11,6 @@ router.use(requireAuth, requireRole("ADMIN_ACADEMIA"), requireTenant);
 
 router.get("/ocupacion", reporteController.ocupacionPorSalon);
 router.get("/ingresos", reporteController.ingresos);
+router.get("/asistencia", reporteController.asistencia);
 
 module.exports = router;

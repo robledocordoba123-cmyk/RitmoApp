@@ -101,4 +101,74 @@ async function ingresos(req, res) {
   });
 }
 
-module.exports = { ocupacionPorSalon, ingresos };
+// OE-4 del acta · RF-20: reporte de asistencia para el administrador, por
+// clase y por estudiante, de las clases del rango que ya empezaron (las
+// futuras todavía no tienen asistencia). Igual que el historial del estudiante
+// (HU-11), el porcentaje solo cuenta lo que el profesor ya registró, y las
+// clases sin registrar se muestran aparte para que el administrador las vea.
+async function asistencia(req, res) {
+  const { desde, hasta } = req.query;
+  const { error, inicio, finExclusivo } = rangoDeFechas(req.query);
+  if (error) return res.status(400).json({ error });
+
+  const ahora = new Date();
+  const clases = await req.db.clase.findMany({
+    where: {
+      estado: { not: "CANCELADA" },
+      fechaHoraInicio: { gte: inicio, lt: finExclusivo < ahora ? finExclusivo : ahora },
+    },
+    include: {
+      ritmo: { select: { nombre: true } },
+      salon: { select: { nombre: true } },
+      profesor: { select: { nombre: true } },
+      reservas: { where: { estado: "CONFIRMADA" }, select: { estudianteId: true, estudiante: { select: { nombre: true } } } },
+      asistencias: { select: { estudianteId: true, estado: true } },
+    },
+    orderBy: { fechaHoraInicio: "desc" },
+  });
+
+  const vacio = () => ({ asistio: 0, inasistencia: 0, excusa: 0, sinRegistrar: 0 });
+  const CAMPO = { ASISTIO: "asistio", INASISTENCIA: "inasistencia", EXCUSA: "excusa" };
+  const porcentaje = (c) => {
+    const registradas = c.asistio + c.inasistencia + c.excusa;
+    return registradas === 0 ? null : Math.round((c.asistio * 100) / registradas);
+  };
+
+  const resumen = { clases: clases.length, clasesSinRegistrar: 0, ...vacio() };
+  const porEstudiante = new Map();
+  const porClase = clases.map((clase) => {
+    const estadoDe = new Map(clase.asistencias.map((a) => [a.estudianteId, a.estado]));
+    const conteo = vacio();
+    for (const r of clase.reservas) {
+      const campo = CAMPO[estadoDe.get(r.estudianteId)] || "sinRegistrar";
+      conteo[campo] += 1;
+      resumen[campo] += 1;
+      if (!porEstudiante.has(r.estudianteId)) {
+        porEstudiante.set(r.estudianteId, { estudianteId: r.estudianteId, nombre: r.estudiante.nombre, clases: 0, ...vacio() });
+      }
+      const e = porEstudiante.get(r.estudianteId);
+      e.clases += 1;
+      e[campo] += 1;
+    }
+    if (clase.reservas.length > 0 && conteo.sinRegistrar === clase.reservas.length) resumen.clasesSinRegistrar += 1;
+    return {
+      claseId: clase.id,
+      ritmo: clase.ritmo.nombre,
+      salon: clase.salon.nombre,
+      profesor: clase.profesor.nombre,
+      fechaHoraInicio: clase.fechaHoraInicio,
+      inscritos: clase.reservas.length,
+      ...conteo,
+      porcentajeAsistencia: porcentaje(conteo),
+    };
+  });
+
+  // Primero quienes más faltan: es a quienes la academia querría llamar.
+  const estudiantes = Array.from(porEstudiante.values())
+    .map((e) => ({ ...e, porcentajeAsistencia: porcentaje(e) }))
+    .sort((a, b) => (a.porcentajeAsistencia ?? 101) - (b.porcentajeAsistencia ?? 101) || a.nombre.localeCompare(b.nombre));
+
+  res.json({ desde, hasta, resumen: { ...resumen, porcentajeAsistencia: porcentaje(resumen) }, porClase, porEstudiante: estudiantes });
+}
+
+module.exports = { ocupacionPorSalon, ingresos, asistencia };
