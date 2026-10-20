@@ -48,7 +48,23 @@ function obtenerTransporte() {
   return transporte;
 }
 
+// Dominios reservados para pruebas (RFC 2606 y 6761): nunca tienen buzón. Los
+// usuarios de la demo usan @ritmocentral.test; enviarles correos gasta la
+// cuota diaria de Brevo (300 en el plan gratuito) y los rebotes dañan la
+// reputación del remitente.
+const DOMINIO_DE_PRUEBA = /\.(test|example|invalid|localhost)$/i;
+
+function esCorreoDePrueba(para) {
+  return DOMINIO_DE_PRUEBA.test(String(para).trim());
+}
+
 async function enviarCorreo({ para, asunto, texto, html }) {
+  if (esCorreoDePrueba(para)) {
+    if (process.env.NODE_ENV !== "test") {
+      console.log(JSON.stringify({ fecha: new Date().toISOString(), nivel: "info", evento: "correo", asunto, omitido: "dominio de prueba" }));
+    }
+    return;
+  }
   if (process.env.BREVO_API_KEY) {
     return enviarConBrevo({ para, asunto, texto, html });
   }
@@ -66,4 +82,4 @@ async function enviarCorreo({ para, asunto, texto, html }) {
   await obtenerTransporte().sendMail({ from: { name, address: email }, to: para, subject: asunto, text: texto, html });
 }
 
-module.exports = { enviarCorreo };
+module.exports = { enviarCorreo, esCorreoDePrueba };

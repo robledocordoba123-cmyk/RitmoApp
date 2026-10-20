@@ -17,12 +17,21 @@ const ROLES = { ADMIN_ACADEMIA: "administrador", PROFESOR: "profesor", ESTUDIANT
 const fecha = (valor) => (valor ? FECHA_HORA.format(new Date(valor)) : null);
 const nombre = (cuerpo) => cuerpo?.nombre ?? null;
 
-// [método, ruta, acción, detalle]. El detalle sale de la respuesta y nunca
-// incluye contraseñas ni correos: solo lo necesario para saber qué cambió.
+// [método, ruta, acción, detalle, entidad]. El detalle sale de la respuesta y
+// nunca incluye contraseñas ni correos: solo lo necesario para saber qué
+// cambió. "entidad" es opcional: dice de qué parte de la ruta sale el id
+// cuando no es el segundo tramo (por ejemplo /qr/clases/:id/asistencia).
 const ACCIONES = [
   ["POST", /^\/clases$/, "Programó una clase", (c) => (c?.fechaHoraInicio ? `Clase del ${fecha(c.fechaHoraInicio)}` : null)],
   ["PATCH", /^\/clases\/[^/]+\/cancelar$/, "Canceló una clase", (c) => (c?.fechaHoraInicio ? `Clase del ${fecha(c.fechaHoraInicio)}` : null)],
   ["POST", /^\/clases\/[^/]+\/asistencia$/, "Registró la asistencia de una clase", (c) => (Array.isArray(c) ? `${c.length} estudiante(s)` : null)],
+  [
+    "POST",
+    /^\/qr\/clases\/[^/]+\/asistencia$/,
+    "Registró asistencia con código QR",
+    (c) => (c?.estudiante ? `${c.estudiante.nombre}${c.yaEstabaRegistrado ? " · ya estaba registrado" : ""}` : null),
+    (ruta) => ruta.split("/")[3],
+  ],
   ["POST", /^\/reservas$/, "Reservó una clase", () => null],
   ["PATCH", /^\/reservas\/[^/]+\/cancelar$/, "Canceló una reserva", () => null],
   ["POST", /^\/pagos$/, "Registró un pago", (c) => (c?.pago ? `${c.pago.nombreTarifa} · ${PESOS.format(c.pago.monto)}` : null)],
@@ -62,7 +71,7 @@ function registrarEnBitacora(req, res, next) {
     }
     anotado = true;
     const cuerpo = tipo === "json" ? datos : undefined;
-    const [, , texto, detallar] = accion;
+    const [, , texto, detallar, entidadDeRuta] = accion;
     prisma.bitacora
       .create({
         data: {
@@ -70,7 +79,7 @@ function registrarEnBitacora(req, res, next) {
           usuarioId: req.user.id,
           accion: texto,
           detalle: detallar(cuerpo),
-          entidadId: cuerpo?.id ?? cuerpo?.pago?.id ?? ruta.split("/")[2] ?? null,
+          entidadId: entidadDeRuta ? entidadDeRuta(ruta) : (cuerpo?.id ?? cuerpo?.pago?.id ?? ruta.split("/")[2] ?? null),
         },
       })
       .catch((err) => {

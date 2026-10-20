@@ -141,4 +141,26 @@ describe("Asistencia con código QR", () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/ya no está activa/);
   });
+
+  // RF-21 · HU-21: el escaneo también queda en la bitácora de la academia.
+  test("CP-179 · cada escaneo exitoso queda en la bitácora con el estudiante y la clase", async () => {
+    const c = await clase();
+    const { e, reserva, token } = await estudianteCon(c);
+    const { codigo } = (await pedirQr(token, reserva.id)).body;
+
+    await escanear(c.id, codigo);
+    await escanear(c.id, codigo);
+
+    const filas = await prisma.bitacora.findMany({ where: { tenantId: academia.id } });
+    filas.sort((a, b) => a.detalle.localeCompare(b.detalle)); // los dos escaneos pueden tener la misma fecha
+    expect(filas.map((f) => f.detalle)).toEqual([e.nombre, `${e.nombre} · ya estaba registrado`]);
+    expect(filas[0]).toMatchObject({ accion: "Registró asistencia con código QR", usuarioId: profesor.id, entidadId: c.id });
+  });
+
+  test("CP-180 · un escaneo rechazado no se anota en la bitácora", async () => {
+    const c = await clase();
+    await escanear(c.id, "codigo-falso");
+
+    expect(await prisma.bitacora.count()).toBe(0);
+  });
 });
