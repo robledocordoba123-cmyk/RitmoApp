@@ -22,7 +22,7 @@ services:
     container_name: ritmoapp_pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@ritmoapp.local
+      PGADMIN_DEFAULT_EMAIL: admin@ritmoapp.dev
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5051:80"
