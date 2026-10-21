@@ -12,7 +12,7 @@ Cada academia se registra sola y trabaja con sus datos totalmente aislados de la
 
 En la pantalla de inicio de sesión puedes entrar con un clic como **Administrador**, **Profesor** o **Estudiante** de una academia de ejemplo con su agenda de clases. Los datos de la demo se restablecen solos.
 
-> La API está en un plan gratuito que se apaga tras 15 minutos sin uso: si nadie la ha abierto en un rato, la primera entrada puede tardar cerca de un minuto.
+> La API está en el plan gratuito de Render, que la apaga tras 15 minutos sin uso. De 7:00 a. m. a 9:00 p. m. (hora de Colombia) un monitor externo en [cron-job.org](https://cron-job.org) la consulta cada 10 minutos para que esté despierta; fuera de ese horario la primera entrada puede tardar cerca de un minuto.
 
 ![Panel del administrador](docs/capturas/03-admin-dashboard.png)
 
@@ -24,7 +24,11 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 - **Membresías.** Sin membresía vigente no se reserva. Cada pago extiende la membresía desde donde terminaba, y dos pagos registrados a la vez no se pisan (bloqueo de fila en la transacción).
 - **Zonas horarias.** "Hoy" y los rangos de los reportes se calculan en hora de Colombia, no en UTC (una clase de 6:00 p. m. en Bogotá ya es "mañana" en UTC).
 - **Seguridad.** JWT + bcrypt, control de acceso por rol, rate limiting en el login, el registro y la recuperación de contraseña, `helmet`, CORS restringido por entorno y la API no arranca si faltan variables obligatorias. El enlace de recuperación vence a los 30 minutos, sirve una sola vez y en la base de datos solo se guarda su hash.
-- **85 pruebas automatizadas** (Jest + Supertest, casos de prueba CP-001 a CP-085) contra PostgreSQL real, sin mocks, que corren en GitHub Actions en cada push.
+- **Asistencia con código QR.** El estudiante muestra un QR de su reserva y el profesor lo escanea con la cámara. El código es un JWT firmado con una clave propia (derivada de la principal), con audiencia exclusiva y sin datos personales, así que no sirve como token de sesión ni para otra clase.
+- **Bitácora de auditoría.** Un middleware anota cada cambio exitoso (quién, qué, cuándo y sobre qué registro) antes de responder; el administrador la consulta con buscador.
+- **Correos y tareas programadas.** Aviso a los inscritos cuando se cancela una clase, comprobante de pago, recordatorio de la clase de mañana y aviso de membresía por vencer. Las dos últimas las dispara cada mañana un workflow de GitHub Actions contra un endpoint protegido con token, y una tabla evita enviar el mismo aviso dos veces. Nunca se envía a dominios de prueba (`.test`, `.example`, `.invalid`, `.localhost`).
+- **Protección de datos (Ley 1581 de 2012).** Página de política de tratamiento de datos; al registrar la academia y al crear cada usuario se exige la autorización, y queda guardada la fecha y la versión aceptada.
+- **182 pruebas automatizadas**, casos de prueba CP-001 a CP-182: 157 del backend (Jest + Supertest contra PostgreSQL real, sin mocks) y 25 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 91,9 % y 81,2 %).
 
 ## Capturas
 
@@ -46,18 +50,18 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 |---|---|
 | **SuperAdmin** | Ver todas las academias registradas y activarlas o suspenderlas. Si una academia está suspendida, sus usuarios no pueden iniciar sesión. |
 | **Todos** | Iniciar sesión y recuperar la contraseña con un enlace que llega al correo. |
-| **Admin de academia** | Registrar su academia, gestionar salones, ritmos y tarifas, crear, editar y desactivar profesores y estudiantes, programar y cancelar clases (lista o calendario semanal), registrar pagos, ver quién está al día y ver los reportes de ocupación e ingresos. |
-| **Profesor** | Ver sus clases de hoy y las próximas, y tomar asistencia (asistió, inasistencia, excusa) el día de la clase. |
-| **Estudiante** | Ver el catálogo con cupos en tiempo real y filtros por ritmo y día, reservar y cancelar (el cupo queda libre para otro), y ver sus pagos y hasta cuándo está vigente su membresía. |
+| **Admin de academia** | Registrar su academia, gestionar salones, ritmos y tarifas, crear, editar y desactivar profesores y estudiantes, programar y cancelar clases (lista o calendario semanal), registrar pagos, ver quién está al día, ver los reportes de ocupación, ingresos y asistencia, y revisar la bitácora de cambios. |
+| **Profesor** | Ver sus clases de hoy y las próximas, y tomar asistencia (asistió, inasistencia, excusa) el día de la clase, a mano o escaneando el QR del estudiante. |
+| **Estudiante** | Ver el catálogo con cupos en tiempo real y filtros por ritmo y día, reservar y cancelar (el cupo queda libre para otro), mostrar el QR de su reserva, ver su historial de asistencia, sus pagos y hasta cuándo está vigente su membresía. |
 
 ## Stack
 
 | Capa | Tecnologías |
 |---|---|
-| Frontend | React 19, Vite, Tailwind CSS 4, React Router, Recharts, Framer Motion |
+| Frontend | React 19, Vite, Tailwind CSS 4, React Router, Recharts, Framer Motion, qrcode y jsQR |
 | Backend | Node.js, Express 5, JWT, bcrypt, helmet, express-rate-limit, correo por la API de Brevo |
 | Datos | PostgreSQL 16, Prisma 7 (driver adapter `@prisma/adapter-pg`) |
-| Pruebas y CI | Jest, Supertest, GitHub Actions |
+| Pruebas y CI | Jest, Supertest, Vitest, Testing Library, GitHub Actions, Dependabot |
 | Entorno | Docker Compose (PostgreSQL + pgAdmin) |
 
 Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md). Dentro de la API no hay capas de servicios ni repositorios separadas ([ADR-002](docs/adr/ADR-002-controladores-y-prisma-sin-capa-de-servicios.md)) y el correo sale por la API de Brevo ([ADR-003](docs/adr/ADR-003-correo-por-api-http-brevo.md)).
@@ -69,6 +73,10 @@ Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa p
 | Frontend | Vercel | Carpeta `frontend`, variables `VITE_API_URL` y `VITE_MODO_DEMO`. Se publica solo con cada merge a `main`. |
 | API | Render (Ohio) | Definida como código en [`render.yaml`](render.yaml). La demo pública arranca con `npm run start:demo`: aplica migraciones y recarga los datos de demo. |
 | Base de datos | Neon, PostgreSQL 16 (Ohio) | Misma región que la API. La cadena de conexión solo vive en las variables de Render, nunca en el repositorio. |
+| Tareas diarias | GitHub Actions | [`tareas-diarias.yml`](.github/workflows/tareas-diarias.yml) llama a `POST /api/tareas/diarias` desde las 7:00 a. m. con el secreto `TAREAS_TOKEN` (GitHub puede retrasar la ejecución unas horas). |
+| Monitor de la demo | cron-job.org | Consulta `/api/health` cada 10 minutos de 7:00 a. m. a 9:00 p. m. y avisa por correo si falla dos veces seguidas. |
+
+Antes la demo se mantenía despierta con un workflow programado de GitHub Actions cada 5 minutos, pero GitHub retrasa y salta las ejecuciones programadas en los repositorios gratuitos: en dos días corrió 8 veces en vez de unas 300. Por eso se cambió a un monitor externo.
 
 `main` está protegida: todo cambio entra por Pull Request con revisión y con las pruebas de CI en verde.
 
@@ -110,7 +118,7 @@ npm install
 npm run dev                   # http://localhost:5173
 ```
 
-pgAdmin queda en `http://localhost:5051` (correo `admin@ritmoapp.local`, contraseña `admin`).
+pgAdmin queda en `http://localhost:5051` (correo `admin@ritmoapp.dev`, contraseña `admin`).
 
 ### Usuarios de prueba
 
@@ -134,36 +142,52 @@ cd backend
 docker exec ritmoapp_db createdb -U ritmoapp ritmoapp_test
 DATABASE_URL="postgresql://ritmoapp:ritmoapp_dev@localhost:5432/ritmoapp_test?schema=public" npx prisma migrate deploy
 
+npm test                      # o npm run test:coverage
+
+# Frontend (no necesita base de datos: usa una API falsa)
+cd ../frontend
 npm test
 ```
 
-Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia y reportes. También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-085) para la matriz de trazabilidad del proyecto.
+Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos y arranque de producción. También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-182) para la matriz de trazabilidad del proyecto.
 
 ## API
 
-Todas las rutas van bajo `/api`. Salvo `auth` y `health`, requieren `Authorization: Bearer <token>`.
+Todas las rutas van bajo `/api`. Salvo `auth`, `health` y `tareas`, requieren `Authorization: Bearer <token>`.
 
 | Método | Ruta | Rol | Descripción |
 |---|---|---|---|
+| GET | `/health` | Público | Estado de la API |
 | POST | `/auth/onboarding` | Público | Registra una academia y su administrador |
 | POST | `/auth/login` | Público | Inicia sesión y devuelve el JWT |
+| POST | `/auth/recuperar`, `/auth/restablecer` | Público | Envía el enlace de recuperación / cambia la contraseña |
 | GET / PATCH | `/superadmin/tenants`, `/superadmin/tenants/:id/estado` | SuperAdmin | Lista academias / activa o suspende |
-| GET / POST / PUT / DELETE | `/salones`, `/ritmos` | Admin | Catálogo de la academia |
-| GET / POST | `/usuarios` | Admin | Lista y crea profesores y estudiantes |
+| GET / POST / PUT / DELETE | `/salones`, `/ritmos`, `/tarifas` | Admin | Catálogo de la academia |
+| GET / POST / PATCH | `/usuarios`, `/usuarios/:id` | Admin | Lista, crea, edita y desactiva profesores y estudiantes |
 | GET | `/clases` | Cualquier rol de la academia | Catálogo de clases con cupos |
 | POST | `/clases` | Admin | Programa una clase (valida cruces y capacidad) |
-| PATCH | `/clases/:id/cancelar` | Admin | Cancela una clase |
+| PATCH | `/clases/:id/cancelar` | Admin | Cancela una clase y avisa a los inscritos |
 | GET / POST | `/clases/:id/inscritos`, `/clases/:id/asistencia` | Profesor asignado | Lista de inscritos / registro de asistencia |
 | POST | `/reservas` | Estudiante | Reserva un cupo |
 | GET | `/reservas/mias` | Estudiante | Sus reservas |
 | PATCH | `/reservas/:id/cancelar` | Estudiante | Cancela su reserva y libera el cupo |
-| GET | `/reportes/ocupacion?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` | Admin | Ocupación por salón |
+| GET | `/asistencias/mias` | Estudiante | Su historial de asistencia |
+| GET | `/qr/reservas/:id` | Estudiante | Código QR de su reserva |
+| POST | `/qr/clases/:id/asistencia` | Profesor asignado | Registra la asistencia con el código escaneado |
+| GET / POST | `/pagos`, `/pagos/membresias` | Admin | Pagos y estado de membresía de cada estudiante / registra un pago |
+| GET | `/pagos/mios` | Estudiante | Sus pagos |
+| GET | `/reportes/ocupacion`, `/reportes/ingresos`, `/reportes/asistencia` | Admin | Reportes por rango (`?desde=YYYY-MM-DD&hasta=YYYY-MM-DD`) |
+| GET | `/bitacora` | Admin | Últimos 200 cambios de la academia |
+| POST | `/tareas/diarias` | Token `TAREAS_TOKEN` | Recordatorios y avisos de membresía del día |
 
 ## Estructura
 
 ```
 RitmoApp/
-├── .github/workflows/ci.yml   # Pruebas + build en cada push
+├── .github/
+│   ├── workflows/ci.yml       # Pruebas, cobertura mínima y build en cada push
+│   ├── workflows/tareas-diarias.yml  # Recordatorios por correo cada mañana
+│   └── dependabot.yml         # Revisión semanal de dependencias
 ├── docker-compose.yml         # PostgreSQL + pgAdmin para desarrollo
 ├── backend/
 │   ├── prisma/                # Esquema, migraciones, seed y seed de demo
@@ -173,13 +197,15 @@ RitmoApp/
 │   │   ├── controllers/
 │   │   ├── routes/
 │   │   └── utils/
+│   ├── scripts/               # crear:superadmin y medición de rendimiento
 │   └── tests/                 # Jest + Supertest contra ritmoapp_test
 ├── frontend/
 │   └── src/
 │       ├── api/               # Cliente HTTP
 │       ├── context/           # Sesión y tema (claro/oscuro)
-│       ├── components/        # UI compartida, calendario, gráfica
-│       └── pages/             # Una carpeta por rol
+│       ├── components/        # UI compartida, calendario, gráfica, QR
+│       ├── pages/             # Una carpeta por rol
+│       └── test/              # Configuración de Vitest y API falsa
 └── docs/
     ├── adr/                   # Decisiones de arquitectura
     └── capturas/
