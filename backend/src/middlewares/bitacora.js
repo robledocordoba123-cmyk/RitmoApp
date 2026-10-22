@@ -45,6 +45,8 @@ const ACCIONES = [
   ["PUT", /^\/tarifas\/[^/]+$/, "Editó una tarifa", nombre],
   ["DELETE", /^\/tarifas\/[^/]+$/, "Desactivó una tarifa", () => null],
   ["POST", /^\/usuarios$/, "Creó un usuario", (c) => (c ? `${c.nombre} (${ROLES[c.rol] || c.rol})` : null)],
+  // La pregunta no se guarda: puede traer datos personales y no hace falta para auditar.
+  ["POST", /^\/asistente$/, "Consultó al asistente de IA", () => null],
   ["PATCH", /^\/usuarios\/[^/]+$/, "Editó un usuario", (c) => (c ? `${c.nombre}${c.activo === false ? " · desactivado" : ""}` : null)],
 ];
 
