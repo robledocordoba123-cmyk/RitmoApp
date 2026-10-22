@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
-const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
+const { normalizarEmail, passwordValida, errorEnCambiosDeUsuario, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
 const { datosDeAutorizacion } = require("../utils/privacidad");
 
 const SALT_ROUNDS = 10;
@@ -71,72 +71,78 @@ async function crear(req, res) {
 // historial de reservas, asistencias y pagos debe conservarse.
 async function actualizar(req, res) {
   const { id } = req.params;
-  const { nombre, activo } = req.body;
-  const email = req.body.email === undefined ? undefined : normalizarEmail(req.body.email);
+  const cambios = {
+    nombre: req.body.nombre,
+    email: req.body.email === undefined ? undefined : normalizarEmail(req.body.email),
+    activo: req.body.activo,
+  };
 
-  if (nombre !== undefined && (typeof nombre !== "string" || !nombre.trim())) {
-    return res.status(400).json({ error: "El nombre no puede quedar vacío." });
-  }
-  if (email !== undefined && (typeof email !== "string" || !email.includes("@"))) {
-    return res.status(400).json({ error: "El correo no es válido." });
-  }
-  if (activo !== undefined && typeof activo !== "boolean") {
-    return res.status(400).json({ error: "activo debe ser verdadero o falso." });
-  }
+  const error = errorEnCambiosDeUsuario(cambios);
+  if (error) return res.status(400).json({ error });
 
-  // users no está en el cliente aislado por tenant: se filtra a mano. Un
-  // admin no puede tocar usuarios de otra academia ni a otros admins.
-  const usuario = await prisma.user.findFirst({
-    where: { id, tenantId: req.user.tenantId, rol: { in: ["PROFESOR", "ESTUDIANTE"] } },
-  });
+  const usuario = await buscarProfesorOEstudiante(id, req.user.tenantId);
   if (!usuario) {
     return res.status(404).json({ error: "El usuario no existe en esta academia." });
   }
-
-  if (email && email !== usuario.email) {
-    const ocupado = await prisma.user.findUnique({ where: { email } });
-    if (ocupado) return res.status(409).json({ error: "Ya existe un usuario registrado con ese correo." });
+  if (await correoOcupadoPorOtro(cambios.email, usuario.email)) {
+    return res.status(409).json({ error: "Ya existe un usuario registrado con ese correo." });
   }
 
-  const desactivando = activo === false && usuario.activo;
+  const desactivando = cambios.activo === false && usuario.activo;
   const ahora = new Date();
 
   // RN-13: un profesor con clases por dictar no se desactiva; primero hay
   // que reasignar o cancelar esas clases, o quedarían sin profesor.
   if (desactivando && usuario.rol === "PROFESOR") {
-    const pendientes = await req.db.clase.count({
-      where: { profesorId: id, estado: "PROGRAMADA", fechaHoraInicio: { gt: ahora } },
-    });
-    if (pendientes > 0) {
-      return res.status(409).json({
-        error: `No se puede desactivar: tiene ${pendientes === 1 ? "1 clase programada" : `${pendientes} clases programadas`}. Reasígnalas o cancélalas primero.`,
-      });
-    }
+    const pendientes = await clasesPorDictar(req.db, id, ahora);
+    if (pendientes > 0) return res.status(409).json({ error: mensajeClasesPendientes(pendientes) });
   }
 
   const actualizado = await req.db.$transaction(async (tx) => {
-    // Un estudiante desactivado libera los cupos de sus clases futuras para
-    // que otros puedan reservarlos.
-    if (desactivando && usuario.rol === "ESTUDIANTE") {
-      const reservas = await tx.reserva.findMany({
-        where: { estudianteId: id, estado: "CONFIRMADA", clase: { fechaHoraInicio: { gt: ahora } } },
-        include: { clase: true },
-      });
-      for (const r of reservas) {
-        await tx.reserva.update({ where: { id: r.id }, data: { estado: "CANCELADA" } });
-        if (r.clase.estado === "PROGRAMADA") {
-          await tx.clase.update({ where: { id: r.claseId }, data: { cuposDisponibles: { increment: 1 } } });
-        }
-      }
-    }
+    if (desactivando && usuario.rol === "ESTUDIANTE") await liberarCuposFuturos(tx, id, ahora);
     return tx.user.update({
       where: { id },
-      data: { nombre: nombre?.trim(), email, activo },
+      data: { nombre: cambios.nombre?.trim(), email: cambios.email, activo: cambios.activo },
       select: { id: true, nombre: true, email: true, rol: true, activo: true, createdAt: true },
     });
   });
 
   res.json(actualizado);
+}
+
+// users no está en el cliente aislado por tenant: se filtra a mano. Un admin
+// no puede tocar usuarios de otra academia ni a otros admins.
+function buscarProfesorOEstudiante(id, tenantId) {
+  return prisma.user.findFirst({ where: { id, tenantId, rol: { in: ["PROFESOR", "ESTUDIANTE"] } } });
+}
+
+async function correoOcupadoPorOtro(emailNuevo, emailActual) {
+  if (!emailNuevo || emailNuevo === emailActual) return false;
+  return Boolean(await prisma.user.findUnique({ where: { email: emailNuevo } }));
+}
+
+function clasesPorDictar(db, profesorId, ahora) {
+  return db.clase.count({ where: { profesorId, estado: "PROGRAMADA", fechaHoraInicio: { gt: ahora } } });
+}
+
+function mensajeClasesPendientes(pendientes) {
+  const cuantas = pendientes === 1 ? "1 clase programada" : `${pendientes} clases programadas`;
+  return `No se puede desactivar: tiene ${cuantas}. Reasígnalas o cancélalas primero.`;
+}
+
+// Un estudiante desactivado libera los cupos de sus clases futuras para que
+// otros puedan reservarlos.
+async function liberarCuposFuturos(tx, estudianteId, ahora) {
+  const reservas = await tx.reserva.findMany({
+    where: { estudianteId, estado: "CONFIRMADA", clase: { fechaHoraInicio: { gt: ahora } } },
+    include: { clase: true },
+  });
+  for (const r of reservas) {
+    await tx.reserva.update({ where: { id: r.id }, data: { estado: "CANCELADA" } });
+    if (r.clase.estado === "PROGRAMADA") {
+      await tx.clase.update({ where: { id: r.claseId }, data: { cuposDisponibles: { increment: 1 } } });
+    }
+  }
 }
 
 module.exports = { listarPorRol, crear, actualizar };

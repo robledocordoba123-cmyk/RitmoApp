@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroDance from "../assets/hero-dance.jpg";
+// P06, hallazgo 11: la foto era un JPG de 1600×2400 (288 KB). Ahora son dos
+// WebP, de 27 KB y 63 KB, y el navegador baja solo el tamaño que necesita la
+// pantalla: la página pesa la mitad. No se usa fetchPriority="high": medido con
+// Lighthouse, retrasaba el LCP en vez de adelantarlo.
+import heroDance640 from "../assets/hero-dance-640.webp";
+import heroDance1280 from "../assets/hero-dance-1280.webp";
 import AccordionItem from "../components/ui/Accordion";
 import {
   Sparkles,
@@ -178,7 +183,15 @@ export default function LandingPage() {
           >
             <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-400 via-fuchsia-400 to-violet-400 rounded-[2rem] blur-2xl opacity-30 dark:opacity-25" />
             <div className="relative rounded-[1.75rem] overflow-hidden border border-white/60 dark:border-gray-800 shadow-2xl shadow-indigo-900/10">
-              <img src={heroDance} alt="Pareja bailando" className="w-full h-[420px] sm:h-[480px] object-cover" />
+              <img
+                src={heroDance640}
+                srcSet={`${heroDance640} 640w, ${heroDance1280} 1280w`}
+                sizes="(min-width: 1024px) 600px, 100vw"
+                width={640}
+                height={960}
+                alt="Pareja bailando"
+                className="w-full h-[420px] sm:h-[480px] object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/50 via-transparent to-transparent" />
             </div>
 
