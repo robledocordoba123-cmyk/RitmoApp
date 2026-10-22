@@ -1,57 +1,22 @@
 const prisma = require("../config/prisma");
 const notificaciones = require("../utils/notificaciones");
+const { validarDatosDeClase } = require("../utils/validaciones");
 
 // RF-14: el administrador de academia programa una clase asignando ritmo,
 // salón, profesor, cupo y horario. RN-02 (salón sin cruce) y RN-03
 // (profesor sin cruce) se validan antes de crear, dentro de la misma
 // academia (req.db ya viene aislado por tenant).
 async function crear(req, res) {
-  const { ritmoId, salonId, profesorId, cupoMaximo, fechaHoraInicio, fechaHoraFin } = req.body;
+  const { ritmoId, salonId, profesorId, cupoMaximo } = req.body;
 
-  if (!ritmoId || !salonId || !profesorId || !Number.isInteger(cupoMaximo) || cupoMaximo <= 0 || !fechaHoraInicio || !fechaHoraFin) {
-    return res.status(400).json({ error: "Faltan datos o son inválidos para crear la clase." });
-  }
+  const { error, inicio, fin } = validarDatosDeClase(req.body);
+  if (error) return res.status(400).json({ error });
 
-  const inicio = new Date(fechaHoraInicio);
-  const fin = new Date(fechaHoraFin);
-  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime()) || inicio >= fin) {
-    return res.status(400).json({ error: "El rango de fecha/hora de la clase no es válido." });
-  }
+  const errorRecursos = await errorEnRecursosDeClase(req, { ritmoId, salonId, profesorId, cupoMaximo });
+  if (errorRecursos) return res.status(400).json({ error: errorRecursos });
 
-  // El profesor vive en la tabla users, que no está en el cliente aislado por
-  // tenant (ver tenantPrismaClient.js), así que se valida a mano que sea de
-  // esta academia y tenga el rol correcto.
-  const profesor = await prisma.user.findUnique({ where: { id: profesorId } });
-  if (!profesor || profesor.tenantId !== req.user.tenantId || profesor.rol !== "PROFESOR") {
-    return res.status(400).json({ error: "El profesor indicado no pertenece a esta academia." });
-  }
-
-  const [salon, ritmo] = await Promise.all([
-    req.db.salon.findUnique({ where: { id: salonId } }),
-    req.db.ritmo.findUnique({ where: { id: ritmoId } }),
-  ]);
-  if (!salon) return res.status(400).json({ error: "El salón indicado no existe en esta academia." });
-  if (!ritmo) return res.status(400).json({ error: "El ritmo indicado no existe en esta academia." });
-  if (cupoMaximo > salon.capacidad) {
-    return res.status(400).json({ error: `El cupo (${cupoMaximo}) supera la capacidad del salón (${salon.capacidad}).` });
-  }
-
-  // Dos franjas se cruzan si una empieza antes de que la otra termine, en ambos sentidos.
-  const filtroCruceHorario = { fechaHoraInicio: { lt: fin }, fechaHoraFin: { gt: inicio } };
-
-  const cruceSalon = await req.db.clase.findFirst({
-    where: { salonId, estado: "PROGRAMADA", ...filtroCruceHorario },
-  });
-  if (cruceSalon) {
-    return res.status(409).json({ error: "El salón ya tiene una clase programada en ese horario (RN-02)." });
-  }
-
-  const cruceProfesor = await req.db.clase.findFirst({
-    where: { profesorId, estado: "PROGRAMADA", ...filtroCruceHorario },
-  });
-  if (cruceProfesor) {
-    return res.status(409).json({ error: "El profesor ya está asignado a otra clase en ese horario (RN-03)." });
-  }
+  const cruce = await cruceDeHorario(req.db, { salonId, profesorId, inicio, fin });
+  if (cruce) return res.status(409).json({ error: cruce });
 
   const clase = await req.db.clase.create({
     data: {
@@ -66,6 +31,41 @@ async function crear(req, res) {
   });
 
   res.status(201).json(clase);
+}
+
+// Que el profesor, el salón y el ritmo existan en esta academia y que el cupo
+// quepa en el salón. Devuelve el mensaje de error o null.
+async function errorEnRecursosDeClase(req, { ritmoId, salonId, profesorId, cupoMaximo }) {
+  // El profesor vive en la tabla users, que no está en el cliente aislado por
+  // tenant (ver tenantPrismaClient.js), así que se valida a mano que sea de
+  // esta academia y tenga el rol correcto.
+  const profesor = await prisma.user.findUnique({ where: { id: profesorId } });
+  if (!profesor || profesor.tenantId !== req.user.tenantId || profesor.rol !== "PROFESOR") {
+    return "El profesor indicado no pertenece a esta academia.";
+  }
+
+  const [salon, ritmo] = await Promise.all([
+    req.db.salon.findUnique({ where: { id: salonId } }),
+    req.db.ritmo.findUnique({ where: { id: ritmoId } }),
+  ]);
+  if (!salon) return "El salón indicado no existe en esta academia.";
+  if (!ritmo) return "El ritmo indicado no existe en esta academia.";
+  if (cupoMaximo > salon.capacidad) return `El cupo (${cupoMaximo}) supera la capacidad del salón (${salon.capacidad}).`;
+  return null;
+}
+
+// RN-02 y RN-03. Dos franjas se cruzan si una empieza antes de que la otra
+// termine, en ambos sentidos. Devuelve el mensaje del cruce o null.
+async function cruceDeHorario(db, { salonId, profesorId, inicio, fin }) {
+  const programadaEnLaFranja = { estado: "PROGRAMADA", fechaHoraInicio: { lt: fin }, fechaHoraFin: { gt: inicio } };
+
+  if (await db.clase.findFirst({ where: { salonId, ...programadaEnLaFranja } })) {
+    return "El salón ya tiene una clase programada en ese horario (RN-02).";
+  }
+  if (await db.clase.findFirst({ where: { profesorId, ...programadaEnLaFranja } })) {
+    return "El profesor ya está asignado a otra clase en ese horario (RN-03).";
+  }
+  return null;
 }
 
 // RF-08 (catálogo): el estudiante consulta las clases con cupos en tiempo real.
