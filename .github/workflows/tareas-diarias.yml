@@ -1,7 +1,9 @@
 # Tareas diarias de RitmoApp (OE-6): recordatorio de las clases de mañana y
 # aviso de membresías que vencen en 3 días. El plan gratuito de Render apaga la
-# API cuando no se usa, así que no puede tener su propio reloj; este workflow
-# la llama una vez al día a las 7:00 a. m. de Colombia (12:00 UTC).
+# API cuando no se usa, así que no puede tener su propio reloj. Desde el
+# 22/10/2026 la llama cron-job.org a las 7:15 a. m. de Colombia, porque GitHub
+# corría este workflow con unas 4 horas de retraso. Este queda de RESPALDO por
+# si cron-job.org falla (12:00 UTC = 7:00 a. m., llega cuando GitHub pueda).
 # Necesita el secreto TAREAS_TOKEN en GitHub, igual al de Render.
 # Si la tarea corre dos veces el mismo día, no se repiten los correos
 # (tabla notificaciones_enviadas).

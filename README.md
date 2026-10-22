@@ -73,10 +73,10 @@ Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa p
 | Frontend | Vercel | Carpeta `frontend`, variables `VITE_API_URL` y `VITE_MODO_DEMO`. Se publica solo con cada merge a `main`. |
 | API | Render (Ohio) | Definida como código en [`render.yaml`](render.yaml). La demo pública arranca con `npm run start:demo`: aplica migraciones y recarga los datos de demo. |
 | Base de datos | Neon, PostgreSQL 16 (Ohio) | Misma región que la API. La cadena de conexión solo vive en las variables de Render, nunca en el repositorio. |
-| Tareas diarias | GitHub Actions | [`tareas-diarias.yml`](.github/workflows/tareas-diarias.yml) llama a `POST /api/tareas/diarias` desde las 7:00 a. m. con el secreto `TAREAS_TOKEN` (GitHub puede retrasar la ejecución unas horas). |
+| Tareas diarias | cron-job.org (respaldo: GitHub Actions) | cron-job.org llama a `POST /api/tareas/diarias` todos los días a las 7:15 a. m. con el encabezado `Authorization: Bearer TAREAS_TOKEN`, y avisa por correo si falla. [`tareas-diarias.yml`](.github/workflows/tareas-diarias.yml) queda de respaldo: GitHub la corre con horas de retraso (hacia las 11:30 a. m.) y, como los correos ya enviados se anotan, no se repiten. |
 | Monitor de la demo | cron-job.org | Consulta `/api/health` cada 10 minutos de 7:00 a. m. a 9:00 p. m. y avisa por correo si falla dos veces seguidas. |
 
-Antes la demo se mantenía despierta con un workflow programado de GitHub Actions cada 5 minutos, pero GitHub retrasa y salta las ejecuciones programadas en los repositorios gratuitos: en dos días corrió 8 veces en vez de unas 300. Por eso se cambió a un monitor externo.
+Antes la demo se mantenía despierta con un workflow programado de GitHub Actions cada 5 minutos, pero GitHub retrasa y salta las ejecuciones programadas en los repositorios gratuitos: en dos días corrió 8 veces en vez de unas 300. Por eso se cambió a un monitor externo. Con las tareas diarias pasó lo mismo: programadas para las 7:00 a. m., corrían hacia las 11:30, así que desde el 22/10/2026 también las lanza cron-job.org.
 
 `main` está protegida: todo cambio entra por Pull Request con revisión y con las pruebas de CI en verde.
 

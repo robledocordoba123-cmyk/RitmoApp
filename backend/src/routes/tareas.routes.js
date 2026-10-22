@@ -5,10 +5,11 @@ const { enviarRecordatoriosDeClase, avisarMembresiasPorVencer } = require("../ut
 
 const router = Router();
 
-// Tareas programadas (OE-6). No las llama ninguna persona: las llama el
-// workflow .github/workflows/tareas-diarias.yml con la clave TAREAS_TOKEN,
-// que solo conocen GitHub (secreto) y Render (variable de entorno). Si la
-// clave no está configurada, la ruta no existe (404).
+// Tareas programadas (OE-6). No las llama ninguna persona: las llama
+// cron-job.org cada mañana, y de respaldo el workflow
+// .github/workflows/tareas-diarias.yml, con la clave TAREAS_TOKEN, que solo
+// conocen cron-job.org, GitHub (secreto) y Render (variable de entorno). Si
+// la clave no está configurada, la ruta no existe (404).
 function exigirTokenDeTareas(req, res, next) {
   const esperado = process.env.TAREAS_TOKEN;
   if (!esperado) return res.status(404).json({ error: "Ruta no encontrada." });
