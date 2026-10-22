@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
+  Bot,
   ScrollText,
   CalendarDays,
   DoorOpen,
@@ -41,6 +42,7 @@ const ENLACES_POR_ROL = {
     { to: "/admin/pagos", label: "Pagos", icon: Wallet },
     { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
     { to: "/admin/bitacora", label: "Bitácora", icon: ScrollText },
+    { to: "/admin/asistente", label: "Asistente", icon: Bot },
   ],
   PROFESOR: [
     { to: "/profesor/inicio", label: "Inicio", icon: LayoutDashboard },

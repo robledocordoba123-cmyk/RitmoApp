@@ -14,6 +14,7 @@ const usuarioRoutes = require("./usuario.routes");
 const tarifaRoutes = require("./tarifa.routes");
 const pagoRoutes = require("./pago.routes");
 const tareasRoutes = require("./tareas.routes");
+const asistenteRoutes = require("./asistente.routes");
 
 const router = Router();
 
@@ -41,5 +42,6 @@ router.use("/usuarios", usuarioRoutes);
 router.use("/tarifas", tarifaRoutes);
 router.use("/pagos", pagoRoutes);
 router.use("/asistencias", asistenciaRoutes);
+router.use("/asistente", asistenteRoutes);
 
 module.exports = router;

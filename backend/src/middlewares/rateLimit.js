@@ -41,4 +41,17 @@ const limiteRecuperacion = rateLimit({
   message: { error: "Demasiadas solicitudes de recuperación. Intenta de nuevo en 15 minutos." },
 });
 
-module.exports = { limiteLogin, limiteRegistro, limiteRecuperacion };
+// RF-23: cada consulta al asistente de IA cuesta dinero (se paga por uso de la
+// API de Anthropic). Se limita por usuario, no por IP, para que un solo
+// administrador no gaste el presupuesto de todos (OWASP LLM10).
+const limiteAsistente = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 20,
+  keyGenerator: (req) => req.user.id,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: saltarEnPruebas,
+  message: { error: "Llegaste al límite de 20 preguntas por hora al asistente. Intenta más tarde." },
+});
+
+module.exports = { limiteLogin, limiteRegistro, limiteRecuperacion, limiteAsistente };
