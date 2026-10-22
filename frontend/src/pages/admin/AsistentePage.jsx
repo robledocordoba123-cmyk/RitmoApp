@@ -80,7 +80,7 @@ export default function AsistentePage() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              enviar(pregunta);
+              void enviar(pregunta);
             }}
           >
             <label htmlFor={idPregunta} className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">
@@ -103,7 +103,7 @@ export default function AsistentePage() {
                     type="button"
                     onClick={() => {
                       setPregunta(s);
-                      enviar(s);
+                      void enviar(s);
                     }}
                     disabled={enviando}
                     className="text-xs rounded-full border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-3 py-1 hover:bg-indigo-50 dark:hover:bg-indigo-950 disabled:opacity-40"
