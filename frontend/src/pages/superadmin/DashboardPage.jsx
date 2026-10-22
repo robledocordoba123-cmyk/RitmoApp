@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Building2, CheckCircle2, XCircle, Users2, ArrowRight } from "lucide-react";
 import { api } from "../../api/client";
@@ -15,7 +16,7 @@ export default function DashboardPage() {
   const [tenants, setTenants] = useState(null);
 
   useEffect(() => {
-    api.get("/superadmin/tenants", token).then(setTenants);
+    api.get("/superadmin/tenants", token).then(setTenants).catch((err) => toast.error(err.message));
   }, []);
 
   if (!tenants) {

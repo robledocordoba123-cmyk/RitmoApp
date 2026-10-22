@@ -15,9 +15,13 @@ function smtpConfigurado() {
 
 // "RitmoApp <correo@dominio.com>" → { name: "RitmoApp", email: "correo@dominio.com" }
 function remitente() {
-  const texto = process.env.CORREO_REMITENTE || process.env.SMTP_USER || "";
-  const partes = texto.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
-  return partes ? { name: partes[1] || "RitmoApp", email: partes[2] } : { name: "RitmoApp", email: texto.trim() };
+  // Se parte a mano en vez de con una expresión regular: SonarCloud marcó la
+  // anterior (con .*? y \s* seguidos) por el riesgo de backtracking lento.
+  const texto = (process.env.CORREO_REMITENTE || process.env.SMTP_USER || "").trim();
+  const abre = texto.lastIndexOf("<");
+  const email = abre === -1 ? "" : texto.slice(abre + 1, -1);
+  if (!texto.endsWith(">") || !email || email.includes(">")) return { name: "RitmoApp", email: texto };
+  return { name: texto.slice(0, abre).trim() || "RitmoApp", email };
 }
 
 async function enviarConBrevo({ para, asunto, texto, html }) {

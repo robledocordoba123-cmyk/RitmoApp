@@ -25,7 +25,7 @@ export default function SalonesPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   // La capacidad se envía como número: la API exige un entero positivo (DEF-03).

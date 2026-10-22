@@ -41,7 +41,7 @@ export default function PagosPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   const conteo = useMemo(() => {

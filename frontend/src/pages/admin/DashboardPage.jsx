@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CalendarDays, DoorOpen, Music4, Ticket, ArrowRight, CheckCircle2, Circle } from "lucide-react";
@@ -64,7 +65,9 @@ export default function DashboardPage() {
       api.get("/salones", token),
       api.get("/ritmos", token),
       api.get("/usuarios?rol=PROFESOR", token),
-    ]).then(([clases, salones, ritmos, profesores]) => setDatos({ clases, salones, ritmos, profesores }));
+    ])
+      .then(([clases, salones, ritmos, profesores]) => setDatos({ clases, salones, ritmos, profesores }))
+      .catch((err) => toast.error(err.message));
   }, []);
 
   if (!datos) {

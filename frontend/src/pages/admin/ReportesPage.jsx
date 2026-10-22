@@ -55,7 +55,7 @@ export default function ReportesPage() {
 
   // Al entrar se muestra de una vez el mes en curso, sin tener que darle a "Consultar".
   useEffect(() => {
-    consultar();
+    void consultar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -33,7 +33,7 @@ export default function EquipoPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   function cambiar(campo) {
@@ -207,7 +207,7 @@ function TarjetaPersona({ persona, token, alCambiar }) {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              guardar(datos, "Datos actualizados.");
+              void guardar(datos, "Datos actualizados.");
             }}
             className="mt-3 space-y-2"
           >

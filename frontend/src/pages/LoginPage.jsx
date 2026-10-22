@@ -56,13 +56,13 @@ export default function LoginPage() {
 
   function manejarSubmit(e) {
     e.preventDefault();
-    ingresar(email, password);
+    void ingresar(email, password);
   }
 
   function entrarComoDemo(cuenta) {
     setEmail(cuenta.email);
     setPassword(PASSWORD_DEMO);
-    ingresar(cuenta.email, PASSWORD_DEMO);
+    void ingresar(cuenta.email, PASSWORD_DEMO);
   }
 
   return (

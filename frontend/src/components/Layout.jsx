@@ -173,7 +173,12 @@ export default function Layout({ children }) {
       {/* Cajón deslizante en móvil */}
       {menuAbierto && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuAbierto(false)} />
+          <button
+            type="button"
+            aria-label="Cerrar menú"
+            className="absolute inset-0 bg-black/40 cursor-default"
+            onClick={() => setMenuAbierto(false)}
+          />
           <aside className="absolute inset-y-0 left-0 w-72 flex flex-col bg-white dark:bg-gray-900 shadow-xl">
             <div className="flex items-center justify-between pr-3">
               <Logo />

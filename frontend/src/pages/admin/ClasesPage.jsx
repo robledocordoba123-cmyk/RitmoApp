@@ -42,7 +42,7 @@ export default function ClasesPage() {
   }
 
   useEffect(() => {
-    cargarTodo();
+    cargarTodo().catch((err) => toast.error(err.message));
   }, []);
 
   function cambiar(campo) {
