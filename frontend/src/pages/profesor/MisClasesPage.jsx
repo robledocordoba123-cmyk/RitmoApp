@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { ClipboardList, DoorOpen, CalendarDays, ArrowRight, QrCode } from "lucide-react";
 import { api } from "../../api/client";
@@ -18,7 +19,7 @@ export default function MisClasesPage() {
     // GET /clases devuelve las clases de la academia; aquí se dejan solo las del
     // profesor que inició sesión. La API igual impide ver o registrar la
     // asistencia de una clase ajena (403).
-    api.get("/clases", token).then((data) => setClases(data.filter((c) => c.profesor.id === usuario.id)));
+    api.get("/clases", token).then((data) => setClases(data.filter((c) => c.profesor.id === usuario.id))).catch((err) => toast.error(err.message));
   }, []);
 
   return (

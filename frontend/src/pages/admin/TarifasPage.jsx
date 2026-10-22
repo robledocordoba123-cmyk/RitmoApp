@@ -28,7 +28,7 @@ export default function TarifasPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   function cambiar(campo) {

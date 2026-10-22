@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Ticket, CalendarDays, ArrowRight, Sparkles } from "lucide-react";
 import { api } from "../../api/client";
@@ -17,9 +18,9 @@ export default function DashboardPage() {
   const [datos, setDatos] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get("/clases", token), api.get("/reservas/mias", token), api.get("/pagos/mios", token)]).then(
-      ([clases, reservas, pagos]) => setDatos({ clases, reservas, membresia: pagos.membresia })
-    );
+    Promise.all([api.get("/clases", token), api.get("/reservas/mias", token), api.get("/pagos/mios", token)])
+      .then(([clases, reservas, pagos]) => setDatos({ clases, reservas, membresia: pagos.membresia }))
+      .catch((err) => toast.error(err.message));
   }, []);
 
   if (!datos) {

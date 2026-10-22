@@ -21,7 +21,7 @@ export default function AcademiasPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   async function cambiarEstado(id, estado) {

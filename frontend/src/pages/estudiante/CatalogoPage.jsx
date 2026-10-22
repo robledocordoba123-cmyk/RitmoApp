@@ -37,7 +37,7 @@ export default function CatalogoPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros]);
 

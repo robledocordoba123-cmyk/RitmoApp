@@ -23,7 +23,7 @@ export default function RitmosPage() {
   }
 
   useEffect(() => {
-    cargar();
+    cargar().catch((err) => toast.error(err.message));
   }, []);
 
   async function crear(e) {

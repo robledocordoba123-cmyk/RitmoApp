@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Receipt, Wallet } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +18,7 @@ export default function MisPagosPage() {
   const [datos, setDatos] = useState(null);
 
   useEffect(() => {
-    api.get("/pagos/mios", token).then(setDatos);
+    api.get("/pagos/mios", token).then(setDatos).catch((err) => toast.error(err.message));
   }, []);
 
   if (!datos) {

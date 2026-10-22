@@ -38,7 +38,7 @@ export default function AsistenciaPage() {
   }
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, []);
 
   async function guardar(e) {

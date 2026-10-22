@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { ClipboardList, CalendarDays, ArrowRight } from "lucide-react";
 import { api } from "../../api/client";
@@ -23,7 +24,7 @@ export default function DashboardPage() {
   const [misClases, setMisClases] = useState(null);
 
   useEffect(() => {
-    api.get("/clases", token).then((data) => setMisClases(data.filter((c) => c.profesor.id === usuario.id)));
+    api.get("/clases", token).then((data) => setMisClases(data.filter((c) => c.profesor.id === usuario.id))).catch((err) => toast.error(err.message));
   }, []);
 
   if (!misClases) {

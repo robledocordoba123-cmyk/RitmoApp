@@ -42,9 +42,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
-      - run: npm ci
-      - run: npx prisma generate
-      - run: npx prisma migrate deploy
+      # --ignore-scripts: ningún paquete corre scripts al instalarse (riesgo de
+      # cadena de suministro que marcó SonarCloud). Prisma baja sus motores al
+      # usarse, y los comandos van por npm run para usar la versión del lockfile.
+      - run: npm ci --ignore-scripts
+      - run: npm run prisma:generate
+      - run: npm run prisma:deploy
       # AM-03: falla si la cobertura baja de 80 % de líneas o 70 % de ramas
       # (los mínimos están en jest.config.js).
       - run: npm run test:coverage
@@ -83,7 +86,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run lint
       # AM-04: pruebas de componentes con Vitest y Testing Library.
       - run: npm test
