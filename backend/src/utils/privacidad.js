@@ -5,7 +5,8 @@
 //
 // Si se cambia el texto de la política (frontend/src/pages/PrivacidadPage.jsx)
 // hay que subir esta versión y la que muestra esa página.
-const VERSION_POLITICA_DATOS = "1.0";
+// 1.1 (22/10/2026): se agrega el asistente de IA (envío de datos a Anthropic, EE. UU.).
+const VERSION_POLITICA_DATOS = "1.1";
 
 function datosDeAutorizacion() {
   return { autorizacionDatosEn: new Date(), versionPoliticaDatos: VERSION_POLITICA_DATOS };

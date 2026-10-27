@@ -5,8 +5,8 @@ import { Sparkles } from "lucide-react";
 // 1377 de 2013, compilado en el Decreto 1074 de 2015). Si el texto cambia,
 // hay que subir la versión aquí y en backend/src/utils/privacidad.js, para
 // que las autorizaciones nuevas queden con la versión que la persona leyó.
-const VERSION = "1.0";
-const VIGENTE_DESDE = "12 de octubre de 2026";
+const VERSION = "1.1";
+const VIGENTE_DESDE = "22 de octubre de 2026";
 const CORREO_CONTACTO = "robledocordoba123@gmail.com";
 
 // UI-06 · Ley 1581 de 2012: política de tratamiento de datos personales,
@@ -56,6 +56,10 @@ export default function PrivacidadPage() {
               <li>Llevar el control de pagos y membresías de la academia.</li>
               <li>Mostrarle a la academia reportes de ocupación e ingresos.</li>
               <li>Enviarte el correo para recuperar tu contraseña cuando lo pidas.</li>
+              <li>
+                Si la academia lo activa, responder las preguntas que su administrador le hace al asistente de inteligencia
+                artificial sobre la academia (ver la sección 7).
+              </li>
             </ul>
             <p className="mt-2">No vendemos ni compartimos tus datos con terceros para publicidad.</p>
           </Seccion>
@@ -97,6 +101,13 @@ export default function PrivacidadPage() {
               comunicación viaja cifrada (HTTPS). Los datos se guardan en servicios en la nube ubicados fuera de Colombia: la base de
               datos y el servidor en Estados Unidos, y el envío de correos en la Unión Europea. Esos proveedores solo los procesan para
               prestar el servicio.
+            </p>
+            <p className="mt-2">
+              <b>Asistente de inteligencia artificial.</b> Si la academia lo activa, cuando su administrador le hace una pregunta se
+              envían a Anthropic, en Estados Unidos, solo los datos necesarios para responderla: nombres de estudiantes y profesores,
+              clases, asistencia, estado de las membresías y cifras de ingresos. Nunca se envían correos, teléfonos ni contraseñas.
+              Anthropic los procesa para generar la respuesta y, según sus condiciones comerciales, no los usa para entrenar sus
+              modelos. El asistente solo puede consultar: no cambia ni borra datos.
             </p>
           </Seccion>
 

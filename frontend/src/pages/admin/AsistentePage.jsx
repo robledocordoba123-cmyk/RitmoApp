@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { Link } from "react-router-dom";
 import { Bot, Send, Info, XCircle } from "lucide-react";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
@@ -145,7 +146,9 @@ export default function AsistentePage() {
 
       <p className="flex items-start gap-2 text-xs text-gray-500 mt-5">
         <Info size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
-        Las respuestas las genera una IA a partir de los reportes de tu academia. Revisa las cifras importantes en Reportes antes de tomar decisiones. El asistente solo consulta: no puede crear, cambiar ni borrar nada.
+        <span>
+          Las respuestas las genera una IA a partir de los reportes de tu academia. Revisa las cifras importantes en Reportes antes de tomar decisiones. El asistente solo consulta: no puede crear, cambiar ni borrar nada. Para responder, envía a Anthropic (EE. UU.) nombres y datos de clases, asistencia y membresías, nunca correos ni teléfonos (<Link to="/privacidad" className="underline">política de datos</Link>, sección 7).
+        </span>
       </p>
     </div>
   );
