@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "framer-motion": "^13.4.0",
+    "framer-motion": "^14.8.0",
     "jsqr": "^1.4.0",
-    "lucide-react": "^1.47.0",
+    "lucide-react": "^1.64.0",
     "qrcode": "^1.5.4",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-hot-toast": "^2.6.1",
     "react-router-dom": "^7.18.4",
     "recharts": "^3.10.1",
@@ -34,7 +34,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^5.0.4",
     "jsdom": "^30.1.2",
-    "oxlint": "^1.81.0",
+    "oxlint": "^1.90.0",
     "vite": "^8.3.0",
     "vitest": "^5.0.4"
   }
