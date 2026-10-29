@@ -1,19 +1,21 @@
 import { useId, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, Rocket } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sparkles, Rocket, MailCheck } from "lucide-react";
 import registroDance from "../assets/registro-dance.jpg";
 import { useAuth } from "../context/AuthContext";
+import ReenviarConfirmacion from "../components/ReenviarConfirmacion";
 
 // UI-03 · HU-01: una academia nueva se registra sola y crea la cuenta de su
 // administrador. Debe aceptar la política de tratamiento de datos (Ley 1581,
-// PR #15); la API guarda la fecha y la versión aceptadas.
+// PR #15); la API guarda la fecha y la versión aceptadas. Al terminar no se
+// entra al panel: primero hay que confirmar el correo (HU-06).
 export default function OnboardingPage() {
   const { onboarding } = useAuth();
-  const navigate = useNavigate();
   const [form, setForm] = useState({ nombreAcademia: "", nit: "", nombreAdmin: "", email: "", password: "" });
   const [aceptaPolitica, setAceptaPolitica] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [correoPendiente, setCorreoPendiente] = useState("");
 
   function cambiar(campo) {
     return (e) => setForm((prev) => ({ ...prev, [campo]: e.target.value }));
@@ -24,12 +26,12 @@ export default function OnboardingPage() {
     setError("");
     setCargando(true);
     try {
-      await onboarding(
+      const respuesta = await onboarding(
         { nombre: form.nombreAcademia, nit: form.nit },
         { nombre: form.nombreAdmin, email: form.email, password: form.password },
         aceptaPolitica
       );
-      navigate("/admin/inicio");
+      setCorreoPendiente(respuesta.email);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -60,55 +62,81 @@ export default function OnboardingPage() {
             <span className="font-semibold text-gray-900 dark:text-gray-100">RitmoApp</span>
           </Link>
 
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Registra tu academia</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-6">
-            Crea tu academia y tu cuenta de administrador en un solo paso.
-          </p>
+          {correoPendiente ? (
+            <CorreoEnviado email={correoPendiente} />
+          ) : (
+            <>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Registra tu academia</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-6">
+                Crea tu academia y tu cuenta de administrador en un solo paso.
+              </p>
 
-          <form onSubmit={manejarSubmit} className="space-y-3.5">
-            <Campo label="Nombre de la academia" value={form.nombreAcademia} onChange={cambiar("nombreAcademia")} />
-            <Campo label="NIT" value={form.nit} onChange={cambiar("nit")} />
-            <Campo label="Tu nombre" value={form.nombreAdmin} onChange={cambiar("nombreAdmin")} />
-            <Campo label="Correo" type="email" value={form.email} onChange={cambiar("email")} />
-            <Campo label="Contraseña" type="password" value={form.password} onChange={cambiar("password")} />
+              <form onSubmit={manejarSubmit} className="space-y-3.5">
+                <Campo label="Nombre de la academia" value={form.nombreAcademia} onChange={cambiar("nombreAcademia")} />
+                <Campo label="NIT" value={form.nit} onChange={cambiar("nit")} />
+                <Campo label="Tu nombre" value={form.nombreAdmin} onChange={cambiar("nombreAdmin")} />
+                <Campo label="Correo" type="email" value={form.email} onChange={cambiar("email")} />
+                <Campo label="Contraseña" type="password" value={form.password} onChange={cambiar("password")} />
 
-            {/* Ley 1581: sin aceptar la política no se crea la academia (el backend también lo exige). */}
-            <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <input
-                type="checkbox"
-                required
-                checked={aceptaPolitica}
-                onChange={(e) => setAceptaPolitica(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span>
-                Acepto la{" "}
-                <Link to="/privacidad" target="_blank" className="text-indigo-600 dark:text-indigo-400 font-medium underline">
-                  política de tratamiento de datos
-                </Link>{" "}
-                y me comprometo a pedir la autorización de las personas que registre en mi academia.
-              </span>
-            </label>
+                {/* Ley 1581: sin aceptar la política no se crea la academia (el backend también lo exige). */}
+                <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={aceptaPolitica}
+                    onChange={(e) => setAceptaPolitica(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>
+                    Acepto la{" "}
+                    <Link to="/privacidad" target="_blank" className="text-indigo-600 dark:text-indigo-400 font-medium underline">
+                      política de tratamiento de datos
+                    </Link>{" "}
+                    y me comprometo a pedir la autorización de las personas que registre en mi academia.
+                  </span>
+                </label>
 
-            {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
+                {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={cargando}
-              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 py-2.5 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-50"
-            >
-              <Rocket size={16} /> {cargando ? "Creando..." : "Crear academia"}
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  disabled={cargando}
+                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-500 py-2.5 text-sm font-medium text-white hover:from-indigo-700 hover:to-fuchsia-600 shadow-sm shadow-indigo-200 dark:shadow-none disabled:opacity-50"
+                >
+                  <Rocket size={16} /> {cargando ? "Creando..." : "Crear academia"}
+                </button>
+              </form>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-5">
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium">
-              Inicia sesión
-            </Link>
-          </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-5">
+                ¿Ya tienes cuenta?{" "}
+                <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium">
+                  Inicia sesión
+                </Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// HU-06-CA-01: la academia ya existe, pero la cuenta se activa con el enlace del correo.
+function CorreoEnviado({ email }) {
+  return (
+    <div>
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 mb-4">
+        <MailCheck size={22} />
+      </div>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Revisa tu correo</h1>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+        Tu academia quedó registrada. Te enviamos un enlace a <strong className="text-gray-900 dark:text-gray-100">{email}</strong> para
+        confirmar tu cuenta. Ábrelo y después inicia sesión. El enlace vence en 24 horas.
+      </p>
+      <ReenviarConfirmacion email={email} />
+      <Link to="/login" className="mt-6 inline-flex text-sm font-medium text-indigo-600 dark:text-indigo-400">
+        Ir a iniciar sesión
+      </Link>
     </div>
   );
 }

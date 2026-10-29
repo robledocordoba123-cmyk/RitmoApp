@@ -4,6 +4,7 @@ import { Sparkles, LogIn, ShieldCheck, GraduationCap, UserRound, Coffee } from "
 import loginDance from "../assets/login-dance.jpg";
 import { useAuth } from "../context/AuthContext";
 import { rutaInicioPara } from "../rutas";
+import ReenviarConfirmacion from "../components/ReenviarConfirmacion";
 
 // Solo en la demo pública (VITE_MODO_DEMO=true): accesos de un clic para que
 // quien visite pueda probar cada rol sin copiar correos. Son las cuentas que
@@ -29,6 +30,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  // HU-06-CA-02: la cuenta existe pero falta confirmar el correo.
+  const [sinConfirmar, setSinConfirmar] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [servidorDespertando, setServidorDespertando] = useState(false);
 
@@ -43,12 +46,14 @@ export default function LoginPage() {
 
   async function ingresar(correo, clave) {
     setError("");
+    setSinConfirmar(false);
     setCargando(true);
     try {
       const usuario = await login(correo, clave);
       navigate(rutaInicioPara(usuario.rol));
     } catch (err) {
       setError(err.message);
+      setSinConfirmar(err.codigo === "CORREO_SIN_CONFIRMAR");
     } finally {
       setCargando(false);
     }
@@ -118,6 +123,7 @@ export default function LoginPage() {
             )}
 
             {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-lg px-3 py-2">{error}</p>}
+            {sinConfirmar && <ReenviarConfirmacion email={email} />}
 
             <button
               type="submit"

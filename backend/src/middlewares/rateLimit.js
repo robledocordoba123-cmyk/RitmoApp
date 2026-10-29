@@ -41,6 +41,17 @@ const limiteRecuperacion = rateLimit({
   message: { error: "Demasiadas solicitudes de recuperación. Intenta de nuevo en 15 minutos." },
 });
 
+// HU-06: confirmar la cuenta y pedir otro enlace. Un poco más amplio que la
+// recuperación, porque una persona puede abrir el enlace y reenviarlo varias veces.
+const limiteConfirmacion = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: saltarEnPruebas,
+  message: { error: "Demasiadas solicitudes de confirmación. Intenta de nuevo en 15 minutos." },
+});
+
 // RF-23: cada consulta al asistente de IA cuesta dinero (se paga por uso de la
 // API de Anthropic). Se limita por usuario, no por IP, para que un solo
 // administrador no gaste el presupuesto de todos (OWASP LLM10).
@@ -54,4 +65,4 @@ const limiteAsistente = rateLimit({
   message: { error: "Llegaste al límite de 20 preguntas por hora al asistente. Intenta más tarde." },
 });
 
-module.exports = { limiteLogin, limiteRegistro, limiteRecuperacion, limiteAsistente };
+module.exports = { limiteLogin, limiteRegistro, limiteRecuperacion, limiteConfirmacion, limiteAsistente };

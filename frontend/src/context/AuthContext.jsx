@@ -37,10 +37,10 @@ export function AuthProvider({ children }) {
     return data.usuario;
   }
 
+  // HU-06: registrar la academia no abre sesión; el administrador entra
+  // después de confirmar su correo con el enlace que le llega.
   async function onboarding(academia, admin, aceptaPoliticaDatos) {
-    const data = await api.post("/auth/onboarding", { academia, admin, aceptaPoliticaDatos });
-    setSesion({ token: data.token, usuario: data.usuario });
-    return data;
+    return api.post("/auth/onboarding", { academia, admin, aceptaPoliticaDatos });
   }
 
   function logout() {

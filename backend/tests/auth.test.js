@@ -12,7 +12,7 @@ afterAll(async () => {
 });
 
 describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
-  test("CP-001 · registra una academia nueva con su administrador y devuelve token", async () => {
+  test("CP-001 · registra una academia nueva con su administrador, que queda pendiente de confirmar el correo (HU-06)", async () => {
     const res = await request(app)
       .post("/api/auth/onboarding")
       .send({
@@ -23,12 +23,13 @@ describe("RF-01 · HU-01: registro de academia (onboarding)", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.tenant.nit).toBe("900111222-1");
-    expect(res.body.token).toBeDefined();
-    // El frontend guarda esto en la sesión; debe traer lo mismo que /login.
-    expect(res.body.usuario).toMatchObject({ nombre: "Admin Nuevo", rol: "ADMIN_ACADEMIA", tenantId: res.body.tenant.id });
+    // Desde HU-06 no se abre sesión al registrar: primero hay que confirmar el correo.
+    expect(res.body.token).toBeUndefined();
+    expect(res.body).toMatchObject({ confirmacionPendiente: true, email: "admin@academianueva.test" });
 
     const usuarioCreado = await prisma.user.findUnique({ where: { email: "admin@academianueva.test" } });
     expect(usuarioCreado.rol).toBe("ADMIN_ACADEMIA");
+    expect(usuarioCreado.confirmacionPendiente).toBe(true);
   });
 
   test("CP-002 · rechaza un NIT ya registrado (409)", async () => {

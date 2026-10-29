@@ -10,10 +10,13 @@ function cuandoVenzaLaSesion(funcion) {
   alVencerSesion = funcion;
 }
 
+// codigo distingue errores que la pantalla maneja aparte, por ejemplo
+// CORREO_SIN_CONFIRMAR al iniciar sesión (HU-06).
 class ApiError extends Error {
-  constructor(mensaje, status) {
+  constructor(mensaje, status, codigo) {
     super(mensaje);
     this.status = status;
+    this.codigo = codigo;
   }
 }
 
@@ -33,7 +36,7 @@ async function solicitar(ruta, { method = "GET", body, token } = {}) {
 
   if (!res.ok) {
     if (res.status === 401 && token) alVencerSesion();
-    throw new ApiError(data?.error || "Ocurrió un error inesperado.", res.status);
+    throw new ApiError(data?.error || "Ocurrió un error inesperado.", res.status, data?.codigo);
   }
 
   return data;
