@@ -65,7 +65,7 @@ jobs:
           fi
       - name: Guardar el informe de cobertura
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cobertura-backend
           path: backend/coverage/
