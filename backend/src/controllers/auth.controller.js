@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
 const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
 const { datosDeAutorizacion } = require("../utils/privacidad");
+const { crearEnlace, enviarEnlace } = require("./confirmacion.controller");
 
 const SALT_ROUNDS = 10;
 
@@ -15,6 +16,8 @@ function emitirToken(user) {
 }
 
 // RF-01: registro autónomo de una academia + su administrador inicial.
+// RF-06 · HU-06: la cuenta queda pendiente hasta que el administrador abra el
+// enlace que le llega al correo; por eso aquí ya no se devuelve token.
 async function onboarding(req, res) {
   const { academia, admin } = req.body;
 
@@ -46,7 +49,7 @@ async function onboarding(req, res) {
 
   const passwordHash = await bcrypt.hash(admin.password, SALT_ROUNDS);
 
-  const { tenant, usuarioAdmin } = await prisma.$transaction(async (tx) => {
+  const { tenant, usuarioAdmin, enlace } = await prisma.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({
       data: { nombre: academia.nombre, nit: academia.nit },
     });
@@ -58,23 +61,22 @@ async function onboarding(req, res) {
         email: emailAdmin,
         passwordHash,
         rol: "ADMIN_ACADEMIA",
+        confirmacionPendiente: true,
         ...datosDeAutorizacion(),
       },
     });
+    const enlace = await crearEnlace(usuarioAdmin, tx);
 
-    return { tenant, usuarioAdmin };
+    return { tenant, usuarioAdmin, enlace };
   });
 
-  const token = emitirToken(usuarioAdmin);
+  enviarEnlace(usuarioAdmin, enlace);
 
   return res.status(201).json({
-    mensaje: "Academia registrada correctamente.",
+    mensaje: "Academia registrada. Te enviamos un correo para confirmar tu cuenta.",
     tenant: { id: tenant.id, nombre: tenant.nombre, nit: tenant.nit },
-    token,
-    // Misma forma que devuelve /login, para que el frontend guarde la
-    // sesión de manera consistente sin importar por cuál de las dos rutas
-    // haya entrado el usuario.
-    usuario: { id: usuarioAdmin.id, nombre: usuarioAdmin.nombre, rol: usuarioAdmin.rol, tenantId: usuarioAdmin.tenantId },
+    confirmacionPendiente: true,
+    email: usuarioAdmin.email,
   });
 }
 
@@ -102,6 +104,15 @@ async function login(req, res) {
   const passwordValida = await bcrypt.compare(password, user.passwordHash);
   if (!passwordValida) {
     return res.status(401).json({ error: "Credenciales inválidas." });
+  }
+
+  // HU-06-CA-02: se revisa después de la contraseña, así solo el dueño de la
+  // cuenta se entera de que le falta confirmar el correo.
+  if (user.confirmacionPendiente) {
+    return res.status(403).json({
+      error: "Confirma tu correo antes de iniciar sesión. Busca el enlace que te enviamos o pide uno nuevo.",
+      codigo: "CORREO_SIN_CONFIRMAR",
+    });
   }
 
   const token = emitirToken(user);

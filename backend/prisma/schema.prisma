@@ -87,6 +87,12 @@ model User {
   // Null en usuarios creados antes de que existiera la política.
   autorizacionDatosEn  DateTime?
   versionPoliticaDatos String?
+  // RF-06 · HU-06: quien registra una academia confirma su correo con un
+  // enlace antes de poder entrar. Los usuarios que crea el administrador y
+  // los de los seeds no lo necesitan (el administrador ya conoce su correo):
+  // por eso el valor por defecto es false.
+  confirmacionPendiente Boolean   @default(false)
+  correoConfirmadoEn    DateTime?
   createdAt    DateTime @default(now())
 
   clasesComoProfesor Clase[]      @relation("ProfesorClases")
@@ -96,6 +102,7 @@ model User {
   pagos               Pago[]       @relation("PagosEstudiante")
   pagosRegistrados    Pago[]       @relation("PagosRegistradosPor")
   tokensRecuperacion  TokenRecuperacion[]
+  tokensConfirmacion  TokenConfirmacion[]
   bitacora            Bitacora[]
 
   @@index([tenantId])
@@ -278,6 +285,22 @@ model TokenRecuperacion {
 
   @@index([userId])
   @@map("tokens_recuperacion")
+}
+
+// Enlace para confirmar el correo al registrar una academia. RF-06 · HU-06:
+// vence a las 24 horas y sirve una sola vez (HU-06-CA-03). Igual que en la
+// recuperación, solo se guarda el hash SHA-256 del token.
+model TokenConfirmacion {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiraEn  DateTime
+  usadoEn   DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("tokens_confirmacion")
 }
 
 // Registro de las notificaciones programadas que ya se enviaron (recordatorio

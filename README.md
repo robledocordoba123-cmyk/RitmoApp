@@ -161,6 +161,7 @@ Todas las rutas van bajo `/api`. Salvo `auth`, `health` y `tareas`, requieren `A
 | POST | `/auth/onboarding` | Público | Registra una academia y su administrador |
 | POST | `/auth/login` | Público | Inicia sesión y devuelve el JWT |
 | POST | `/auth/recuperar`, `/auth/restablecer` | Público | Envía el enlace de recuperación / cambia la contraseña |
+| POST | `/auth/confirmar`, `/auth/reenviar-confirmacion` | Público | Confirma la cuenta con el enlace del correo / envía un enlace nuevo (HU-06) |
 | GET / PATCH | `/superadmin/tenants`, `/superadmin/tenants/:id/estado` | SuperAdmin | Lista academias / activa o suspende |
 | GET / POST / PUT / DELETE | `/salones`, `/ritmos`, `/tarifas` | Admin | Catálogo de la academia |
 | GET / POST / PATCH | `/usuarios`, `/usuarios/:id` | Admin | Lista, crea, edita y desactiva profesores y estudiantes |

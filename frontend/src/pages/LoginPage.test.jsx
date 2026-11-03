@@ -55,4 +55,25 @@ describe('RF-04 · HU-04: inicio de sesión (pantalla)', () => {
     expect(screen.queryByText('Panel del estudiante')).not.toBeInTheDocument()
     expect(localStorage.getItem('ritmoapp_sesion')).toBeNull()
   })
+
+  test('CP-209 · si falta confirmar el correo, lo explica y ofrece reenviar el enlace (HU-06-CA-02)', async () => {
+    const fetchFalso = apiFalsa({
+      'POST /auth/login': {
+        status: 403,
+        body: { error: 'Confirma tu correo antes de iniciar sesión.', codigo: 'CORREO_SIN_CONFIRMAR' },
+      },
+      'POST /auth/reenviar-confirmacion': { status: 200, body: { mensaje: 'Te enviamos un enlace nuevo.' } },
+    })
+    mostrarLogin()
+
+    await userEvent.type(screen.getByLabelText('Correo'), 'laura@academia.co')
+    await userEvent.type(screen.getByLabelText('Contraseña'), 'Prueba123!')
+    await userEvent.click(screen.getByRole('button', { name: /ingresar/i }))
+
+    expect(await screen.findByText('Confirma tu correo antes de iniciar sesión.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /reenviar/i }))
+    expect(await screen.findByText('Te enviamos un enlace nuevo.')).toBeInTheDocument()
+    expect(llamadasA(fetchFalso, 'POST', '/auth/reenviar-confirmacion')[0].body).toEqual({ email: 'laura@academia.co' })
+    expect(localStorage.getItem('ritmoapp_sesion')).toBeNull()
+  })
 })
