@@ -28,7 +28,7 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 - **Bitácora de auditoría.** Un middleware anota cada cambio exitoso (quién, qué, cuándo y sobre qué registro) antes de responder; el administrador la consulta con buscador.
 - **Correos y tareas programadas.** Aviso a los inscritos cuando se cancela una clase, comprobante de pago, recordatorio de la clase de mañana y aviso de membresía por vencer. Las dos últimas las dispara cada mañana un workflow de GitHub Actions contra un endpoint protegido con token, y una tabla evita enviar el mismo aviso dos veces. Nunca se envía a dominios de prueba (`.test`, `.example`, `.invalid`, `.localhost`).
 - **Protección de datos (Ley 1581 de 2012).** Página de política de tratamiento de datos; al registrar la academia y al crear cada usuario se exige la autorización, y queda guardada la fecha y la versión aceptada.
-- **182 pruebas automatizadas**, casos de prueba CP-001 a CP-182: 157 del backend (Jest + Supertest contra PostgreSQL real, sin mocks) y 25 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 91,9 % y 81,2 %).
+- **195 pruebas automatizadas**, casos de prueba CP-001 a CP-195: 167 del backend (Jest + Supertest contra PostgreSQL real, sin mocks; el asistente de IA usa un cliente simulado) y 28 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 92,1 % y 81,0 %). SonarCloud analiza cada cambio: en main, 0 bugs, 0 vulnerabilidades y deuda técnica 0.
 
 ## Capturas
 
@@ -50,7 +50,7 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 |---|---|
 | **SuperAdmin** | Ver todas las academias registradas y activarlas o suspenderlas. Si una academia está suspendida, sus usuarios no pueden iniciar sesión. |
 | **Todos** | Iniciar sesión y recuperar la contraseña con un enlace que llega al correo. |
-| **Admin de academia** | Registrar su academia, gestionar salones, ritmos y tarifas, crear, editar y desactivar profesores y estudiantes, programar y cancelar clases (lista o calendario semanal), registrar pagos, ver quién está al día, ver los reportes de ocupación, ingresos y asistencia, y revisar la bitácora de cambios. |
+| **Admin de academia** | Registrar su academia, gestionar salones, ritmos y tarifas, crear, editar y desactivar profesores y estudiantes, programar y cancelar clases (lista o calendario semanal), registrar pagos, ver quién está al día, ver los reportes de ocupación, ingresos y asistencia, revisar la bitácora de cambios y preguntarle al asistente de IA sobre los datos de su academia (opcional). |
 | **Profesor** | Ver sus clases de hoy y las próximas, y tomar asistencia (asistió, inasistencia, excusa) el día de la clase, a mano o escaneando el QR del estudiante. |
 | **Estudiante** | Ver el catálogo con cupos en tiempo real y filtros por ritmo y día, reservar y cancelar (el cupo queda libre para otro), mostrar el QR de su reserva, ver su historial de asistencia, sus pagos y hasta cuándo está vigente su membresía. |
 
@@ -59,12 +59,12 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 | Capa | Tecnologías |
 |---|---|
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router, Recharts, Framer Motion, qrcode y jsQR |
-| Backend | Node.js, Express 5, JWT, bcrypt, helmet, express-rate-limit, correo por la API de Brevo |
+| Backend | Node.js, Express 5, JWT, bcrypt, helmet, express-rate-limit, correo por la API de Brevo, asistente con la API de Claude (opcional) |
 | Datos | PostgreSQL 16, Prisma 7 (driver adapter `@prisma/adapter-pg`) |
-| Pruebas y CI | Jest, Supertest, Vitest, Testing Library, GitHub Actions, Dependabot |
+| Pruebas y CI | Jest, Supertest, Vitest, Testing Library, GitHub Actions, Dependabot, SonarCloud |
 | Entorno | Docker Compose (PostgreSQL + pgAdmin) |
 
-Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md). Dentro de la API no hay capas de servicios ni repositorios separadas ([ADR-002](docs/adr/ADR-002-controladores-y-prisma-sin-capa-de-servicios.md)) y el correo sale por la API de Brevo ([ADR-003](docs/adr/ADR-003-correo-por-api-http-brevo.md)).
+Arquitectura de tres capas: el frontend nunca toca la base de datos, todo pasa por la API REST. La decisión está documentada en [`docs/adr/ADR-001-arquitectura-tres-capas.md`](docs/adr/ADR-001-arquitectura-tres-capas.md). Dentro de la API no hay capas de servicios ni repositorios separadas ([ADR-002](docs/adr/ADR-002-controladores-y-prisma-sin-capa-de-servicios.md)) y el correo sale por la API de Brevo ([ADR-003](docs/adr/ADR-003-correo-por-api-http-brevo.md)). El asistente de IA del administrador es opcional, solo lee los reportes de su academia y no envía correos ni teléfonos ([ADR-004](docs/adr/ADR-004-asistente-ia-del-administrador.md)).
 
 ## Despliegue
 
@@ -149,7 +149,7 @@ cd ../frontend
 npm test
 ```
 
-Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos y arranque de producción. También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-182) para la matriz de trazabilidad del proyecto.
+Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos, arranque de producción y asistente de IA (con un cliente simulado, sin llamar a la API real). También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-195) para la matriz de trazabilidad del proyecto.
 
 ## API
 
@@ -178,6 +178,7 @@ Todas las rutas van bajo `/api`. Salvo `auth`, `health` y `tareas`, requieren `A
 | GET | `/pagos/mios` | Estudiante | Sus pagos |
 | GET | `/reportes/ocupacion`, `/reportes/ingresos`, `/reportes/asistencia` | Admin | Reportes por rango (`?desde=YYYY-MM-DD&hasta=YYYY-MM-DD`) |
 | GET | `/bitacora` | Admin | Últimos 200 cambios de la academia |
+| GET / POST | `/asistente/estado`, `/asistente` | Admin | Si el asistente de IA está activo / responde una pregunta con los reportes de la academia (20 por hora) |
 | POST | `/tareas/diarias` | Token `TAREAS_TOKEN` | Recordatorios y avisos de membresía del día |
 
 ## Estructura
