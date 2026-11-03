@@ -26,6 +26,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import HelpPanel from "./HelpPanel";
+import Avatar from "./Avatar";
 
 const ENLACES_POR_ROL = {
   SUPERADMIN: [
@@ -103,7 +104,7 @@ function EnlacesNav({ enlaces, onNavegar }) {
   );
 }
 
-function PerfilYSalir({ usuario, iniciales, onSalir }) {
+function PerfilYSalir({ usuario, onSalir, onNavegar }) {
   const { tema, alternar } = useTheme();
   return (
     <div className="border-t border-gray-100 dark:border-gray-800 p-3 space-y-1">
@@ -114,16 +115,22 @@ function PerfilYSalir({ usuario, iniciales, onSalir }) {
         {tema === "oscuro" ? <Sun size={16} /> : <Moon size={16} />}
         {tema === "oscuro" ? "Modo claro" : "Modo oscuro"}
       </button>
-      <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-          {iniciales}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-            {usuario?.nombre || ETIQUETA_ROL[usuario?.rol]}
-          </p>
-          <p className="truncate text-xs text-gray-500 dark:text-gray-400">{ETIQUETA_ROL[usuario?.rol]}</p>
-        </div>
+      <div className="flex items-center gap-1 rounded-lg px-1 py-1">
+        {/* HU-07: tocar el nombre o la foto lleva a "Mi perfil". */}
+        <Link
+          to="/perfil"
+          onClick={onNavegar}
+          title="Mi perfil"
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          <Avatar nombre={usuario?.nombre || ETIQUETA_ROL[usuario?.rol]} foto={usuario?.fotoPerfil} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+              {usuario?.nombre || ETIQUETA_ROL[usuario?.rol]}
+            </p>
+            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{ETIQUETA_ROL[usuario?.rol]} · Mi perfil</p>
+          </div>
+        </Link>
         <button
           onClick={onSalir}
           title="Cerrar sesión"
@@ -148,13 +155,6 @@ export default function Layout({ children }) {
     navigate("/login");
   }
 
-  const iniciales = (usuario?.nombre || ETIQUETA_ROL[usuario?.rol] || "?")
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex relative">
       {/* Textura de fondo muy sutil: un dashboard funcional no se pinta de
@@ -169,7 +169,7 @@ export default function Layout({ children }) {
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-gray-200 bg-white/90 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 relative z-10">
         <Logo />
         <EnlacesNav enlaces={enlaces} />
-        <PerfilYSalir usuario={usuario} iniciales={iniciales} onSalir={cerrarSesion} />
+        <PerfilYSalir usuario={usuario} onSalir={cerrarSesion} />
       </aside>
 
       {/* Cajón deslizante en móvil */}
@@ -189,7 +189,7 @@ export default function Layout({ children }) {
               </button>
             </div>
             <EnlacesNav enlaces={enlaces} onNavegar={() => setMenuAbierto(false)} />
-            <PerfilYSalir usuario={usuario} iniciales={iniciales} onSalir={cerrarSesion} />
+            <PerfilYSalir usuario={usuario} onSalir={cerrarSesion} onNavegar={() => setMenuAbierto(false)} />
           </aside>
         </div>
       )}

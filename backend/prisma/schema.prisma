@@ -87,6 +87,10 @@ model User {
   // Null en usuarios creados antes de que existiera la política.
   autorizacionDatosEn  DateTime?
   versionPoliticaDatos String?
+  // RF-07 · HU-07: foto de perfil como data URL (JPEG, PNG o WebP). El
+  // frontend la reduce a 256 px antes de enviarla, así que pesa unos pocos KB
+  // y cabe en la base de datos sin necesitar un servicio de archivos aparte.
+  fotoPerfil   String?
   // RF-06 · HU-06: quien registra una academia confirma su correo con un
   // enlace antes de poder entrar. Los usuarios que crea el administrador y
   // los de los seeds no lo necesitan (el administrador ya conoce su correo):

@@ -119,7 +119,8 @@ async function login(req, res) {
 
   return res.json({
     token,
-    usuario: { id: user.id, nombre: user.nombre, rol: user.rol, tenantId: user.tenantId },
+    // HU-07: la foto va en la sesión para mostrarla en el menú sin otra llamada.
+    usuario: { id: user.id, nombre: user.nombre, rol: user.rol, tenantId: user.tenantId, fotoPerfil: user.fotoPerfil },
   });
 }
 

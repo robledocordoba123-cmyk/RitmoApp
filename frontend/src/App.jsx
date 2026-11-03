@@ -14,6 +14,7 @@ const RecuperarContrasenaPage = lazy(() => import("./pages/RecuperarContrasenaPa
 const RestablecerContrasenaPage = lazy(() => import("./pages/RestablecerContrasenaPage"));
 const ConfirmarCuentaPage = lazy(() => import("./pages/ConfirmarCuentaPage"));
 const PrivacidadPage = lazy(() => import("./pages/PrivacidadPage"));
+const PerfilPage = lazy(() => import("./pages/PerfilPage"));
 
 const EstudianteDashboard = lazy(() => import("./pages/estudiante/DashboardPage"));
 const CatalogoPage = lazy(() => import("./pages/estudiante/CatalogoPage"));
@@ -87,6 +88,9 @@ export default function App() {
           path="/registro-academia"
           element={estaAutenticado ? <Navigate to={rutaInicioPara(usuario.rol)} replace /> : <OnboardingPage />}
         />
+
+        {/* HU-07: el perfil propio es igual para todos los roles. */}
+        {ruta("/perfil", ["SUPERADMIN", "ADMIN_ACADEMIA", "PROFESOR", "ESTUDIANTE"], PerfilPage)}
 
         {ruta("/estudiante/inicio", ["ESTUDIANTE"], EstudianteDashboard)}
         {ruta("/estudiante/catalogo", ["ESTUDIANTE"], CatalogoPage)}

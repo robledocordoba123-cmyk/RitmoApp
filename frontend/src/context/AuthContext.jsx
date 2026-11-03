@@ -47,6 +47,12 @@ export function AuthProvider({ children }) {
     setSesion(null);
   }
 
+  // HU-07: al guardar el perfil, el menú muestra de una vez el nombre y la
+  // foto nuevos sin tener que cerrar e iniciar sesión otra vez.
+  function actualizarUsuario(cambios) {
+    setSesion((actual) => (actual ? { ...actual, usuario: { ...actual.usuario, ...cambios } } : actual));
+  }
+
   const value = {
     token: sesion?.token || null,
     usuario: sesion?.usuario || null,
@@ -54,6 +60,7 @@ export function AuthProvider({ children }) {
     login,
     onboarding,
     logout,
+    actualizarUsuario,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -48,6 +48,8 @@ const ACCIONES = [
   // La pregunta no se guarda: puede traer datos personales y no hace falta para auditar.
   ["POST", /^\/asistente$/, "Consultó al asistente de IA", () => null],
   ["PATCH", /^\/usuarios\/[^/]+$/, "Editó un usuario", (c) => (c ? `${c.nombre}${c.activo === false ? " · desactivado" : ""}` : null)],
+  // HU-07: la foto no se copia a la bitácora; basta con saber quién cambió su perfil.
+  ["PATCH", /^\/perfil$/, "Editó su perfil", nombre],
 ];
 
 function buscarAccion(metodo, ruta) {
