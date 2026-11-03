@@ -1,9 +1,9 @@
 // RF-05 · HU-05: recuperar la contraseña con un enlace enviado al correo.
 // RN-07: el enlace vence a los 30 minutos y sirve una sola vez.
-const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
 const correo = require("../utils/correo");
+const { nuevoToken, hashDe, escaparHtml, urlFrontend } = require("../utils/enlaces");
 const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
 
 const SALT_ROUNDS = 10;
@@ -14,20 +14,6 @@ const MINUTOS_VIGENCIA = 30;
 const RESPUESTA_SOLICITUD = {
   mensaje: "Si el correo está registrado, te enviamos un enlace para crear una nueva contraseña. Revisa tu bandeja de entrada.",
 };
-
-function hashDe(token) {
-  return crypto.createHash("sha256").update(token).digest("hex");
-}
-
-// El nombre lo escribió un usuario: se escapa antes de meterlo en el HTML del correo.
-function escaparHtml(texto) {
-  return String(texto).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-}
-
-function urlFrontend() {
-  const primerOrigen = (process.env.CORS_ORIGIN || "").split(",")[0].trim();
-  return process.env.FRONTEND_URL || primerOrigen || "http://localhost:5173";
-}
 
 async function solicitar(req, res) {
   const email = normalizarEmail(req.body.email);
@@ -41,7 +27,7 @@ async function solicitar(req, res) {
     return res.json(RESPUESTA_SOLICITUD);
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
+  const token = nuevoToken();
   const ahora = new Date();
   await prisma.$transaction([
     // Pedir un enlace nuevo anula los anteriores que no se hayan usado.
