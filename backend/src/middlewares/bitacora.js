@@ -50,6 +50,9 @@ const ACCIONES = [
   ["PATCH", /^\/usuarios\/[^/]+$/, "Editó un usuario", (c) => (c ? `${c.nombre}${c.activo === false ? " · desactivado" : ""}` : null)],
   // HU-07: la foto no se copia a la bitácora; basta con saber quién cambió su perfil.
   ["PATCH", /^\/perfil$/, "Editó su perfil", nombre],
+  // HU-22: el código no se copia; basta con saber quién lo cambió o lo apagó.
+  ["POST", /^\/invitacion$/, "Generó un código de invitación", () => null],
+  ["DELETE", /^\/invitacion$/, "Desactivó el código de invitación", () => null],
 ];
 
 function buscarAccion(metodo, ruta) {

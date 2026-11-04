@@ -56,6 +56,11 @@ model Tenant {
   nit       String       @unique
   estado    EstadoTenant @default(ACTIVA)
   createdAt DateTime     @default(now())
+  // HU-22: código que la academia comparte para que sus estudiantes se
+  // registren solos. No es secreto (se reparte en grupos o carteleras), pero
+  // vence y se puede cambiar o apagar en cualquier momento. Null = sin código.
+  codigoInvitacion        String?   @unique
+  codigoInvitacionVenceEn DateTime?
 
   usuarios  User[]
   salones   Salon[]
