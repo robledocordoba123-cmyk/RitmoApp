@@ -26,9 +26,10 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 - **Seguridad.** JWT + bcrypt, control de acceso por rol, rate limiting en el login, el registro y la recuperación de contraseña, `helmet`, CORS restringido por entorno y la API no arranca si faltan variables obligatorias. El enlace de recuperación vence a los 30 minutos, sirve una sola vez y en la base de datos solo se guarda su hash.
 - **Asistencia con código QR.** El estudiante muestra un QR de su reserva y el profesor lo escanea con la cámara. El código es un JWT firmado con una clave propia (derivada de la principal), con audiencia exclusiva y sin datos personales, así que no sirve como token de sesión ni para otra clase.
 - **Bitácora de auditoría.** Un middleware anota cada cambio exitoso (quién, qué, cuándo y sobre qué registro) antes de responder; el administrador la consulta con buscador.
-- **Correos y tareas programadas.** Aviso a los inscritos cuando se cancela una clase, comprobante de pago, recordatorio de la clase de mañana y aviso de membresía por vencer. Las dos últimas las dispara cada mañana un workflow de GitHub Actions contra un endpoint protegido con token, y una tabla evita enviar el mismo aviso dos veces. Nunca se envía a dominios de prueba (`.test`, `.example`, `.invalid`, `.localhost`).
+- **Correos y tareas programadas.** Aviso a los inscritos cuando se cancela una clase, comprobante de pago, recordatorio de la clase de mañana y aviso de membresía por vencer. Las dos últimas las dispara cada mañana cron-job.org contra un endpoint protegido con token, y una tabla evita enviar el mismo aviso dos veces. Nunca se envía a dominios de prueba (`.test`, `.example`, `.invalid`, `.localhost`).
 - **Protección de datos (Ley 1581 de 2012).** Página de política de tratamiento de datos; al registrar la academia y al crear cada usuario se exige la autorización, y queda guardada la fecha y la versión aceptada.
-- **195 pruebas automatizadas**, casos de prueba CP-001 a CP-195: 167 del backend (Jest + Supertest contra PostgreSQL real, sin mocks; el asistente de IA usa un cliente simulado) y 28 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 92,1 % y 81,0 %). SonarCloud analiza cada cambio: en main, 0 bugs, 0 vulnerabilidades y deuda técnica 0.
+- **Registro de estudiantes con código.** El administrador genera un código de invitación que vence en 30 días y el estudiante crea su cuenta solo. El rol y la academia salen del código, nunca del formulario, y debe confirmar su correo con un enlace de un solo uso.
+- **233 pruebas automatizadas**, casos de prueba CP-001 a CP-233: 194 del backend (Jest + Supertest contra PostgreSQL real, sin mocks; el asistente de IA usa un cliente simulado) y 39 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 92,5 % y 81,1 %). SonarCloud analiza cada cambio: en main, 0 bugs, 0 vulnerabilidades y deuda técnica 0.
 
 ## Capturas
 
@@ -149,7 +150,7 @@ cd ../frontend
 npm test
 ```
 
-Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos, arranque de producción y asistente de IA (con un cliente simulado, sin llamar a la API real). También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-195) para la matriz de trazabilidad del proyecto.
+Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos, arranque de producción, confirmación de la cuenta, perfil, registro de estudiantes con código y asistente de IA (con un cliente simulado, sin llamar a la API real). También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-233) para la matriz de trazabilidad del proyecto.
 
 ## API
 
@@ -162,9 +163,12 @@ Todas las rutas van bajo `/api`. Salvo `auth`, `health` y `tareas`, requieren `A
 | POST | `/auth/login` | Público | Inicia sesión y devuelve el JWT |
 | POST | `/auth/recuperar`, `/auth/restablecer` | Público | Envía el enlace de recuperación / cambia la contraseña |
 | POST | `/auth/confirmar`, `/auth/reenviar-confirmacion` | Público | Confirma la cuenta con el enlace del correo / envía un enlace nuevo (HU-06) |
+| GET / POST | `/auth/invitacion/:codigo`, `/auth/registro-estudiante` | Público | Muestra la academia del código / registra un estudiante (HU-22) |
+| GET / PATCH | `/perfil` | Cualquier rol | Ve y cambia el nombre y la foto propios (HU-07) |
 | GET / PATCH | `/superadmin/tenants`, `/superadmin/tenants/:id/estado` | SuperAdmin | Lista academias / activa o suspende |
 | GET / POST / PUT / DELETE | `/salones`, `/ritmos`, `/tarifas` | Admin | Catálogo de la academia |
 | GET / POST / PATCH | `/usuarios`, `/usuarios/:id` | Admin | Lista, crea, edita y desactiva profesores y estudiantes |
+| GET / POST / DELETE | `/invitacion` | Admin | Ve, genera o desactiva el código de invitación de la academia (HU-22) |
 | GET | `/clases` | Cualquier rol de la academia | Catálogo de clases con cupos |
 | POST | `/clases` | Admin | Programa una clase (valida cruces y capacidad) |
 | PATCH | `/clases/:id/cancelar` | Admin | Cancela una clase y avisa a los inscritos |
