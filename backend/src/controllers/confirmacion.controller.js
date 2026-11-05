@@ -43,11 +43,11 @@ function enviarEnlace(user, token) {
       asunto: "Confirma tu cuenta de RitmoApp",
       texto:
         `Hola, ${user.nombre}.\n\nPara activar tu cuenta de RitmoApp entra a este enlace:\n${enlace}\n\n` +
-        `El enlace vence en ${HORAS_VIGENCIA} horas y sirve una sola vez. Si no registraste una academia, ignora este correo.`,
+        `El enlace vence en ${HORAS_VIGENCIA} horas y sirve una sola vez. Si no creaste una cuenta en RitmoApp, ignora este correo.`,
       html:
         `<p>Hola, ${escaparHtml(user.nombre)}.</p><p>Para activar tu cuenta de RitmoApp entra a este enlace:</p>` +
         `<p><a href="${enlace}">Confirmar mi cuenta</a></p>` +
-        `<p>El enlace vence en ${HORAS_VIGENCIA} horas y sirve una sola vez. Si no registraste una academia, ignora este correo.</p>`,
+        `<p>El enlace vence en ${HORAS_VIGENCIA} horas y sirve una sola vez. Si no creaste una cuenta en RitmoApp, ignora este correo.</p>`,
     })
     .catch((err) => console.error("[correo] No se pudo enviar el enlace de confirmación:", err.message));
 }

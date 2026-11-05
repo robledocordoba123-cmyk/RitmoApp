@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 import EmptyState from "../../components/ui/EmptyState";
 import { SkeletonList } from "../../components/ui/Skeleton";
+import CodigoInvitacion from "../../components/CodigoInvitacion";
 
 const VACIO = { nombre: "", email: "", password: "", rol: "PROFESOR", autorizacionDatos: false };
 
@@ -68,7 +69,9 @@ export default function EquipoPage() {
 
   return (
     <div>
-      <PageHeader title="Equipo" subtitle="Aquí das de alta a tus profesores y estudiantes — no se registran solos." />
+      <PageHeader title="Equipo" subtitle="Aquí das de alta a tus profesores y estudiantes. Los estudiantes también pueden registrarse con tu código de invitación." />
+
+      <CodigoInvitacion />
 
       <Card className="mb-6">
         <CardHeader title="Agregar persona" />

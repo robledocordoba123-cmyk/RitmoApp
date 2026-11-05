@@ -16,6 +16,7 @@ const pagoRoutes = require("./pago.routes");
 const tareasRoutes = require("./tareas.routes");
 const asistenteRoutes = require("./asistente.routes");
 const perfilRoutes = require("./perfil.routes");
+const invitacionRoutes = require("./invitacion.routes");
 
 const router = Router();
 
@@ -45,5 +46,6 @@ router.use("/pagos", pagoRoutes);
 router.use("/asistencias", asistenciaRoutes);
 router.use("/asistente", asistenteRoutes);
 router.use("/perfil", perfilRoutes);
+router.use("/invitacion", invitacionRoutes);
 
 module.exports = router;

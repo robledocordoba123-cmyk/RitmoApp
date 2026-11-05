@@ -29,9 +29,9 @@ async function listarPorRol(req, res) {
 }
 
 // El admin de academia crea profesores y estudiantes de su propia academia.
-// No existe autorregistro público para estos roles a propósito: el Alcance
-// del proyecto define esto como gestión de usuarios por parte del admin, no
-// un estudiante buscando su academia entre muchas.
+// Los estudiantes también pueden registrarse solos, pero solo con el código
+// de invitación que comparte su academia (HU-22, registroEstudiante.controller.js):
+// nadie busca una academia entre muchas ni se crea un profesor por su cuenta.
 async function crear(req, res) {
   const { nombre, password, rol } = req.body;
   const email = normalizarEmail(req.body.email);

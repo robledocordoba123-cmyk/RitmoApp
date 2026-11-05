@@ -164,6 +164,13 @@ export default function LoginPage() {
               Regístrala aquí
             </Link>
           </p>
+          {/* HU-22: los estudiantes con el código de su academia se registran solos. */}
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            ¿Tu academia te dio un código de invitación?{" "}
+            <Link to="/registro-estudiante" className="text-indigo-600 dark:text-indigo-400 font-medium">
+              Crea tu cuenta de estudiante
+            </Link>
+          </p>
         </div>
       </div>
 
