@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "framer-motion": "^14.8.0",
+    "framer-motion": "^14.9.0",
     "jsqr": "^1.4.0",
     "lucide-react": "^1.66.0",
     "qrcode": "^1.5.4",
