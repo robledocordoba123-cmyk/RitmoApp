@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
-const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
+const { normalizarEmail, errorEnRegistroDeAcademia } = require("../utils/validaciones");
 const { datosDeAutorizacion } = require("../utils/privacidad");
 const { crearEnlace, enviarEnlace } = require("./confirmacion.controller");
 
@@ -21,17 +21,8 @@ function emitirToken(user) {
 async function onboarding(req, res) {
   const { academia, admin } = req.body;
 
-  if (!academia?.nombre || !academia?.nit || !admin?.nombre || !admin?.email || !admin?.password) {
-    return res.status(400).json({ error: "Faltan datos de la academia o del administrador." });
-  }
-  if (!passwordValida(admin.password)) {
-    return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
-  }
-  // Ley 1581: la academia no se crea si su administrador no acepta la
-  // política de tratamiento de datos. Debe ser true explícito, no "algo".
-  if (req.body.aceptaPoliticaDatos !== true) {
-    return res.status(400).json({ error: "Debes aceptar la política de tratamiento de datos para registrar la academia." });
-  }
+  const error = errorEnRegistroDeAcademia(req.body);
+  if (error) return res.status(400).json({ error });
 
   const emailAdmin = normalizarEmail(admin.email);
 
