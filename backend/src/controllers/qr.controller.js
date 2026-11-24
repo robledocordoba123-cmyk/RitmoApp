@@ -66,6 +66,26 @@ async function codigoDeReserva(req, res) {
 // día de la clase) más las del código (firmado, vigente, de esta clase, de
 // esta academia y con la reserva todavía confirmada). La reserva se busca con
 // req.db: si es de otra academia, no aparece.
+// Cada regla devuelve [estado HTTP, mensaje] si falla, o null si está bien.
+function errorDeLaClase(clase, profesorId) {
+  if (!clase) return [404, "Clase no encontrada en esta academia."];
+  if (clase.profesorId !== profesorId) return [403, "Solo el profesor asignado a esta clase puede registrar su asistencia."];
+  if (clase.estado === "CANCELADA") return [400, "La clase está cancelada."];
+  return null;
+}
+
+function errorDeLaReserva(reserva, claseId) {
+  if (!reserva || reserva.claseId !== claseId) return [400, "Este código QR es de otra clase."];
+  if (reserva.estado !== "CONFIRMADA") return [400, "La reserva de este código ya no está activa."];
+  return null;
+}
+
+// Solo el día de la clase, desde MINUTOS_ANTES minutos antes de que empiece.
+function dentroDelHorario(clase, ahora) {
+  const desde = new Date(clase.fechaHoraInicio.getTime() - MINUTOS_ANTES * 60 * 1000);
+  return esMismoDia(clase.fechaHoraInicio, ahora) && ahora >= desde;
+}
+
 async function registrarPorQr(req, res) {
   const { id: claseId } = req.params;
   const { codigo } = req.body || {};
@@ -78,29 +98,17 @@ async function registrarPorQr(req, res) {
   }
 
   const clase = await req.db.clase.findUnique({ where: { id: claseId } });
-  if (!clase) {
-    return res.status(404).json({ error: "Clase no encontrada en esta academia." });
-  }
-  if (clase.profesorId !== req.user.id) {
-    return res.status(403).json({ error: "Solo el profesor asignado a esta clase puede registrar su asistencia." });
-  }
-  if (clase.estado === "CANCELADA") {
-    return res.status(400).json({ error: "La clase está cancelada." });
-  }
+  const errorClase = errorDeLaClase(clase, req.user.id);
+  if (errorClase) return res.status(errorClase[0]).json({ error: errorClase[1] });
   const reserva = await req.db.reserva.findUnique({
     where: { id: datos.sub },
     include: { estudiante: { select: { id: true, nombre: true } } },
   });
-  if (!reserva || reserva.claseId !== claseId) {
-    return res.status(400).json({ error: "Este código QR es de otra clase." });
-  }
-  if (reserva.estado !== "CONFIRMADA") {
-    return res.status(400).json({ error: "La reserva de este código ya no está activa." });
-  }
+  const errorReserva = errorDeLaReserva(reserva, claseId);
+  if (errorReserva) return res.status(errorReserva[0]).json({ error: errorReserva[1] });
 
   const ahora = new Date();
-  const desde = new Date(clase.fechaHoraInicio.getTime() - MINUTOS_ANTES * 60 * 1000);
-  if (!esMismoDia(clase.fechaHoraInicio, ahora) || ahora < desde) {
+  if (!dentroDelHorario(clase, ahora)) {
     return res.status(400).json({ error: `Solo se puede escanear el día de la clase, desde ${MINUTOS_ANTES} minutos antes de que empiece.` });
   }
 

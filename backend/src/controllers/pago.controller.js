@@ -20,11 +20,27 @@ const DATOS_DEL_PAGO = {
   registradoEn: true,
 };
 
+function leerReferencia(valor) {
+  return typeof valor === "string" ? valor.trim() || null : null;
+}
+
+function datosCompletos({ estudianteId, tarifaId, medio }) {
+  return Boolean(estudianteId && tarifaId) && MEDIOS.includes(medio);
+}
+
+// Por defecto se cobra el valor de la tarifa; el admin puede indicar otro
+// (por ejemplo un descuento), pero nunca cero ni negativo (RN-14).
+// Devuelve el monto válido o null.
+function montoDelPago(monto, tarifa) {
+  const valor = monto === undefined ? tarifa.valor : monto;
+  return Number.isInteger(valor) && valor > 0 ? valor : null;
+}
+
 async function registrar(req, res) {
   const { estudianteId, tarifaId, medio } = req.body;
-  const referencia = typeof req.body.referencia === "string" ? req.body.referencia.trim() || null : null;
+  const referencia = leerReferencia(req.body.referencia);
 
-  if (!estudianteId || !tarifaId || !MEDIOS.includes(medio)) {
+  if (!datosCompletos(req.body)) {
     return res.status(400).json({ error: `estudianteId, tarifaId y medio (${MEDIOS.join(", ")}) son obligatorios.` });
   }
 
@@ -44,10 +60,8 @@ async function registrar(req, res) {
     return res.status(400).json({ error: "La tarifa no existe en esta academia o está desactivada." });
   }
 
-  // Por defecto se cobra el valor de la tarifa; el admin puede indicar otro
-  // (por ejemplo un descuento), pero nunca cero ni negativo (RN-14).
-  const monto = req.body.monto === undefined ? tarifa.valor : req.body.monto;
-  if (!Number.isInteger(monto) || monto <= 0) {
+  const monto = montoDelPago(req.body.monto, tarifa);
+  if (monto === null) {
     return res.status(400).json({ error: "El monto debe ser un número entero mayor que cero." });
   }
 
