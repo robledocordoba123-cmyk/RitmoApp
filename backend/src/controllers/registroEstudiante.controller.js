@@ -7,13 +7,12 @@
 // estudiante nuevo.
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
-const { normalizarEmail, passwordValida, LONGITUD_MINIMA_PASSWORD } = require("../utils/validaciones");
+const { normalizarEmail, errorEnRegistroDeEstudiante } = require("../utils/validaciones");
 const { datosDeAutorizacion } = require("../utils/privacidad");
 const { normalizarCodigo, vigente } = require("../utils/invitacion");
 const { crearEnlace, enviarEnlace } = require("./confirmacion.controller");
 
 const SALT_ROUNDS = 10;
-const LONGITUD_MAXIMA_NOMBRE = 80;
 // El mismo mensaje para un código inexistente, vencido o de una academia
 // suspendida: no hace falta decir cuál de las tres pasó (HU-22-CA-02).
 const CODIGO_INVALIDO = "El código de invitación no es válido o ya venció. Pide uno nuevo a tu academia.";
@@ -39,25 +38,8 @@ async function registrar(req, res) {
   const nombre = typeof req.body.nombre === "string" ? req.body.nombre.trim() : "";
   const email = normalizarEmail(req.body.email);
 
-  if (!codigo || !nombre || !email || !password) {
-    return res.status(400).json({ error: "El código, tu nombre, tu correo y una contraseña son obligatorios." });
-  }
-  if (nombre.length > LONGITUD_MAXIMA_NOMBRE) {
-    return res.status(400).json({ error: `El nombre puede tener máximo ${LONGITUD_MAXIMA_NOMBRE} caracteres.` });
-  }
-  if (!passwordValida(password)) {
-    return res.status(400).json({ error: `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.` });
-  }
-  // Ley 1581: debe ser true explícito. Si es menor de edad, la autorización
-  // la da su representante legal (HU-22-CA-03).
-  if (req.body.aceptaPoliticaDatos !== true) {
-    return res.status(400).json({ error: "Debes aceptar la política de tratamiento de datos para registrarte." });
-  }
-  if (req.body.menorDeEdad === true && req.body.autorizaRepresentante !== true) {
-    return res.status(400).json({
-      error: "Si eres menor de edad, tu madre, padre o representante legal debe autorizar el tratamiento de tus datos.",
-    });
-  }
+  const error = errorEnRegistroDeEstudiante({ ...req.body, nombre, email });
+  if (error) return res.status(400).json({ error });
 
   const tenant = await academiaDelCodigo(codigo);
   if (!tenant) return res.status(400).json({ error: CODIGO_INVALIDO });

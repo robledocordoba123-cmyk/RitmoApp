@@ -2,17 +2,19 @@
 // cambia los pagos ya registrados, porque cada pago guarda su propia copia de
 // nombre, valor y duración (HU-18-CA-03).
 
-function validar({ nombre, valor, duracionDias }, parcial = false) {
-  if (!parcial || nombre !== undefined) {
-    if (typeof nombre !== "string" || !nombre.trim()) return "nombre es obligatorio.";
-  }
-  if (!parcial || valor !== undefined) {
-    if (!Number.isInteger(valor) || valor <= 0) return "valor debe ser un entero positivo (pesos).";
-  }
-  if (!parcial || duracionDias !== undefined) {
-    if (!Number.isInteger(duracionDias) || duracionDias <= 0 || duracionDias > 366) {
-      return "duracionDias debe ser un entero entre 1 y 366.";
-    }
+// Una regla por campo: cada una devuelve el mensaje de error o null.
+const REGLAS = {
+  nombre: (v) => (typeof v !== "string" || !v.trim() ? "nombre es obligatorio." : null),
+  valor: (v) => (!Number.isInteger(v) || v <= 0 ? "valor debe ser un entero positivo (pesos)." : null),
+  duracionDias: (v) => (!Number.isInteger(v) || v <= 0 || v > 366 ? "duracionDias debe ser un entero entre 1 y 366." : null),
+};
+
+// En una edición (parcial) solo se revisan los campos que llegan.
+function validar(datos, parcial = false) {
+  for (const [campo, regla] of Object.entries(REGLAS)) {
+    if (parcial && datos[campo] === undefined) continue;
+    const error = regla(datos[campo]);
+    if (error) return error;
   }
   return null;
 }

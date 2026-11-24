@@ -50,4 +50,52 @@ function validarDatosDeClase(datos) {
   return { inicio, fin };
 }
 
-module.exports = { normalizarEmail, passwordValida, errorEnCambiosDeUsuario, validarDatosDeClase, LONGITUD_MINIMA_PASSWORD };
+const MENSAJE_PASSWORD = `La contraseña debe tener al menos ${LONGITUD_MINIMA_PASSWORD} caracteres.`;
+
+// Devuelve el primer mensaje de error de una lista de [condición, mensaje],
+// o null si ninguna condición se cumple. Sirve para escribir las validaciones
+// como una tabla en vez de una cadena de if.
+function primerError(reglas) {
+  const fallida = reglas.find(([falla]) => falla);
+  return fallida ? fallida[1] : null;
+}
+
+// RF-01 · HU-01: datos para registrar una academia con su administrador.
+// Ley 1581: la política se acepta con true explícito, no con "algo".
+function errorEnRegistroDeAcademia({ academia, admin, aceptaPoliticaDatos }) {
+  const obligatorios = [academia?.nombre, academia?.nit, admin?.nombre, admin?.email, admin?.password];
+  return primerError([
+    [obligatorios.some((valor) => !valor), "Faltan datos de la academia o del administrador."],
+    [!passwordValida(admin?.password), MENSAJE_PASSWORD],
+    [aceptaPoliticaDatos !== true, "Debes aceptar la política de tratamiento de datos para registrar la academia."],
+  ]);
+}
+
+// RF-24 · HU-22: datos para que un estudiante cree su cuenta con el código
+// de invitación. Si es menor de edad, autoriza su representante (HU-22-CA-03).
+const LONGITUD_MAXIMA_NOMBRE = 80;
+
+function errorEnRegistroDeEstudiante({ codigo, nombre, email, password, aceptaPoliticaDatos, menorDeEdad, autorizaRepresentante }) {
+  return primerError([
+    [!codigo || !nombre || !email || !password, "El código, tu nombre, tu correo y una contraseña son obligatorios."],
+    [nombre.length > LONGITUD_MAXIMA_NOMBRE, `El nombre puede tener máximo ${LONGITUD_MAXIMA_NOMBRE} caracteres.`],
+    [!passwordValida(password), MENSAJE_PASSWORD],
+    [aceptaPoliticaDatos !== true, "Debes aceptar la política de tratamiento de datos para registrarte."],
+    [
+      menorDeEdad === true && autorizaRepresentante !== true,
+      "Si eres menor de edad, tu madre, padre o representante legal debe autorizar el tratamiento de tus datos.",
+    ],
+  ]);
+}
+
+module.exports = {
+  normalizarEmail,
+  passwordValida,
+  primerError,
+  errorEnCambiosDeUsuario,
+  validarDatosDeClase,
+  errorEnRegistroDeAcademia,
+  errorEnRegistroDeEstudiante,
+  LONGITUD_MINIMA_PASSWORD,
+  LONGITUD_MAXIMA_NOMBRE,
+};

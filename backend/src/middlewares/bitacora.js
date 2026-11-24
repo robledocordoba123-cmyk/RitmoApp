@@ -59,6 +59,19 @@ function buscarAccion(metodo, ruta) {
   return ACCIONES.find(([m, patron]) => m === metodo && patron.test(ruta));
 }
 
+// Qué registro de la base tocó la acción: lo dice la ruta o, si no, el id que
+// devolvió la respuesta (o el del pago), o el segmento de la ruta.
+function entidadDe(ruta, cuerpo, entidadDeRuta) {
+  if (entidadDeRuta) return entidadDeRuta(ruta);
+  return cuerpo?.id ?? cuerpo?.pago?.id ?? ruta.split("/")[2] ?? null;
+}
+
+// Solo se anota una vez, si la acción salió bien y si el usuario es de una
+// academia (el SuperAdmin no pertenece a ninguna).
+function debeAnotarse(yaAnotado, res, req) {
+  return !yaAnotado && res.statusCode < 300 && Boolean(req.user?.tenantId);
+}
+
 function registrarEnBitacora(req, res, next) {
   const ruta = req.path;
   const accion = buscarAccion(req.method, ruta);
@@ -72,8 +85,7 @@ function registrarEnBitacora(req, res, next) {
   const enviarOriginal = { json: res.json.bind(res), send: res.send.bind(res) };
 
   const interceptar = (tipo) => (datos) => {
-    // El SuperAdmin no pertenece a una academia: sus acciones no van aquí.
-    if (anotado || res.statusCode >= 300 || !req.user?.tenantId) {
+    if (!debeAnotarse(anotado, res, req)) {
       return enviarOriginal[tipo](datos);
     }
     anotado = true;
@@ -86,7 +98,7 @@ function registrarEnBitacora(req, res, next) {
           usuarioId: req.user.id,
           accion: texto,
           detalle: detallar(cuerpo),
-          entidadId: entidadDeRuta ? entidadDeRuta(ruta) : (cuerpo?.id ?? cuerpo?.pago?.id ?? ruta.split("/")[2] ?? null),
+          entidadId: entidadDe(ruta, cuerpo, entidadDeRuta),
         },
       })
       .catch((err) => {

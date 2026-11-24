@@ -28,8 +28,40 @@ function estado(req, res) {
   res.json({ disponible: asistenteActual() !== null });
 }
 
+// Errores del proveedor de IA que tienen un mensaje claro para el usuario.
+// Nunca se muestra la clave, la respuesta cruda ni el error interno.
+const ERRORES_DEL_PROVEEDOR = [
+  [(err) => err instanceof Anthropic.RateLimitError, 429, "El asistente está recibiendo muchas preguntas. Intenta en un minuto."],
+  [
+    (err) => err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError,
+    503,
+    "El asistente no está bien configurado. Avísale al equipo técnico.",
+  ],
+  [
+    (err) => err instanceof Anthropic.APIConnectionError || err instanceof Anthropic.APIError,
+    503,
+    "El asistente no está disponible en este momento. Intenta más tarde.",
+  ],
+];
+
+// Traduce un error a { estado, cuerpo } para responder, o null si no se
+// conoce (en ese caso el error sigue hacia el manejador general).
+function respuestaParaElError(err) {
+  if (err instanceof ErrorDelAsistente) {
+    return { estado: 422, cuerpo: { error: err.message, codigo: err.codigo } };
+  }
+  // Se registra el detalle en el servidor, pero al usuario solo se le da un mensaje claro.
+  console.error(JSON.stringify({ fecha: new Date().toISOString(), nivel: "error", evento: "asistente", tipo: err.constructor?.name, estado: err.status, error: err.message }));
+  const conocido = ERRORES_DEL_PROVEEDOR.find(([coincide]) => coincide(err));
+  return conocido ? { estado: conocido[1], cuerpo: { error: conocido[2] } } : null;
+}
+
+function leerPregunta(cuerpo) {
+  return typeof cuerpo?.pregunta === "string" ? cuerpo.pregunta.trim() : "";
+}
+
 async function preguntar(req, res) {
-  const pregunta = typeof req.body?.pregunta === "string" ? req.body.pregunta.trim() : "";
+  const pregunta = leerPregunta(req.body);
   if (pregunta.length < 3 || pregunta.length > LARGO_MAXIMO) {
     return res.status(400).json({ error: `Escribe una pregunta de entre 3 y ${LARGO_MAXIMO} caracteres.` });
   }
@@ -43,22 +75,9 @@ async function preguntar(req, res) {
     const resultado = await actual.responder({ pregunta, db: req.db, tenantId: req.user.tenantId });
     return res.json(resultado);
   } catch (err) {
-    if (err instanceof ErrorDelAsistente) {
-      return res.status(422).json({ error: err.message, codigo: err.codigo });
-    }
-    // Se registra el detalle en el servidor, pero al usuario solo se le da
-    // un mensaje claro: nunca la clave, la respuesta cruda ni el error interno.
-    console.error(JSON.stringify({ fecha: new Date().toISOString(), nivel: "error", evento: "asistente", tipo: err.constructor?.name, estado: err.status, error: err.message }));
-    if (err instanceof Anthropic.RateLimitError) {
-      return res.status(429).json({ error: "El asistente está recibiendo muchas preguntas. Intenta en un minuto." });
-    }
-    if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-      return res.status(503).json({ error: "El asistente no está bien configurado. Avísale al equipo técnico." });
-    }
-    if (err instanceof Anthropic.APIConnectionError || err instanceof Anthropic.APIError) {
-      return res.status(503).json({ error: "El asistente no está disponible en este momento. Intenta más tarde." });
-    }
-    throw err;
+    const respuesta = respuestaParaElError(err);
+    if (!respuesta) throw err;
+    return res.status(respuesta.estado).json(respuesta.cuerpo);
   }
 }
 
