@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const swaggerUi = require("swagger-ui-express");
 const routes = require("./routes");
+const especificacionApi = require("./docs/openapi");
 const { registroDePeticiones } = require("./middlewares/registro");
 
 const app = express();
@@ -36,6 +38,19 @@ app.use(cors(origenesPermitidos.length > 0 ? { origin: origenesPermitidos } : {}
 app.use(registroDePeticiones);
 
 app.use(express.json({ limit: "100kb" }));
+
+// Documentación de la API (OpenAPI 3): /api/docs para verla y probarla en el
+// navegador y /api/docs/openapi.json para importarla en Postman. Solo describe
+// las rutas; usarlas sigue exigiendo el token y el rol de cada una.
+app.get("/api/docs/openapi.json", (req, res) => res.json(especificacionApi));
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(especificacionApi, {
+    customSiteTitle: "RitmoApp API",
+    swaggerOptions: { docExpansion: "none", tryItOutEnabled: false },
+  })
+);
 
 app.use("/api", routes);
 
