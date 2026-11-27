@@ -29,7 +29,7 @@ En la pantalla de inicio de sesión puedes entrar con un clic como **Administrad
 - **Correos y tareas programadas.** Aviso a los inscritos cuando se cancela una clase, comprobante de pago, recordatorio de la clase de mañana y aviso de membresía por vencer. Las dos últimas las dispara cada mañana cron-job.org contra un endpoint protegido con token, y una tabla evita enviar el mismo aviso dos veces. Nunca se envía a dominios de prueba (`.test`, `.example`, `.invalid`, `.localhost`).
 - **Protección de datos (Ley 1581 de 2012).** Página de política de tratamiento de datos; al registrar la academia y al crear cada usuario se exige la autorización, y queda guardada la fecha y la versión aceptada.
 - **Registro de estudiantes con código.** El administrador genera un código de invitación que vence en 30 días y el estudiante crea su cuenta solo. El rol y la academia salen del código, nunca del formulario, y debe confirmar su correo con un enlace de un solo uso.
-- **233 pruebas automatizadas**, casos de prueba CP-001 a CP-233: 194 del backend (Jest + Supertest contra PostgreSQL real, sin mocks; el asistente de IA usa un cliente simulado) y 39 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 92,5 % y 81,1 %). SonarCloud analiza cada cambio: en main, 0 bugs, 0 vulnerabilidades y deuda técnica 0.
+- **239 pruebas automatizadas** con su código de caso de prueba (CP): 200 del backend (Jest + Supertest contra PostgreSQL real, sin mocks; el asistente de IA usa un cliente simulado) y 39 del frontend (Vitest + Testing Library). Corren en GitHub Actions en cada push, y la CI falla si la cobertura del backend baja de 80 % de líneas o 70 % de ramas (hoy 93,1 % y 80,9 %). SonarCloud analiza cada cambio: en main, 0 bugs, 0 vulnerabilidades y deuda técnica 0.
 
 ## Capturas
 
@@ -150,9 +150,11 @@ cd ../frontend
 npm test
 ```
 
-Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos, arranque de producción, confirmación de la cuenta, perfil, registro de estudiantes con código y asistente de IA (con un cliente simulado, sin llamar a la API real). También cubren el aislamiento entre academias. Cada prueba lleva su código de caso de prueba (CP-001 a CP-233) para la matriz de trazabilidad del proyecto.
+Cubren los requisitos construidos: registro de academia, inicio de sesión (incluido el límite de intentos), recuperación de contraseña, panel del SuperAdmin, gestión de profesores y estudiantes, tarifas, programación de clases, catálogo con filtros, reservas y cancelaciones (incluida la prueba de concurrencia y el cruce de horarios), membresías y pagos, asistencia (también por QR), historial de asistencia, reportes, bitácora, correos y tareas diarias, autorización de datos, arranque de producción, confirmación de la cuenta, perfil, registro de estudiantes con código y asistente de IA (con un cliente simulado, sin llamar a la API real). También cubren el aislamiento entre academias. También revisan que cada ruta de la API esté en la documentación OpenAPI. Cada prueba lleva su código de caso de prueba (CP-001, CP-002...) para la matriz de trazabilidad del proyecto.
 
 ## API
+
+**Documentación interactiva (Swagger / OpenAPI 3):** [ritmoapp-api.onrender.com/api/docs](https://ritmoapp-api.onrender.com/api/docs), o `http://localhost:4000/api/docs` en local. Ahí se ve cada ruta con sus datos de entrada, sus respuestas y sus errores, y se puede probar con el botón **Authorize** después de iniciar sesión. El archivo para importar en Postman está en `/api/docs/openapi.json`. Una prueba automática (CP-238) falla si se agrega una ruta sin documentarla.
 
 Todas las rutas van bajo `/api`. Salvo `auth`, `health` y `tareas`, requieren `Authorization: Bearer <token>`.
 
@@ -201,6 +203,7 @@ RitmoApp/
 │   │   ├── config/            # Cliente de Prisma y cliente aislado por academia
 │   │   ├── middlewares/       # JWT, roles, tenant, rate limit
 │   │   ├── controllers/
+│   │   ├── docs/              # Especificación OpenAPI (Swagger en /api/docs)
 │   │   ├── routes/
 │   │   └── utils/
 │   ├── scripts/               # crear:superadmin y medición de rendimiento
