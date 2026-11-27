@@ -289,6 +289,7 @@ const paths = {
             },
             admin: {
               type: "object",
+              description: "Los ejemplos no traen contraseña a propósito: escribe una de al menos 8 caracteres.",
               required: ["nombre", "email", "password"],
               properties: {
                 nombre: { type: "string" },
@@ -301,7 +302,7 @@ const paths = {
         },
         {
           academia: { nombre: "Academia Son de Barrio", nit: "900123456-7" },
-          admin: { nombre: "Laura Gómez", email: "laura@academia.co", password: "ClaveSegura123" },
+          admin: { nombre: "Laura Gómez", email: "laura@academia.co" },
           aceptaPoliticaDatos: true,
         }
       ),
@@ -332,7 +333,7 @@ const paths = {
           required: ["email", "password"],
           properties: { email: { type: "string", format: "email" }, password: { type: "string" } },
         },
-        { email: "admin@demo.ritmoapp.co", password: "tu-contraseña" }
+        { email: "admin@demo.ritmoapp.co" }
       ),
       responses: {
         200: ok("Sesión iniciada.", { type: "object", properties: { token: { type: "string" }, usuario: ref("UsuarioSesion") } }),
