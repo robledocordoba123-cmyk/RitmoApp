@@ -43,9 +43,24 @@ const parametroFecha = (nombre, descripcion) => ({
 const SIN_SESION = { 401: { $ref: "#/components/responses/SinSesion" } };
 const CON_ROL = { ...SIN_SESION, 403: { $ref: "#/components/responses/SinPermiso" } };
 const DEMASIADOS_INTENTOS = { 429: { $ref: "#/components/responses/DemasiadosIntentos" } };
+const NO_EXISTE = error("No existe en esta academia.");
+
+// Reportes: todos piden el mismo rango de fechas y fallan igual sin él.
+const RANGO_DE_FECHAS = [parametroFecha("desde", "Primer día (YYYY-MM-DD)."), parametroFecha("hasta", "Último día (YYYY-MM-DD).")];
+const FECHAS_INVALIDAS = error("Fechas faltantes o inválidas.");
+
+// Rutas públicas que reciben solo un correo y responden lo mismo exista o no.
+const SOLO_CORREO = cuerpo({ type: "object", required: ["email"], properties: { email: { type: "string", format: "email" } } });
+const RESPUESTAS_SOLO_CORREO = {
+  200: ok("Solicitud recibida.", { $ref: "#/components/schemas/Mensaje" }),
+  400: error("Falta el correo."),
+  ...DEMASIADOS_INTENTOS,
+};
 
 // Una operación que necesita sesión. "roles" se muestra en la descripción para
 // que se lea de un vistazo quién la puede usar.
+const ADMIN_ACADEMIA = "Administrador de academia (ADMIN_ACADEMIA)";
+
 function protegida(tag, resumen, roles, detalles = {}) {
   const descripcion = [`**Rol:** ${roles}.`, detalles.description].filter(Boolean).join("\n\n");
   return {
@@ -56,6 +71,25 @@ function protegida(tag, resumen, roles, detalles = {}) {
     security: [{ bearerAuth: [] }],
     responses: { ...detalles.responses, ...CON_ROL },
   };
+}
+
+// Los tres reportes reciben el mismo rango y devuelven desde, hasta y sus datos.
+function reporte(resumen, descripcion, datos) {
+  return protegida("Reportes", resumen, ADMIN_ACADEMIA, {
+    parameters: RANGO_DE_FECHAS,
+    responses: {
+      200: ok(descripcion, { type: "object", properties: { desde: { type: "string" }, hasta: { type: "string" }, ...datos } }),
+      400: FECHAS_INVALIDAS,
+    },
+  });
+}
+
+// Borrar un elemento del catálogo de la academia. conflicto: por qué no se puede.
+function eliminar(tag, resumen, descripcionId, conflicto) {
+  return protegida(tag, resumen, ADMIN_ACADEMIA, {
+    parameters: [parametroId(descripcionId)],
+    responses: { 204: { description: "Eliminado." }, 404: NO_EXISTE, 409: error(conflicto) },
+  });
 }
 
 function publica(tag, resumen, detalles = {}) {
@@ -258,7 +292,7 @@ const schemas = {
 // Rutas
 // ---------------------------------------------------------------------------
 
-const ADMIN = "Administrador de academia (ADMIN_ACADEMIA)";
+const ADMIN = ADMIN_ACADEMIA;
 const PROFESOR = "Profesor asignado a la clase (PROFESOR)";
 const ESTUDIANTE = "Estudiante (ESTUDIANTE)";
 const CUALQUIERA = "Cualquier usuario con sesión";
@@ -304,7 +338,7 @@ const paths = {
           academia: { nombre: "Academia Son de Barrio", nit: "900123456-7" },
           admin: { nombre: "Laura Gómez", email: "laura@academia.co" },
           aceptaPoliticaDatos: true,
-        }
+        },
       ),
       responses: {
         201: ok("Academia creada; falta confirmar el correo.", {
@@ -333,7 +367,7 @@ const paths = {
           required: ["email", "password"],
           properties: { email: { type: "string", format: "email" }, password: { type: "string" } },
         },
-        { email: "admin@demo.ritmoapp.co" }
+        { email: "admin@demo.ritmoapp.co" },
       ),
       responses: {
         200: ok("Sesión iniciada.", { type: "object", properties: { token: { type: "string" }, usuario: ref("UsuarioSesion") } }),
@@ -349,8 +383,8 @@ const paths = {
       description:
         "Responde lo mismo exista o no el correo, para no revelar qué correos están registrados. " +
         "El enlace vence a los 30 minutos y sirve una sola vez (RN-07).",
-      requestBody: cuerpo({ type: "object", required: ["email"], properties: { email: { type: "string", format: "email" } } }),
-      responses: { 200: ok("Solicitud recibida.", ref("Mensaje")), 400: error("Falta el correo."), ...DEMASIADOS_INTENTOS },
+      requestBody: SOLO_CORREO,
+      responses: RESPUESTAS_SOLO_CORREO,
     }),
   },
   "/auth/restablecer": {
@@ -381,8 +415,8 @@ const paths = {
   "/auth/reenviar-confirmacion": {
     post: publica("Autenticación", "Pedir otro enlace de confirmación (HU-06-CA-03)", {
       description: "Responde lo mismo exista o no el correo.",
-      requestBody: cuerpo({ type: "object", required: ["email"], properties: { email: { type: "string", format: "email" } } }),
-      responses: { 200: ok("Solicitud recibida.", ref("Mensaje")), 400: error("Falta el correo."), ...DEMASIADOS_INTENTOS },
+      requestBody: SOLO_CORREO,
+      responses: RESPUESTAS_SOLO_CORREO,
     }),
   },
   "/auth/invitacion/{codigo}": {
@@ -462,7 +496,7 @@ const paths = {
           required: ["nombre", "capacidad"],
           properties: { nombre: { type: "string" }, capacidad: { type: "integer", minimum: 1 } },
         },
-        { nombre: "Salón Espejos", capacidad: 15 }
+        { nombre: "Salón Espejos", capacidad: 15 },
       ),
       responses: { 201: ok("Salón creado.", ref("Salon")), 400: error("Nombre vacío o capacidad inválida.") },
     }),
@@ -474,16 +508,9 @@ const paths = {
         type: "object",
         properties: { nombre: { type: "string" }, capacidad: { type: "integer", minimum: 1 }, activo: { type: "boolean" } },
       }),
-      responses: { 200: ok("Salón actualizado.", ref("Salon")), 400: error("Datos inválidos."), 404: error("No existe en esta academia.") },
+      responses: { 200: ok("Salón actualizado.", ref("Salon")), 400: error("Datos inválidos."), 404: NO_EXISTE },
     }),
-    delete: protegida("Salones", "Eliminar salón (RF-18 · HU-18)", ADMIN, {
-      parameters: [parametroId("Id del salón.")],
-      responses: {
-        204: { description: "Eliminado." },
-        404: error("No existe en esta academia."),
-        409: error("Tiene clases asociadas."),
-      },
-    }),
+    delete: eliminar("Salones", "Eliminar salón (RF-18 · HU-18)", "Id del salón.", "Tiene clases asociadas."),
   },
   "/ritmos": {
     get: protegida("Ritmos", "Listar ritmos (RF-18 · HU-18)", ADMIN, {
@@ -498,16 +525,9 @@ const paths = {
     put: protegida("Ritmos", "Editar ritmo (RF-18 · HU-18)", ADMIN, {
       parameters: [parametroId("Id del ritmo.")],
       requestBody: cuerpo({ type: "object", required: ["nombre"], properties: { nombre: { type: "string" } } }),
-      responses: { 200: ok("Ritmo actualizado.", ref("Ritmo")), 400: error("Falta el nombre."), 404: error("No existe en esta academia.") },
+      responses: { 200: ok("Ritmo actualizado.", ref("Ritmo")), 400: error("Falta el nombre."), 404: NO_EXISTE },
     }),
-    delete: protegida("Ritmos", "Eliminar ritmo (RF-18 · HU-18)", ADMIN, {
-      parameters: [parametroId("Id del ritmo.")],
-      responses: {
-        204: { description: "Eliminado." },
-        404: error("No existe en esta academia."),
-        409: error("Tiene clases asociadas."),
-      },
-    }),
+    delete: eliminar("Ritmos", "Eliminar ritmo (RF-18 · HU-18)", "Id del ritmo.", "Tiene clases asociadas."),
   },
   "/tarifas": {
     get: protegida("Tarifas", "Listar tarifas (RF-18 · HU-18)", ADMIN, {
@@ -524,7 +544,7 @@ const paths = {
             duracionDias: { type: "integer", minimum: 1, maximum: 366 },
           },
         },
-        { nombre: "Mensualidad", valor: 120000, duracionDias: 30 }
+        { nombre: "Mensualidad", valor: 120000, duracionDias: 30 },
       ),
       responses: { 201: ok("Tarifa creada.", ref("Tarifa")), 400: error("Datos inválidos.") },
     }),
@@ -542,16 +562,14 @@ const paths = {
           activa: { type: "boolean" },
         },
       }),
-      responses: { 200: ok("Tarifa actualizada.", ref("Tarifa")), 400: error("Datos inválidos."), 404: error("No existe en esta academia.") },
+      responses: { 200: ok("Tarifa actualizada.", ref("Tarifa")), 400: error("Datos inválidos."), 404: NO_EXISTE },
     }),
-    delete: protegida("Tarifas", "Eliminar tarifa sin pagos (RN-13)", ADMIN, {
-      parameters: [parametroId("Id de la tarifa.")],
-      responses: {
-        204: { description: "Eliminada." },
-        404: error("No existe en esta academia."),
-        409: error("Tiene pagos registrados: se debe desactivar en su lugar."),
-      },
-    }),
+    delete: eliminar(
+      "Tarifas",
+      "Eliminar tarifa sin pagos (RN-13)",
+      "Id de la tarifa.",
+      "Tiene pagos registrados: se debe desactivar en su lugar.",
+    ),
   },
   "/usuarios": {
     get: protegida("Usuarios", "Listar profesores o estudiantes (RF-17 · HU-17)", ADMIN, {
@@ -597,7 +615,7 @@ const paths = {
       responses: {
         200: ok("Usuario actualizado.", ref("UsuarioDeAcademia")),
         400: error("Datos inválidos."),
-        404: error("No existe en esta academia."),
+        404: NO_EXISTE,
         409: error("Correo ocupado o profesor con clases pendientes."),
       },
     }),
@@ -651,7 +669,7 @@ const paths = {
     patch: protegida("Clases", "Cancelar una clase (HU-14)", ADMIN, {
       description: "Si la clase no ha empezado, se avisa por correo a los estudiantes con reserva.",
       parameters: [parametroId("Id de la clase.")],
-      responses: { 200: ok("Clase cancelada.", ref("Clase")), 404: error("No existe en esta academia.") },
+      responses: { 200: ok("Clase cancelada.", ref("Clase")), 404: NO_EXISTE },
     }),
   },
   "/clases/{id}/inscritos": {
@@ -670,7 +688,7 @@ const paths = {
             },
           },
         }),
-        404: error("No existe en esta academia."),
+        404: NO_EXISTE,
       },
     }),
   },
@@ -685,14 +703,18 @@ const paths = {
           asistencias: {
             type: "array",
             minItems: 1,
-            items: { type: "object", required: ["estudianteId", "estado"], properties: { estudianteId: uuid, estado: ref("EstadoAsistencia") } },
+            items: {
+              type: "object",
+              required: ["estudianteId", "estado"],
+              properties: { estudianteId: uuid, estado: ref("EstadoAsistencia") },
+            },
           },
         },
       }),
       responses: {
         200: ok("Asistencias guardadas.", lista("Asistencia")),
         400: error("Lista vacía, estado inválido, no es el día de la clase o estudiante sin reserva."),
-        404: error("No existe en esta academia."),
+        404: NO_EXISTE,
       },
     }),
   },
@@ -857,107 +879,78 @@ const paths = {
 
   // --- Reportes y asistente ---
   "/reportes/ocupacion": {
-    get: protegida("Reportes", "Ocupación por salón (RF-20 · HU-20)", ADMIN, {
-      parameters: [parametroFecha("desde", "Primer día (YYYY-MM-DD)."), parametroFecha("hasta", "Último día (YYYY-MM-DD).")],
-      responses: {
-        200: ok("Ocupación de cada salón en el rango.", {
+    get: reporte("Ocupación por salón (RF-20 · HU-20)", "Ocupación de cada salón en el rango.", {
+      salones: {
+        type: "array",
+        items: {
           type: "object",
           properties: {
-            desde: { type: "string" },
-            hasta: { type: "string" },
-            salones: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  salonId: uuid,
-                  salon: { type: "string" },
-                  totalClases: { type: "integer" },
-                  capacidadOfertada: { type: "integer" },
-                  reservasConfirmadas: { type: "integer" },
-                  porcentajeOcupacion: { type: "number" },
-                },
-              },
-            },
+            salonId: uuid,
+            salon: { type: "string" },
+            totalClases: { type: "integer" },
+            capacidadOfertada: { type: "integer" },
+            reservasConfirmadas: { type: "integer" },
+            porcentajeOcupacion: { type: "number" },
           },
-        }),
-        400: error("Fechas faltantes o inválidas."),
+        },
       },
     }),
   },
   "/reportes/ingresos": {
-    get: protegida("Reportes", "Ingresos por tarifa y por medio de pago (RF-20 · HU-20)", ADMIN, {
-      parameters: [parametroFecha("desde", "Primer día (YYYY-MM-DD)."), parametroFecha("hasta", "Último día (YYYY-MM-DD).")],
-      responses: {
-        200: ok("Totales del rango.", {
-          type: "object",
-          properties: {
-            desde: { type: "string" },
-            hasta: { type: "string" },
-            total: { type: "integer" },
-            cantidadPagos: { type: "integer" },
-            porTarifa: {
-              type: "array",
-              items: { type: "object", properties: { nombreTarifa: { type: "string" }, pagos: { type: "integer" }, total: { type: "integer" } } },
-            },
-            porMedio: {
-              type: "array",
-              items: { type: "object", properties: { medio: { type: "string" }, pagos: { type: "integer" }, total: { type: "integer" } } },
-            },
-          },
-        }),
-        400: error("Fechas faltantes o inválidas."),
+    get: reporte("Ingresos por tarifa y por medio de pago (RF-20 · HU-20)", "Totales del rango.", {
+      total: { type: "integer" },
+      cantidadPagos: { type: "integer" },
+      porTarifa: {
+        type: "array",
+        items: { type: "object", properties: { nombreTarifa: { type: "string" }, pagos: { type: "integer" }, total: { type: "integer" } } },
+      },
+      porMedio: {
+        type: "array",
+        items: { type: "object", properties: { medio: { type: "string" }, pagos: { type: "integer" }, total: { type: "integer" } } },
       },
     }),
   },
   "/reportes/asistencia": {
-    get: protegida("Reportes", "Asistencia por clase y por estudiante (RF-20 · HU-20)", ADMIN, {
-      parameters: [parametroFecha("desde", "Primer día (YYYY-MM-DD)."), parametroFecha("hasta", "Último día (YYYY-MM-DD).")],
-      responses: {
-        200: ok("Resumen, detalle por clase y por estudiante (primero quienes más faltan).", {
-          type: "object",
-          properties: {
-            desde: { type: "string" },
-            hasta: { type: "string" },
-            resumen: {
-              allOf: [
-                ref("ConteoAsistencia"),
-                { type: "object", properties: { clases: { type: "integer" }, clasesSinRegistrar: { type: "integer" } } },
-              ],
-            },
-            porClase: {
-              type: "array",
-              items: {
-                allOf: [
-                  ref("ConteoAsistencia"),
-                  {
-                    type: "object",
-                    properties: {
-                      claseId: uuid,
-                      ritmo: { type: "string" },
-                      salon: { type: "string" },
-                      profesor: { type: "string" },
-                      fechaHoraInicio: fecha,
-                      inscritos: { type: "integer" },
-                    },
-                  },
-                ],
+    get: reporte(
+      "Asistencia por clase y por estudiante (RF-20 · HU-20)",
+      "Resumen, detalle por clase y por estudiante (primero quienes más faltan).",
+      {
+        resumen: {
+          allOf: [
+            ref("ConteoAsistencia"),
+            { type: "object", properties: { clases: { type: "integer" }, clasesSinRegistrar: { type: "integer" } } },
+          ],
+        },
+        porClase: {
+          type: "array",
+          items: {
+            allOf: [
+              ref("ConteoAsistencia"),
+              {
+                type: "object",
+                properties: {
+                  claseId: uuid,
+                  ritmo: { type: "string" },
+                  salon: { type: "string" },
+                  profesor: { type: "string" },
+                  fechaHoraInicio: fecha,
+                  inscritos: { type: "integer" },
+                },
               },
-            },
-            porEstudiante: {
-              type: "array",
-              items: {
-                allOf: [
-                  ref("ConteoAsistencia"),
-                  { type: "object", properties: { estudianteId: uuid, nombre: { type: "string" }, clases: { type: "integer" } } },
-                ],
-              },
-            },
+            ],
           },
-        }),
-        400: error("Fechas faltantes o inválidas."),
+        },
+        porEstudiante: {
+          type: "array",
+          items: {
+            allOf: [
+              ref("ConteoAsistencia"),
+              { type: "object", properties: { estudianteId: uuid, nombre: { type: "string" }, clases: { type: "integer" } } },
+            ],
+          },
+        },
       },
-    }),
+    ),
   },
   "/bitacora": {
     get: protegida("Reportes", "Últimos 200 movimientos de la academia (RF-21 · HU-21)", ADMIN, {
@@ -988,7 +981,7 @@ const paths = {
       description: "Responde con datos de la propia academia (ADR-004). Límite: 20 preguntas por hora por usuario.",
       requestBody: cuerpo(
         { type: "object", required: ["pregunta"], properties: { pregunta: { type: "string", minLength: 3, maxLength: 500 } } },
-        { pregunta: "¿Cuánto ingresó la academia este mes?" }
+        { pregunta: "¿Cuánto ingresó la academia este mes?" },
       ),
       responses: {
         200: ok("Respuesta del asistente.", {
@@ -1017,7 +1010,11 @@ const paths = {
     patch: protegida("SuperAdmin", "Activar o suspender una academia (RF-03 · HU-03)", "SuperAdmin del SaaS (SUPERADMIN)", {
       description: "Solo cambia el estado; ningún dato se borra (RN-06).",
       parameters: [parametroId("Id de la academia.")],
-      requestBody: cuerpo({ type: "object", required: ["estado"], properties: { estado: { type: "string", enum: ["ACTIVA", "SUSPENDIDA"] } } }),
+      requestBody: cuerpo({
+        type: "object",
+        required: ["estado"],
+        properties: { estado: { type: "string", enum: ["ACTIVA", "SUSPENDIDA"] } },
+      }),
       responses: {
         200: ok("Estado cambiado.", ref("Academia")),
         400: error("Estado inválido."),
@@ -1064,19 +1061,21 @@ const especificacion = {
   tags: [
     { name: "Sistema" },
     { name: "Autenticación", description: "Rutas públicas, con límite de intentos por IP." },
-    { name: "Perfil" },
-    { name: "Salones" },
-    { name: "Ritmos" },
-    { name: "Tarifas" },
-    { name: "Usuarios" },
-    { name: "Invitación" },
-    { name: "Clases" },
-    { name: "Reservas" },
-    { name: "Asistencia" },
-    { name: "Pagos" },
-    { name: "Reportes" },
-    { name: "Asistente de IA" },
-    { name: "SuperAdmin" },
+    ...[
+      "Perfil",
+      "Salones",
+      "Ritmos",
+      "Tarifas",
+      "Usuarios",
+      "Invitación",
+      "Clases",
+      "Reservas",
+      "Asistencia",
+      "Pagos",
+      "Reportes",
+      "Asistente de IA",
+      "SuperAdmin",
+    ].map((name) => ({ name })),
   ],
   security: [{ bearerAuth: [] }],
   paths,
