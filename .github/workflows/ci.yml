@@ -101,10 +101,12 @@ jobs:
     services:
       postgres:
         image: postgres:16-alpine
+        # Base de datos desechable que solo vive mientras corre esta prueba:
+        # acepta conexiones sin contraseña, así no hay claves en el archivo.
         env:
           POSTGRES_USER: ritmoapp
-          POSTGRES_PASSWORD: ritmoapp_dev
           POSTGRES_DB: ritmoapp_e2e
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -114,7 +116,7 @@ jobs:
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://ritmoapp:ritmoapp_dev@localhost:5432/ritmoapp_e2e?schema=public
+      DATABASE_URL: postgresql://ritmoapp@localhost:5432/ritmoapp_e2e?schema=public
       JWT_SECRET: solo-para-la-prueba-de-punta-a-punta
       PORT: 4000
 
@@ -145,10 +147,12 @@ jobs:
         working-directory: frontend
         run: |
           npm ci --ignore-scripts
-          npx playwright install --with-deps chromium
+          npm run test:e2e:navegador
+      # Por npm run, para usar la versión de Playwright del lockfile (npx podría
+      # bajar otra versión y correr sus scripts de instalación).
       - name: Pruebas de punta a punta
         working-directory: frontend
-        run: npx playwright test
+        run: npm run test:e2e
       - name: Guardar el informe si falla
         if: failure()
         uses: actions/upload-artifact@v7

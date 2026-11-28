@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:navegador": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
