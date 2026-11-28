@@ -91,3 +91,72 @@ jobs:
       # AM-04: pruebas de componentes con Vitest y Testing Library.
       - run: npm test
       - run: npm run build
+
+  e2e:
+    name: De punta a punta (Playwright)
+    runs-on: ubuntu-latest
+    # AM-05 (DOC-07): un navegador de verdad recorre la app contra la API real
+    # y un PostgreSQL con los datos de demostración, solo para esta prueba.
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        # Base de datos desechable que solo vive mientras corre esta prueba:
+        # acepta conexiones sin contraseña, así no hay claves en el archivo.
+        env:
+          POSTGRES_USER: ritmoapp
+          POSTGRES_DB: ritmoapp_e2e
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ritmoapp -d ritmoapp_e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ritmoapp@localhost:5432/ritmoapp_e2e?schema=public
+      JWT_SECRET: solo-para-la-prueba-de-punta-a-punta
+      PORT: 4000
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Preparar la API con los datos de demostración
+        working-directory: backend
+        run: |
+          npm ci --ignore-scripts
+          npm run prisma:generate
+          npm run prisma:deploy
+          npm run prisma:seed
+          npm run prisma:seed:demo
+      - name: Encender la API
+        working-directory: backend
+        run: |
+          nohup node src/server.js > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:4000/api/health && exit 0; sleep 1; done
+          cat api.log; exit 1
+      - name: Instalar el frontend y Chromium
+        working-directory: frontend
+        run: |
+          npm ci --ignore-scripts
+          npm run test:e2e:navegador
+      # Por npm run, para usar la versión de Playwright del lockfile (npx podría
+      # bajar otra versión y correr sus scripts de instalación).
+      - name: Pruebas de punta a punta
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Guardar el informe si falla
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-playwright
+          path: frontend/playwright-report/
+          retention-days: 14

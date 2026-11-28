@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 coverage
+
+# Playwright (AM-05)
+test-results
+playwright-report
+blob-report
